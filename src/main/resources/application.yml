@@ -1,0 +1,26 @@
+spring:
+  config:
+    import: optional:application-secret.yml
+
+  application:
+    name: miniproject
+
+#  h2:
+#    console:
+#      enabled: true
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/miniproject
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true # 출력되는 SQL을 정렬
+    hibernate:
+      ddl-auto: update
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: trace # SQL의 '?'에 바인딩되는 파라미터 값을 로그로 확인

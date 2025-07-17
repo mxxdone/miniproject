@@ -1,0 +1,55 @@
+package com.mxxdone.miniproject.controller;
+
+import com.mxxdone.miniproject.dto.PostResponseDto;
+import com.mxxdone.miniproject.dto.PostSaveRequestDto;
+import com.mxxdone.miniproject.dto.PostUpdateRequestDto;
+import com.mxxdone.miniproject.service.PostService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/posts")
+public class PostController {
+
+    private final PostService postService;
+
+    //게시글 생성 API
+    @PostMapping
+    public ResponseEntity<Long> savePost(@RequestBody PostSaveRequestDto requestDto) {
+        return ResponseEntity.ok(postService.save(requestDto));
+    }
+
+    //게시글 수정 API
+    @PutMapping("/{id}")
+    public ResponseEntity<Long> updatePost(@PathVariable Long id, @RequestBody PostUpdateRequestDto requestDto) {
+        return ResponseEntity.ok(postService.update(id, requestDto));
+    }
+
+    //게시글 삭제 API
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        postService.delete(id);
+        return ResponseEntity.ok().build();
+        //.build() 사용 이유
+        //응답 본문(body)이 없는 HTTP응답을 만들기 위해서
+        //응답 본문으로 사용할 객체(a.g. PostResponseDto)를 파라미터로 직접 넣어주면
+        //ResponseEntity 객체를 반환하지만
+        //위의 경우에는 Void로 직접 응답 본문 만들어줘야함.
+    }
+
+    //게시글 단건 조회 API
+    @GetMapping("/{id}")
+    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long id) {
+        return ResponseEntity.ok(postService.findById(id));
+    }
+
+    //게시글 전체 조회 API
+    @GetMapping
+    public ResponseEntity<List<PostResponseDto>> getAllPosts() {
+        return ResponseEntity.ok(postService.findAll());
+    }
+}
