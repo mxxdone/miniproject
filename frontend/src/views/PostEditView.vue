@@ -1,0 +1,80 @@
+<script setup>
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { usePostsStore } from '@/stores/posts'
+import { useUiStore } from '@/stores/ui'
+
+const route = useRoute()
+const router = useRouter()
+const postsStore = usePostsStore()
+const uiStore = useUiStore()
+
+const postId = route.params.id
+const form = ref(null)
+const title = ref('')
+const content = ref('')
+
+// 페이지가 로드될 때 기존 게시글 데이터를 불러옴
+onMounted(() => {
+  postsStore.fetchPost(postId)
+})
+
+// watch(source, callback)
+// 스토어의 currentPost 값이 변경(로드 완료)되면, 폼 데이터에 채워 넣음
+watch(() => postsStore.currentPost, (newPost) => {
+  if (newPost) {
+    title.value = newPost.title
+    content.value = newPost.content
+  }
+})
+
+const rules = {
+  required: value => !!value || '필수 항목입니다.',
+  minLength: value => value.length >= 2 || '2글자 이상 입력해 주세요.',
+}
+
+async function submitUpdate() {
+  const { valid } = await form.value.validate()
+  if (valid) {
+    const isSuccess = await postsStore.updatePost(postId, {
+      title: title.value,
+      content: content.value
+    })
+    if (isSuccess) {
+      uiStore.showSnackbar({ text: '게시글이 성공적으로 수정되었습니다.', color: 'success' })
+      await router.push(`/posts/${postId}`) // 수정된 상세 페이지로 이동
+    } else {
+      uiStore.showSnackbar({ text: '게시글 수정에 실패했습니다.', color: 'error' })
+    }
+  }
+}
+</script>
+
+<template>
+  <v-container>
+    <v-card v-if="postsStore.currentPost">
+      <v-card-title class="text-h5">게시글 수정</v-card-title>
+      <v-card-text>
+        <v-form ref="form" @submit.prevent="submitUpdate">
+          <v-text-field
+            v-model="title"
+            label="제목"
+            :rules="[rules.required, rules.minLength]"
+            required
+          ></v-text-field>
+          <v-textarea
+            v-model="content"
+            label="내용"
+            :rules="[rules.required, rules.minLength]"
+            required
+            rows="10"
+          ></v-textarea>
+          <v-btn type="submit" color="primary" class="mt-4">저장</v-btn>
+        </v-form>
+      </v-card-text>
+    </v-card>
+    <v-row v-else align="center" justify="center" class="my-12">
+      <v-progress-circular indeterminate color="primary" size="48" />
+    </v-row>
+  </v-container>
+</template>
