@@ -1,89 +1,26 @@
-# ========================
-# Java & IntelliJ
-# ========================
-# 컴파일된 클래스 및 패키징된 아티팩트
-*.class
-*.jar
-*.war
-*.ear
-*.zip # 일부 빌드에서 생성될 수 있는 압축 파일
-
-# IntelliJ IDEA 설정 및 빌드 출력
-*.iml
+# IntelliJ / IDE
 .idea/
-out/
-.idea_modules/ # 간혹 생성될 수 있는 모듈 디렉토리
+*.iml
+*.iws
 
-# ========================
 # Gradle
-# ========================
-# Gradle 캐시 및 빌드 결과
-.gradle/
+.gradle
 build/
+!gradle-wrapper.jar
 
-# Gradle Wrapper JAR (커밋되어야 함)
-!gradle/wrapper/gradle-wrapper.jar
-
-# ========================
-# Optional: 로그 및 임시 파일
-# ========================
+# Node / Vue
+node_modules/
+dist/
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 *.log
-*.tmp
-temp/ # 임시 파일이나 디렉토리
-logs/ # 애플리케이션 로그 디렉토리
 
-# ========================
-# Spring Boot (개발 환경 변수/시크릿)
-# ========================
-# 민감한 설정 파일 (절대 커밋 금지)
+# Secrets
 application-secret.yml
-application-*.secret.yml
-application-local.yml # 로컬 개발 환경 전용 설정
-application-dev.yml   # 개발 환경 전용 설정 (프로젝트마다 다름)
-.env
-*.env
 
-# ========================
-# Database 관련
-# ========================
-# 임베디드 데이터베이스 파일
-*.h2.db
-*.mv.db
-*.sqlite
-*.db
-
-# 특정 데이터베이스 덤프 또는 로컬 테스트용 SQL 파일
-dump.sql
-*.bak
-
-# SQL 마이그레이션 스크립트 등은 포함 (무시하지 않음)
-# 만약 특정 SQL 파일을 무시하고 싶다면 여기에 추가
-
-# ========================
-# OS / 편집기 환경
-# ========================
-.DS_Store          # macOS
-Thumbs.db          # Windows
-ehthumbs.db        # Windows
-Desktop.ini        # Windows
-*.swp              # Vim 스왑 파일
-*.swo              # Vim 스왑 파일
-.vscode/           # VS Code 설정 (개인용이므로 무시)
-*.bak              # 백업 파일
-
-# ========================
-# Test/Coverage 도구
-# ========================
-test-output/       # 테스트 결과 출력
-target/            # Maven 빌드 출력 (Gradle 프로젝트라면 거의 사용 안 함, 방어적으로 포함)
-jacoco.exec        # JaCoCo 커버리지 실행 파일
-*.ec               # JaCoCo 커버리지 파일
-coverage/          # 커버리지 보고서 디렉토리
-
-# ========================
-# IDE별 추가 (선택 사항)
-# ========================
-# Eclipse (사용한다면)
-.project
-.classpath
-.settings/
+# OS
+.DS_Store
+Thumbs.db
