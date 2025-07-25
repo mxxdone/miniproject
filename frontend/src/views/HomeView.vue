@@ -1,14 +1,18 @@
 <script setup>
-import { onMounted } from 'vue'
+import { watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 
-// posts 스토어를 사용
+// posts.js에 작성한 posts 스토어를 사용
 const postsStore = usePostsStore()
 
-// 이 컴포넌트가 화면에 마운트(표시)되면 fetchPosts 액션을 실행
-onMounted(() => {
-  postsStore.fetchPosts()
-})
+//컴포넌트가 마운트될 떄 감시 대상의 현재 값으로 watch 콜백 즉시 한 번 실행
+watch(
+  () => postsStore.page.currentPage,
+  (newPage) => {
+    postsStore.fetchPosts(newPage)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -19,19 +23,21 @@ onMounted(() => {
       </v-col>
     </v-row>
     <v-row>
-      <v-col
-        v-for="post in postsStore.posts"
-        :key="post.id"
-        cols="12"
-        sm="6"
-        md="4"
-      >
+      <v-col v-for="post in postsStore.posts" :key="post.id" cols="12" sm="6" md="4">
         <RouterLink :to="`/posts/${post.id}`" class="text-decoration-none">
           <v-card>
             <v-card-title>{{ post.title }}</v-card-title>
             <v-card-text>{{ post.content }}</v-card-text>
           </v-card>
         </RouterLink>
+      </v-col>
+    </v-row>
+    <v-row v-if="postsStore.page.totalPages > 0" class="justify-center mt-4">
+      <v-col cols="auto">
+        <v-pagination
+          v-model="postsStore.page.currentPage"
+          :length="postsStore.page.totalPages"
+        ></v-pagination>
       </v-col>
     </v-row>
   </v-container>

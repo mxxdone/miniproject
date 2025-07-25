@@ -5,10 +5,12 @@ import com.mxxdone.miniproject.dto.PostSaveRequestDto;
 import com.mxxdone.miniproject.dto.PostUpdateRequestDto;
 import com.mxxdone.miniproject.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,7 +51,10 @@ public class PostController {
 
     //게시글 전체 조회 API
     @GetMapping
-    public ResponseEntity<List<PostResponseDto>> getAllPosts() {
-        return ResponseEntity.ok(postService.findAll());
+//    public ResponseEntity<List<PostResponseDto>> getAllPosts() {
+    public ResponseEntity<Page<PostResponseDto>> getAllPosts(
+            @PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(postService.findAll(pageable));
     }
 }

@@ -6,10 +6,11 @@ import com.mxxdone.miniproject.dto.PostSaveRequestDto;
 import com.mxxdone.miniproject.dto.PostUpdateRequestDto;
 import com.mxxdone.miniproject.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,14 +56,10 @@ public class PostService {
     }
 
     //게시글 전체 조회
-    @Transactional
-    public List<PostResponseDto> findAll() {
-        return postRepository.findAll().stream()
-                //:: -> 가공 없이 파라미터를 그대로 다른 메서드에 전달
-                //post를 받아서 from 메서드에 그대로 전달
-                //post -> PostResponseDto.from(post)의 축약 버전
-                .map(PostResponseDto::from)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> findAll(Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+        return posts.map(PostResponseDto::from);
     }
 
 }
