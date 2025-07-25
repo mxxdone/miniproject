@@ -61,7 +61,8 @@ async function submitPost() {
             required
             rows="10"
           ></v-textarea>
-          <v-btn type="submit" color="primary" class="mt-4">저장</v-btn>
+          <v-btn color="primary" to="/" class="mt-4 mr-2">뒤로가기</v-btn>
+          <v-btn type="submit" color="primary" class="mt-4">등록</v-btn>
         </v-form>
       </v-card-text>
     </v-card>
