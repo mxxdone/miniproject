@@ -1,9 +1,11 @@
 package com.mxxdone.miniproject.service;
 
+import com.mxxdone.miniproject.domain.Category;
 import com.mxxdone.miniproject.domain.Post;
 import com.mxxdone.miniproject.dto.PostResponseDto;
 import com.mxxdone.miniproject.dto.PostSaveRequestDto;
 import com.mxxdone.miniproject.dto.PostUpdateRequestDto;
+import com.mxxdone.miniproject.repository.CategoryRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,18 +13,23 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class PostService {
 
     private final PostRepository postRepository;
+    private final CategoryRepository categoryRepository;
 
-    //게시글 저장
+    // 게시글 저장
     public Long save(PostSaveRequestDto requestDto) {
-        return postRepository.save(requestDto.toEntity()).getId();
+        Category category = categoryRepository.findById(requestDto.categoryId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
+
+        Post post = new Post(requestDto.title(), requestDto.content());
+        post.setCategory(category);
+
+        return postRepository.save(post).getId();
         //postRepository-> db에 접근
         //toEntity의 결과 Post 객체를 파라미터로 사용
         //저장후 반환 받은 엔티티 객체에서 id 추출
