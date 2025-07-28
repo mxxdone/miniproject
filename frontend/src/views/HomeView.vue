@@ -1,22 +1,53 @@
 <script setup>
-import { watch } from 'vue'
+import { onMounted, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
+import { useCategoriesStore } from '@/stores/categories'
 
 // posts.js에 작성한 posts 스토어를 사용
 const postsStore = usePostsStore()
+const categoriesStore = useCategoriesStore()
 
-//컴포넌트가 마운트될 떄 감시 대상의 현재 값으로 watch 콜백 즉시 한 번 실행
+onMounted(() => {
+  postsStore.fetchPosts({ pageNumber: 1 }) // 초기 로딩은 전체 게시글
+  categoriesStore.fetchCategories() // 카테고리 목록도 함께 로딩
+})
+
+// 페이지가 변경될 때 현재 선택 카테고리를 유지하며 데이터 요청
 watch(
   () => postsStore.page.currentPage,
-  (newPage) => {
-    postsStore.fetchPosts(newPage)
+  (newPage, oldPage) => {
+    // onMounted 이후 중복 호출 방지
+    if (oldPage != 0) {
+      postsStore.fetchPosts({ pageNumber: newPage, categoryId: postsStore.currentCategoryId })
+    }
   },
-  { immediate: true },
 )
+// 카테고리 클릭 시 실행될 함수
+function selectCategory(categoryId) {
+  postsStore.fetchPosts({ pageNumber: 1, categoryId: categoryId })
+}
 </script>
 
 <template>
   <v-container>
+    <v-row>
+      <v-col>
+        <v-chip-group mandatory selected-class="text-primary">
+          <v-chip @click="selectCategory(null)">전체</v-chip>
+          <v-chip
+            v-for="category in categoriesStore.categories"
+            :key="category.id"
+            @click="selectCategory(category.id)"
+          >
+            {{ category.name }}
+          </v-chip>
+        </v-chip-group>
+      </v-col>
+    </v-row>
+
+    <v-row> </v-row>
+
+    <v-row v-if="postsStore.page.totalPages > 0" class="justify-center mt-4"> </v-row>
     <v-row>
       <v-col cols="12" class="text-right">
         <v-btn color="primary" to="/posts/new">글쓰기</v-btn>
@@ -40,7 +71,9 @@ watch(
         <v-pagination
           v-model="postsStore.page.currentPage"
           :length="postsStore.page.totalPages"
-        ></v-pagination>
+          :total-visible="7"
+        >
+        </v-pagination>
       </v-col>
     </v-row>
   </v-container>

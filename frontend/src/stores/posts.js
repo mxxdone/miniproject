@@ -11,9 +11,10 @@ export const usePostsStore = defineStore('posts', () => {
   const page = ref({
     totalPages: 0,
     totalElements: 0,
-    currentPage: 0,
-    size: 3,
+    currentPage: 1,
+    size: 6,
   })
+  const currentCategoryId = ref(null) // 현재 선택된 카테고리id를 저장할 상태 추가
 
   /** Actions **/
 
@@ -29,15 +30,33 @@ export const usePostsStore = defineStore('posts', () => {
   }
 
   // 게시글 목록 조회
-  async function fetchPosts(pageNumber = 1) {
+  async function fetchPosts({ pageNumber = 1, categoryId = null }) {
+    currentCategoryId.value = categoryId
+    let url = 'http://localhost:8080/api/v1/posts'
+
+    if (categoryId) {
+      url = `http://localhost:8080/api/v1/posts/category/${categoryId}`
+    }
     try {
       // 백엔드 API 호출 (주소는 백엔드 서버 주소에 맞게 확인)
-      const response = await axios.get(`http://localhost:8080/api/v1/posts?page=${pageNumber -1}&size=${page.value.size}`)
+      const response = await axios.get(url, {
+        params: {
+          page: pageNumber - 1, // 백엔드용 0-based
+          size: page.value.size
+        }
+      })
       // 현재 페이지의 상태 확정, 기록
-      posts.value = response.data.content
-      page.value.totalPages = response.data.totalPages
-      page.value.totalElements = response.data.totalElements
-      page.value.currentPage = response.data.number + 1
+      const data = response.data
+      posts.value = data.content
+      page.value = {
+        //기존 page 상태 객체의 내용을 복사해서 아래 내용들을 덮어쓰기
+        // a.g. Size값 고정
+        ...page.value,
+        totalPages: data.totalPages,
+        totalElements: data.totalElements,
+        currentPage: data.number + 1, // 프론트용 1-based
+      }
+
     } catch (error) {
       console.error('게시글을 불러오는 중 오류가 발생했습니다:', error)
     }
@@ -78,5 +97,5 @@ export const usePostsStore = defineStore('posts', () => {
   }
 
   // 외부 컴포넌트에서 사용할 수 있도록 정의
-  return { posts, currentPost, page, fetchPosts, fetchPost, createPost, deletePost, updatePost}
+  return { posts, currentPost, page, currentCategoryId, fetchPosts, fetchPost, createPost, deletePost, updatePost}
 })
