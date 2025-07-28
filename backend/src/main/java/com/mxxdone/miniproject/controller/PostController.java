@@ -57,4 +57,11 @@ public class PostController {
     ) {
         return ResponseEntity.ok(postService.findAll(pageable));
     }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<Page<PostResponseDto>> getPostsByCategory(
+            @PathVariable Long categoryId,
+            @PageableDefault(size = 6, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(postService.findByCategoryId(categoryId, pageable));
+    }
 }

@@ -69,4 +69,8 @@ public class PostService {
         return posts.map(PostResponseDto::from);
     }
 
+    public Page<PostResponseDto> findByCategoryId(Long categoryId, Pageable pageable) {
+        Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
+        return posts.map(PostResponseDto::from);
+    }
 }
