@@ -31,11 +31,13 @@ export const usePostsStore = defineStore('posts', () => {
 
   // 게시글 목록 조회
   async function fetchPosts({ pageNumber = 1, categoryId = null }) {
-    currentCategoryId.value = categoryId
+    // categoryId가 undefined일 경우 null로 처리
+    const finalCategoryId = categoryId === undefined ? null : categoryId
+    currentCategoryId.value = finalCategoryId
     let url = 'http://localhost:8080/api/v1/posts'
 
-    if (categoryId) {
-      url = `http://localhost:8080/api/v1/posts/category/${categoryId}`
+    if (finalCategoryId) {
+      url = `http://localhost:8080/api/v1/posts/category/${finalCategoryId}`
     }
     try {
       // 백엔드 API 호출 (주소는 백엔드 서버 주소에 맞게 확인)

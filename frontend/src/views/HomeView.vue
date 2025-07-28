@@ -2,28 +2,40 @@
 import { onMounted, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useCategoriesStore } from '@/stores/categories'
+import { useRoute, useRouter } from 'vue-router'
 
 // posts.js에 작성한 posts 스토어를 사용
 const postsStore = usePostsStore()
 const categoriesStore = useCategoriesStore()
+const route = useRoute(); // 현재 경로 정보 읽기
+const router = useRouter(); // 경로 변경에 필요
 
 onMounted(() => {
-  postsStore.fetchPosts({ pageNumber: 1 }) // 초기 로딩은 전체 게시글
   categoriesStore.fetchCategories() // 카테고리 목록도 함께 로딩
 })
 
-// 페이지가 변경될 때 현재 선택 카테고리를 유지하며 데이터 요청
+// URL의 쿼리 파라미터(?category=...) 변경시 데이터 새로 불러오기
 watch(
-  () => postsStore.page.currentPage,
-  (newPage, oldPage) => {
-    // onMounted 이후 중복 호출 방지
-    if (oldPage != 0) {
-      postsStore.fetchPosts({ pageNumber: newPage, categoryId: postsStore.currentCategoryId })
-    }
+  () => route.query.category,
+  (newCategoryId) => {
+    postsStore.fetchPosts({ pageNumber:1, categoryId: newCategoryId })
+    // onMounted 이후 중복 호출 방
   },
+  // 페이지 처음 진입시에도 즉시 실행
+  { immediate: true }
 )
-// 카테고리 클릭 시 실행될 함수
+
+// 페이지 번호가 바뀔 때 데이터 새로 불러오기
+watch(() => postsStore.page.currentPage, (newPage, oldPage) => {
+  if (oldPage !== 0) {
+    postsStore.fetchPosts({ pageNumber: newPage, categoryId: route.query.category})
+  }
+})
+// 카테고리 클릭 시 실행될 함수, URL을 변경함
+// categoryId가 falase라면 (null, undefined, 0, '') 빈객체 넘기기
 function selectCategory(categoryId) {
+  const query = categoryId ? { category: categoryId } : {}
+  router.push({ path: '/', query: query })
   postsStore.fetchPosts({ pageNumber: 1, categoryId: categoryId })
 }
 </script>
