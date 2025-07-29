@@ -12,6 +12,7 @@ public record PostResponseDto(
         Long id,
         String title,
         String content,
+        String categoryName,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -21,6 +22,7 @@ public record PostResponseDto(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
+                post.getCategory() != null ? post.getCategory().getName() : null,
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

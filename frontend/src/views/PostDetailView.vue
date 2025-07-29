@@ -16,6 +16,10 @@ onMounted(() => {
   postsStore.fetchPost(postId)
 })
 
+function goBack() {
+  router.back()
+}
+
 async function removePost() {
   if (confirm('정말로 삭제하시겠습니까?')) {
     const isSuccess = await postsStore.deletePost(postId)
@@ -32,6 +36,7 @@ async function removePost() {
 <template>
   <v-container>
     <v-card v-if="postsStore.currentPost">
+      <v-chip color="primary" class="mb-4">{{ postsStore.currentPost.categoryName }}</v-chip>
       <v-card-title class="text-h4">{{ postsStore.currentPost.title }}</v-card-title>
       <v-card-subtitle>
         작성일: {{ postsStore.currentPost.createdAt }}
@@ -43,6 +48,7 @@ async function removePost() {
 
       <v-card-actions>
         <v-spacer></v-spacer>
+        <v-btn color="primary" @click="goBack">뒤로가기</v-btn>
         <v-btn color="blue" :to="`/posts/${postId}/edit`">수정</v-btn>
         <v-btn color="red" @click="removePost">삭제</v-btn>
       </v-card-actions>
