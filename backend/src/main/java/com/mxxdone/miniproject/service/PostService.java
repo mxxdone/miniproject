@@ -73,4 +73,18 @@ public class PostService {
         Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
         return posts.map(PostResponseDto::from);
     }
+
+    // 검색
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> searchByKeyword(String type, String keyword, Pageable pageable) {
+        Page<Post> posts;
+        if ("title".equals(type)) {
+            posts = postRepository.searchByTitle(keyword, pageable);
+        } else if ("content".equals(type)) {
+            posts = postRepository.searchByContent(keyword, pageable);
+        } else {
+            posts = postRepository.searchByTitleOrContent(keyword, pageable);
+        }
+        return posts.map(PostResponseDto::from);
+    }
 }
