@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useCategoriesStore } from '@/stores/categories'
 import { useRoute, useRouter } from 'vue-router'
@@ -10,16 +10,23 @@ const categoriesStore = useCategoriesStore()
 const route = useRoute() // 현재 경로 정보 읽기
 const router = useRouter() // 경로 변경에 필요
 
+// 검색 UI와 연결될 로컬 상태
+const searchType = ref('all')
+const searchKeyword = ref('')
+const searchTypes = [
+  { title: '전체', value: 'all' },
+  { title: '제목', value: 'title' },
+  { title: '내용', value: 'content' },
+]
+
 const currentPage = computed(() => Number(route.query.page) || 1)
-const selectedCategory = computed({
-  get: () => (route.query.category ? Number(route.query.category) : 0),
-  set: (value) => {
-    selectCategory(value)
-  },
-})
+const currentCategory = computed(() => (route.query.category ? Number(route.query.category) : null))
 
 onMounted(() => {
   categoriesStore.fetchCategories() // 카테고리 목록도 함께 로딩
+  // URL 쿼리에서 검색어 상태 복원
+  searchType.value = route.query.type || 'all'
+  searchKeyword.value = route.query.keyword || ''
 })
 
 // URL의 쿼리 변경시 데이터 새로 불러오기
@@ -28,10 +35,14 @@ watch(
   (newQuery) => {
     const pageNumber = Number(newQuery.page) || 1
     const categoryId = newQuery.category ? Number(newQuery.category) : null
-    postsStore.fetchPosts({ pageNumber, categoryId })
+    const type = newQuery.type || 'all'
+    const keyword = newQuery.keyword || ''
+
+    postsStore.fetchPosts({ pageNumber, categoryId, type, keyword })
     // onMounted 이후 중복 호출 방
   },
-  // 페이지 처음 진입시에도 즉시 실행, deep: true로 객체 내부 변경 감지
+  // immediate: 페이지 처음 진입시에도 즉시 실행
+  // deep: true로 객체 내부 변경 감지
   { immediate: true, deep: true },
 )
 
@@ -41,16 +52,27 @@ function handlePageChange(newPage) {
 }
 
 function selectCategory(categoryId) {
-  if ((route.query.category ? Number(route.query.category) : 0) === categoryId) return
-  const query = { ...route.query }
+  // 카테고리 변경시 검색어, 검색옵션 초기화
+  searchKeyword.value = ''
+  searchType.value = 'all'
+
+  const query = {}
   if (categoryId) {
-    // 카테고리id가 0이 아닐 때 -> '전체'가 아닐때
     query.category = categoryId
-  } else {
-    delete query.category // '전체'를 누르면 카테고리 파라미터 제거
   }
   query.page = 1 // 카테고리 변경 시 항상 1페이지로
   router.push({ query })
+}
+
+function handleSearch() {
+  router.push({
+    query: {
+      ...route.query, // 현재 카테고리 유지
+      type: searchType.value,
+      keyword: searchKeyword.value,
+      page: 1 // 검색 시 항상 1페이지로
+    }
+  })
 }
 </script>
 
@@ -58,22 +80,39 @@ function selectCategory(categoryId) {
   <v-container>
     <v-row>
       <v-col>
-        <v-chip-group v-model="selectedCategory" mandatory selected-class="text-primary">
-          <v-chip :value="0">전체</v-chip>
+        <v-chip-group :model-value="currentCategory" mandatory selected-class="text-primary">
+          <v-chip :value="null" @click="selectCategory(null)">전체</v-chip>
           <v-chip
             v-for="category in categoriesStore.categories"
             :key="category.id"
             :value="category.id"
+            @click="selectCategory(category.id)"
           >
             {{ category.name }}
           </v-chip>
         </v-chip-group>
       </v-col>
     </v-row>
-
-    <v-row></v-row>
-
+    <v-row>
+      <v-col cols="12">
+        <v-card class="pa-4">
+          <v-row align="center" no-gutters>
+            <v-col cols="3" class="pr-2">
+              <v-select v-model="searchType" :items="searchTypes" density="compact" hide-details></v-select>
+            </v-col>
+            <v-col cols="7">
+              <v-text-field v-model="searchKeyword" placeholder="검색어를 입력하세요" density="compact" hide-details @keyup.enter="handleSearch"></v-text-field>
+            </v-col>
+            <v-col cols="2" class="pl-2">
+              <v-btn color="primary" block @click="handleSearch">검색</v-btn>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+    </v-row>
+<!--
     <v-row v-if="postsStore.page.totalPages > 0" class="justify-center mt-4"></v-row>
+-->
     <v-row>
       <v-col cols="12" class="text-right">
         <v-btn color="primary" to="/posts/new">글쓰기</v-btn>

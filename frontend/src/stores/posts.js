@@ -15,6 +15,7 @@ export const usePostsStore = defineStore('posts', () => {
     size: 6,
   })
   const currentCategoryId = ref(null) // 현재 선택된 카테고리id를 저장할 상태 추가
+  const currentSearch = ref({ type: 'all', keyword: '' }) // 기본은 전체 검색
 
   /** Actions **/
 
@@ -30,23 +31,30 @@ export const usePostsStore = defineStore('posts', () => {
   }
 
   // 게시글 목록 조회
-  async function fetchPosts({ pageNumber = 1, categoryId = null }) {
-    // categoryId가 undefined일 경우 null로 처리
-    const finalCategoryId = categoryId === undefined ? null : categoryId
-    currentCategoryId.value = finalCategoryId
-    let url = 'http://localhost:8080/api/v1/posts'
+  async function fetchPosts({ pageNumber = 1, categoryId = null, type = 'all', keyword = '' }) {
+    currentCategoryId.value = categoryId
+    currentSearch.value = { type, keyword }
 
-    if (finalCategoryId) {
-      url = `http://localhost:8080/api/v1/posts/category/${finalCategoryId}`
+    let url = 'http://localhost:8080/api/v1/posts'
+    let params = {
+      page: pageNumber - 1,
+      size: page.value.size
     }
+
+    if (keyword) { // 키워드가 있으면 검색 API 사용
+      url = `http://localhost:8080/api/v1/posts/search`
+      params.keyword = keyword
+      params.type = type
+      if (categoryId) {
+        params.categoryId = categoryId;
+      }
+    } else if (categoryId) { // 카테고리 IPD가 있으면 카테고리별 조회 API 사용
+      url = `http://localhost:8080/api/v1/posts/category/${categoryId}`
+    }
+
     try {
       // 백엔드 API 호출 (주소는 백엔드 서버 주소에 맞게 확인)
-      const response = await axios.get(url, {
-        params: {
-          page: pageNumber - 1, // 백엔드용 0-based
-          size: page.value.size
-        }
-      })
+      const response = await axios.get(url, { params })
       // 현재 페이지의 상태 확정, 기록
       const data = response.data
       posts.value = data.content

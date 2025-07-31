@@ -53,7 +53,7 @@ public class PostController {
     @GetMapping
 //    public ResponseEntity<List<PostResponseDto>> getAllPosts() {
     public ResponseEntity<Page<PostResponseDto>> getAllPosts(
-            @PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 6, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(postService.findAll(pageable));
     }
 
@@ -68,7 +68,8 @@ public class PostController {
     public ResponseEntity<Page<PostResponseDto>> searchPosts(
             @RequestParam(required = false, defaultValue = "all") String type,
             @RequestParam String keyword,
-            @PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(postService.searchByKeyword(type, keyword, pageable));
+            @RequestParam(required = false) Long categoryId,
+            @PageableDefault(size = 6, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(postService.searchByKeyword(type, keyword, categoryId, pageable));
     }
 }

@@ -76,14 +76,27 @@ public class PostService {
 
     // 검색
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> searchByKeyword(String type, String keyword, Pageable pageable) {
+    public Page<PostResponseDto> searchByKeyword(String type, String keyword, Long categoryId, Pageable pageable) {
         Page<Post> posts;
-        if ("title".equals(type)) {
-            posts = postRepository.searchByTitle(keyword, pageable);
-        } else if ("content".equals(type)) {
-            posts = postRepository.searchByContent(keyword, pageable);
+
+        if (categoryId != null) {
+            // 카테고리 id가 있을 때
+            if ("title".equals(type)) {
+                posts = postRepository.searchByTitleAndCategory(categoryId, keyword, pageable);
+            } else if ("content".equals(type)) {
+                posts = postRepository.searchByContentAndCategory(categoryId, keyword, pageable);
+            } else {
+                posts = postRepository.searchByKeywordAndCategory(categoryId, keyword, pageable);
+            }
         } else {
-            posts = postRepository.searchByTitleOrContent(keyword, pageable);
+            // 카테고리 id가 없을 때
+            if ("title".equals(type)) {
+                posts = postRepository.searchByTitle(keyword, pageable);
+            } else if ("content".equals(type)) {
+                posts = postRepository.searchByContent(keyword, pageable);
+            } else {
+                posts = postRepository.searchByTitleOrContent(keyword, pageable);
+            }
         }
         return posts.map(PostResponseDto::from);
     }
