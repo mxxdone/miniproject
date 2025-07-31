@@ -17,26 +17,26 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // JPQL
     // 제목, 본문 통합 검색
-    @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword%")
+    @Query("SELECT p FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Post> searchByTitleOrContent(@Param("keyword") String keyword, Pageable pageable);
 
     // 제목 검색
-    @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword%")
+    @Query("SELECT p FROM Post p WHERE LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Post> searchByTitle(@Param("keyword") String keyword, Pageable pageable);
 
     // 본문 검색
-    @Query("SELECT p FROM Post p WHERE p.content LIKE %:keyword%")
+    @Query("SELECT p FROM Post p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Post> searchByContent(@Param("keyword") String keyword, Pageable pageable);
 
     // 카테고리 내 통합 검색
-    @Query("SELECT p FROM Post p WHERE p.category.id = :categoryId AND (p.title LIKE %:keyword% OR p.content LIKE %:keyword%)")
+    @Query("SELECT p FROM Post p WHERE p.category.id = :categoryId AND (LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Post> searchByKeywordAndCategory(@Param("categoryId") Long categoryId, @Param("keyword") String keyword, Pageable pageable);
 
     // 카테고리 내 제목 검색
-    @Query("SELECT p FROM Post p WHERE p.category.id = :categoryId AND p.title LIKE %:keyword%")
+    @Query("SELECT p FROM Post p WHERE p.category.id = :categoryId AND LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Post> searchByTitleAndCategory(@Param("categoryId") Long categoryId, @Param("keyword") String keyword, Pageable pageable);
 
     // 카테고리 내 본문 검색
-    @Query("SELECT p FROM Post p WHERE p.category.id = :categoryId AND p.content LIKE %:keyword%")
+    @Query("SELECT p FROM Post p WHERE p.category.id = :categoryId AND LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     Page<Post> searchByContentAndCategory(@Param("categoryId") Long categoryId, @Param("keyword") String keyword, Pageable pageable);
 }
