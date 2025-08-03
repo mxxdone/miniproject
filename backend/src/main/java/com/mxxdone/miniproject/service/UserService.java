@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncorder; // SecurityConfig에 등록한 인코더
+    private final PasswordEncoder passwordEncoder; // SecurityConfig에 등록한 인코더
 
     public Long signup(SignUpRequestDto requestDto) {
         // 아이디 중복 확인
@@ -24,7 +24,7 @@ public class UserService {
         }
 
         // 비밀번호 암호화
-        String encodedPassword = passwordEncorder.encode(requestDto.password());
+        String encodedPassword = passwordEncoder.encode(requestDto.password());
 
         //사용자 생성 (기본 권한은 USER)
         User user = User.builder()
