@@ -1,7 +1,9 @@
 package com.mxxdone.miniproject.service;
 
+import com.mxxdone.miniproject.config.jwt.JwtUtil;
 import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
+import com.mxxdone.miniproject.dto.LoginRequestDto;
 import com.mxxdone.miniproject.dto.SignUpRequestDto;
 import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // SecurityConfig에 등록한 인코더
+    private final JwtUtil jwtUtil;
 
     public Long signup(SignUpRequestDto requestDto) {
         // 아이디 중복 확인
@@ -35,5 +38,17 @@ public class UserService {
 
         // 사용자 저장
         return userRepository.save(user).getId();
+    }
+
+    public String login(LoginRequestDto requestDto) {
+        User user = userRepository.findByUsername(requestDto.username())
+                .orElseThrow(() -> new IllegalArgumentException("등록된 사용자가 없습니다."));
+
+        // matches: 사용자 입력값과 DB 저장 해시값을 비교해줌
+        if (!passwordEncoder.matches(requestDto.password(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        return jwtUtil.createToken(user.getUsername());
     }
 }

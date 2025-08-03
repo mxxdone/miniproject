@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.controller;
 
+import com.mxxdone.miniproject.dto.LoginRequestDto;
 import com.mxxdone.miniproject.dto.SignUpRequestDto;
 import com.mxxdone.miniproject.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,5 +20,12 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<Long> signup(@RequestBody SignUpRequestDto requestDto) {
         return ResponseEntity.ok(userService.signup(requestDto));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequestDto requestDto) {
+        String token = userService.login(requestDto);
+        // 토큰을 클라이언트에게 전달
+        return ResponseEntity.ok(token);
     }
 }
