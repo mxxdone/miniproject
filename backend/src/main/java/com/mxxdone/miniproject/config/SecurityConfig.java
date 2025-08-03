@@ -36,8 +36,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 조회(GET) API들은 누구나 접근 가능
                         .requestMatchers(HttpMethod.GET, "/api/v1/posts/**", "api/v1/categories/**").permitAll()
-                        // 회원가입, 로그인 API는 누구나 접근 가능 (추후 추가)
-                        //.requestMatchers("/api/v1/users/signup", "/api/v1/users/login").permitAll()
+                        // 회원가입, 로그인 API는 누구나 접근 가능
+                        .requestMatchers("/api/v1/users/signup", "/api/v1/users/login").permitAll()
                         //그 외 모든 요청은 인증 사용자만 접근 가능
                         .anyRequest().authenticated()
                 );
