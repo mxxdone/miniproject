@@ -1,5 +1,9 @@
 package com.mxxdone.miniproject.config;
 
+import com.mxxdone.miniproject.config.jwt.JwtAuthenticationFilter;
+import com.mxxdone.miniproject.config.jwt.JwtUtil;
+import com.mxxdone.miniproject.config.security.UserDetailServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,10 +13,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtUtil jwtUtil;
+    private final UserDetailServiceImpl userDetailService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -40,7 +49,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/signup", "/api/v1/users/login").permitAll()
                         //그 외 모든 요청은 인증 사용자만 접근 가능
                         .anyRequest().authenticated()
-                );
+                )
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
