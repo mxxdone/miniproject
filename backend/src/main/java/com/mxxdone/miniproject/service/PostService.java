@@ -2,6 +2,7 @@ package com.mxxdone.miniproject.service;
 
 import com.mxxdone.miniproject.domain.Category;
 import com.mxxdone.miniproject.domain.Post;
+import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.PostResponseDto;
 import com.mxxdone.miniproject.dto.PostSaveRequestDto;
@@ -30,7 +31,7 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
 
         User author = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("작성자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 빌더를 이용하여 Post 객체 생성
         Post post = Post.builder()
@@ -47,18 +48,32 @@ public class PostService {
     }
 
     //게시글 수정
-    public Long update(Long id, PostUpdateRequestDto requestDto) {
+    public Long update(Long id, PostUpdateRequestDto requestDto, String username) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
+
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
+            throw new IllegalArgumentException("게시글 수정 권한이 없습니다.");
+        }
 
         post.update(requestDto.title(), requestDto.content());
         return id;
     }
 
     //게시글 삭제
-    public void delete(Long id) {
+    public void delete(Long id, String username) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
+
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
+            throw new IllegalArgumentException("게시글 삭제 권한이 없습니다.");
+        }
 
         postRepository.delete(post);
     }

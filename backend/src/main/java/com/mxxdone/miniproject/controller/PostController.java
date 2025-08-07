@@ -33,14 +33,19 @@ public class PostController {
 
     //게시글 수정 API
     @PutMapping("/{id}")
-    public ResponseEntity<Long> updatePost(@PathVariable Long id, @RequestBody PostUpdateRequestDto requestDto) {
-        return ResponseEntity.ok(postService.update(id, requestDto));
+    public ResponseEntity<Long> updatePost(@PathVariable Long id,
+                                           @RequestBody PostUpdateRequestDto requestDto,
+                                           @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(postService.update(id, requestDto, userDetails.getUsername()));
     }
 
     //게시글 삭제 API
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        postService.delete(id);
+    public ResponseEntity<Void> deletePost(@PathVariable Long id,
+                                           @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        postService.delete(id, userDetails.getUsername());
         return ResponseEntity.ok().build();
         //.build() 사용 이유
         //응답 본문(body)이 없는 HTTP응답을 만들기 위해서
