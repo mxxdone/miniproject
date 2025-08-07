@@ -2,11 +2,13 @@ package com.mxxdone.miniproject.service;
 
 import com.mxxdone.miniproject.domain.Category;
 import com.mxxdone.miniproject.domain.Post;
+import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.PostResponseDto;
 import com.mxxdone.miniproject.dto.PostSaveRequestDto;
 import com.mxxdone.miniproject.dto.PostUpdateRequestDto;
 import com.mxxdone.miniproject.repository.CategoryRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
+import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,14 +22,23 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
     // 게시글 저장
-    public Long save(PostSaveRequestDto requestDto) {
+    public Long save(PostSaveRequestDto requestDto, String username) {
         Category category = categoryRepository.findById(requestDto.categoryId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
 
-        Post post = new Post(requestDto.title(), requestDto.content());
-        post.setCategory(category);
+        User author = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("작성자를 찾을 수 없습니다."));
+
+        // 빌더를 이용하여 Post 객체 생성
+        Post post = Post.builder()
+                .title(requestDto.title())
+                .content(requestDto.content())
+                .category(category)
+                .author(author)
+                .build();
 
         return postRepository.save(post).getId();
         //postRepository-> db에 접근

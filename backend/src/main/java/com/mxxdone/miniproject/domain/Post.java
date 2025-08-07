@@ -1,10 +1,7 @@
 package com.mxxdone.miniproject.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -31,6 +28,10 @@ public class Post {
     @Column(columnDefinition = "TEXT") // content는 내용이 길어질 수 있으므로 TEXT 타입으로 설정
     private String content;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User author; // 작성자
+
     @CreatedDate
     private LocalDateTime createdAt;
 
@@ -47,5 +48,13 @@ public class Post {
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
+    }
+
+    @Builder
+    public Post(String title, String content, Category category, User author) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.author = author;
     }
 }

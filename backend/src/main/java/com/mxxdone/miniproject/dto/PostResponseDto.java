@@ -13,6 +13,7 @@ public record PostResponseDto(
         String title,
         String content,
         String categoryName,
+        String authorUsername,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -22,7 +23,9 @@ public record PostResponseDto(
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
+                // 연관관계인 필드만 null 체크
                 post.getCategory() != null ? post.getCategory().getName() : null,
+                post.getAuthor() != null ? post.getAuthor().getUsername() : null,
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

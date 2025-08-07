@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,8 +23,12 @@ public class PostController {
 
     //게시글 생성 API
     @PostMapping
-    public ResponseEntity<Long> savePost(@RequestBody PostSaveRequestDto requestDto) {
-        return ResponseEntity.ok(postService.save(requestDto));
+    public ResponseEntity<Long> savePost(
+            @RequestBody PostSaveRequestDto requestDto,
+            @AuthenticationPrincipal UserDetails userDetails // 현재 로그인한 사용자 정보
+    ) {
+        String username = userDetails.getUsername();
+        return ResponseEntity.ok(postService.save(requestDto, username));
     }
 
     //게시글 수정 API
