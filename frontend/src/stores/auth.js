@@ -2,10 +2,15 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import apiClient from '@/api'
 import router from '@/router'
+import { jwtDecode } from 'jwt-decode'
 
 export const useAuthStore = defineStore('auth', () => {
   // state
   const token = ref(localStorage.getItem('jwt'))
+  const username = ref(null)
+  if (token.value) {
+    username.value = jwtDecode(token.value).sub; // sub: 토큰의 주체
+  }
   const isLoggedIn = computed(() => !!token.value)
 
   // action
@@ -13,8 +18,10 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = newToken
     if (newToken) {
       localStorage.setItem('jwt', newToken)
+      username.value = jwtDecode(newToken).sub // 토큰 설정 시 username도 설정
     } else {
       localStorage.removeItem('jwt')
+      username.value = null // 토큰 삭제 시 username 삭제
     }
   }
 
@@ -44,5 +51,5 @@ export const useAuthStore = defineStore('auth', () => {
     router.push('/')
   }
 
-  return { token, isLoggedIn, signup, login, logout }
+  return { token, username, isLoggedIn, signup, login, logout }
 })
