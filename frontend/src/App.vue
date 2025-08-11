@@ -1,15 +1,20 @@
 <script setup>
+import { ref } from 'vue'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
+import CategoryNav from '@/components/CategoryNav.vue'
 
 const uiStore = useUiStore()
 const authStore = useAuthStore()
+const drawer = ref(true) // 카테고리 서랍 열림 닫힘 제어
 </script>
 
 <template>
   <v-app>
-    <!-- 상단 앱바 -->
     <v-app-bar app>
+      <!-- 좌측 카테고리 서랍 열고 닫기-->
+      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+      <!-- 상단 앱바 -->
       <v-toolbar-title>
         <RouterLink to="/" class="text-decoration-none text-grey-darken-3">My Blog</RouterLink>
       </v-toolbar-title>
@@ -24,6 +29,10 @@ const authStore = useAuthStore()
         <v-btn @click="authStore.logout()">로그아웃</v-btn>
       </div>
     </v-app-bar>
+
+    <v-navigation-drawer v-model="drawer">
+      <categoryNav />
+    </v-navigation-drawer>
 
     <!-- 메인 뷰 -->
     <v-main>

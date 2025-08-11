@@ -1,12 +1,10 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
-import { useCategoriesStore } from '@/stores/categories'
 import { useRoute, useRouter } from 'vue-router'
 
 // posts.js에 작성한 posts 스토어를 사용
 const postsStore = usePostsStore()
-const categoriesStore = useCategoriesStore()
 const route = useRoute() // 현재 경로 정보 읽기
 const router = useRouter() // 경로 변경에 필요
 
@@ -19,11 +17,7 @@ const searchTypes = [
   { title: '내용', value: 'content' },
 ]
 
-const currentPage = computed(() => Number(route.query.page) || 1)
-const currentCategory = computed(() => (route.query.category ? Number(route.query.category) : null))
-
 onMounted(() => {
-  categoriesStore.fetchCategories() // 카테고리 목록도 함께 로딩
   // URL 쿼리에서 검색어 상태 복원
   searchType.value = route.query.type || 'all'
   searchKeyword.value = route.query.keyword || ''
@@ -32,14 +26,19 @@ onMounted(() => {
 // URL의 쿼리 변경시 데이터 새로 불러오기
 watch(
   () => route.query,
-  (newQuery) => {
+  (newQuery, oldQuery) => {
+    if (oldQuery && newQuery.category !== oldQuery.category) {
+      searchKeyword.value = '';
+      searchType.value = 'all';
+    }
+
     const pageNumber = Number(newQuery.page) || 1
     const categoryId = newQuery.category ? Number(newQuery.category) : null
     const type = newQuery.type || 'all'
     const keyword = newQuery.keyword || ''
 
     postsStore.fetchPosts({ pageNumber, categoryId, type, keyword })
-    // onMounted 이후 중복 호출 방
+    // onMounted 이후 중복 호출 방지
   },
   // immediate: 페이지 처음 진입시에도 즉시 실행
   // deep: true로 객체 내부 변경 감지
@@ -49,19 +48,6 @@ watch(
 // 페이지네이션 클릭시 page 쿼리 파라미터 변경
 function handlePageChange(newPage) {
   router.push({ query: { ...route.query, page: newPage } })
-}
-
-function selectCategory(categoryId) {
-  // 카테고리 변경시 검색어, 검색옵션 초기화
-  searchKeyword.value = ''
-  searchType.value = 'all'
-
-  const query = {}
-  if (categoryId) {
-    query.category = categoryId
-  }
-  query.page = 1 // 카테고리 변경 시 항상 1페이지로
-  router.push({ query })
 }
 
 function handleSearch() {
@@ -78,21 +64,6 @@ function handleSearch() {
 
 <template>
   <v-container>
-    <v-row>
-      <v-col>
-        <v-chip-group :model-value="currentCategory" mandatory selected-class="text-primary">
-          <v-chip :value="null" @click="selectCategory(null)">전체</v-chip>
-          <v-chip
-            v-for="category in categoriesStore.categories"
-            :key="category.id"
-            :value="category.id"
-            @click="selectCategory(category.id)"
-          >
-            {{ category.name }}
-          </v-chip>
-        </v-chip-group>
-      </v-col>
-    </v-row>
     <v-row>
       <v-col cols="12">
         <v-card class="pa-4">
