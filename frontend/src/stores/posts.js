@@ -34,6 +34,8 @@ export const usePostsStore = defineStore('posts', () => {
 
   // 게시글 목록 조회
   async function fetchPosts({ pageNumber = 1, categoryId = null, type = 'all', keyword = '' }) {
+    posts.value = [] // 게시글 불러오기 전, 기존 목록 비우기
+
     currentCategoryId.value = categoryId
     currentSearch.value = { type, keyword }
 
