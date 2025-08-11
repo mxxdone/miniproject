@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.service;
 
+import com.mxxdone.miniproject.domain.Category;
 import com.mxxdone.miniproject.dto.CategoryResponseDto;
 import com.mxxdone.miniproject.dto.CategorySaveRequestDto;
 import com.mxxdone.miniproject.repository.CategoryRepository;
@@ -18,12 +19,20 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     public Long save(CategorySaveRequestDto requestDto) {
-        return categoryRepository.save(requestDto.toEntity()).getId();
+        Category category = requestDto.toEntity();
+
+        // 상위 카테고리 id 값을 가지고 상위 카테고리명 저장
+        if (requestDto.parentId() != null) {
+            Category parent = categoryRepository.findById(requestDto.parentId())
+                    .orElseThrow(() -> new IllegalArgumentException("상위 카테고리를 찾을 수 없습니다. id=" + requestDto.parentId()));
+            category.setParent(parent);
+        }
+        return categoryRepository.save(category).getId();
     }
 
     @Transactional(readOnly = true)
     public List<CategoryResponseDto> findAll() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findByParentIsNull().stream()
                 .map(CategoryResponseDto::from)
                 .collect(Collectors.toList());
     }

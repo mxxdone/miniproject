@@ -17,12 +17,28 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String name;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Category parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Category> children = new ArrayList<>();
 
     @OneToMany(mappedBy = "category")
     private List<Post> posts = new ArrayList<>();
 
     public Category(String name) {
         this.name = name;
+    }
+
+    //양방향 편의 메서드
+    public void setParent(Category parent) {
+        this.parent = parent;
+        if (!parent.getChildren().contains(this)) {
+            parent.getChildren().add(this);
+        }
     }
 }
