@@ -30,6 +30,10 @@ public class PostService {
         Category category = categoryRepository.findById(requestDto.categoryId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
 
+        if (!category.getChildren().isEmpty()) {
+            throw new IllegalArgumentException("하위 카테고리에만 게시글을 작성할 수 있습니다.");
+        }
+
         User author = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 

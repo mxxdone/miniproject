@@ -1,10 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useCategoriesStore } from '@/stores/categories'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute  } from 'vue-router'
 import { useUiStore } from '@/stores/ui' // ui 스토어 import
 
+const route = useRoute();
 const postsStore = usePostsStore()
 const categoriesStore = useCategoriesStore()
 const router = useRouter() // 라우터 객체 가져오기
@@ -14,7 +15,22 @@ const uiStore = useUiStore() // ui 스토어 사용
 const form = ref(null)
 const title = ref('')
 const content = ref('')
-const selectedCategoryId = ref(null)
+const selectedCategoryId = ref(route.query.categoryId ? Number(route.query.categoryId) : null)
+
+const flatCategories = computed(() => {
+  const result = [];
+  categoriesStore.categories.forEach(parent => {
+    // 상위 카테고리는 선택X, disabled: true 추가
+    result.push({ ...parent, disabled: true})
+    if (parent.children) {
+      parent.children.forEach(child => {
+        // 하위 카테고리는 들여쓰기 된 것처럼 보이게
+        result.push({ ...child, name: `\u00A0 ${child.name}` })
+      })
+    }
+  })
+  return result
+})
 
 // 페이지 로드시 카테고리 목록 불러오기
 onMounted(() => {
@@ -30,6 +46,7 @@ const rules = {
   required: (value) => !!value || '필수 항목입니다.', // 값이 있으면 true, 없으면 메시지 반환
   minLength: (value) => value.length >= 2 || '2글자 이상 입력해 주세요.',
 }
+
 
 // submit 메서드를 비동기(async)로 변경하고, 폼의 유효성을 검사하는 로직을 추가합니다.
 async function submitPost() {
@@ -64,9 +81,10 @@ async function submitPost() {
         <v-form ref="form" @submit.prevent="submitPost">
           <v-select
             v-model="selectedCategoryId"
-            :items="categoriesStore.categories"
+            :items="flatCategories"
             item-title="name"
             item-value="id"
+            :item-props="item => ({ disabled: item.disabled })"
             label="카테고리"
             :rules="[rules.required]"
             required

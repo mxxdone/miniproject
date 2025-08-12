@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -16,6 +16,8 @@ const searchTypes = [
   { title: '제목', value: 'title' },
   { title: '내용', value: 'content' },
 ]
+
+const currentCategory = computed(() => (route.query.category ? Number(route.query.category) : null))
 
 onMounted(() => {
   // URL 쿼리에서 검색어 상태 복원
@@ -81,12 +83,15 @@ function handleSearch() {
         </v-card>
       </v-col>
     </v-row>
-<!--
-    <v-row v-if="postsStore.page.totalPages > 0" class="justify-center mt-4"></v-row>
--->
     <v-row>
-      <v-col cols="12" class="text-right">
-        <v-btn color="primary" to="/posts/new">글쓰기</v-btn>
+      <v-col class="d-flex justify-end">
+        <v-btn
+          v-if="currentCategory"
+          color="primary"
+          :to="`/posts/new?categoryId=${currentCategory}`"
+        >
+          글쓰기
+        </v-btn>
       </v-col>
     </v-row>
     <v-row>
