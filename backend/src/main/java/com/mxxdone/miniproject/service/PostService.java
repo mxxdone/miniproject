@@ -4,8 +4,9 @@ import com.mxxdone.miniproject.domain.Category;
 import com.mxxdone.miniproject.domain.Post;
 import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
-import com.mxxdone.miniproject.dto.PostResponseDto;
+import com.mxxdone.miniproject.dto.PostDetailResponseDto;
 import com.mxxdone.miniproject.dto.PostSaveRequestDto;
+import com.mxxdone.miniproject.dto.PostSummaryResponseDto;
 import com.mxxdone.miniproject.dto.PostUpdateRequestDto;
 import com.mxxdone.miniproject.repository.CategoryRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
@@ -85,28 +86,29 @@ public class PostService {
     //게시글 단건 조회
     //밖으로 나가는 데이터는 DTO로 변환하여 엔티티를 보호
     @Transactional(readOnly = true) //조회 기능은 readOnly = true 옵션으로 성능 최적화
-    public PostResponseDto findById(Long id) {
+    public PostDetailResponseDto findById(Long id) {
         Post entity = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
 
-        return PostResponseDto.from(entity);
+        return PostDetailResponseDto.from(entity);
     }
 
     //게시글 전체 조회
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> findAll(Pageable pageable) {
+    public Page<PostSummaryResponseDto> findAll(Pageable pageable) {
         Page<Post> posts = postRepository.findAll(pageable);
-        return posts.map(PostResponseDto::from);
+        return posts.map(PostSummaryResponseDto::from);
     }
 
-    public Page<PostResponseDto> findByCategoryId(Long categoryId, Pageable pageable) {
+    // 카테고리별 게시글 조회
+    public Page<PostSummaryResponseDto> findByCategoryId(Long categoryId, Pageable pageable) {
         Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
-        return posts.map(PostResponseDto::from);
+        return posts.map(PostSummaryResponseDto::from);
     }
 
     // 검색
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> searchByKeyword(String type, String keyword, Long categoryId, Pageable pageable) {
+    public Page<PostSummaryResponseDto> searchByKeyword(String type, String keyword, Long categoryId, Pageable pageable) {
         Page<Post> posts;
 
         if (categoryId != null) {
@@ -128,6 +130,6 @@ public class PostService {
                 posts = postRepository.searchByTitleOrContent(keyword, pageable);
             }
         }
-        return posts.map(PostResponseDto::from);
+        return posts.map(PostSummaryResponseDto::from);
     }
 }

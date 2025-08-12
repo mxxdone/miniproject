@@ -1,7 +1,8 @@
 package com.mxxdone.miniproject.controller;
 
-import com.mxxdone.miniproject.dto.PostResponseDto;
+import com.mxxdone.miniproject.dto.PostDetailResponseDto;
 import com.mxxdone.miniproject.dto.PostSaveRequestDto;
+import com.mxxdone.miniproject.dto.PostSummaryResponseDto;
 import com.mxxdone.miniproject.dto.PostUpdateRequestDto;
 import com.mxxdone.miniproject.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -56,27 +57,27 @@ public class PostController {
 
     //게시글 단건 조회 API
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDto> getPost(@PathVariable Long id) {
+    public ResponseEntity<PostDetailResponseDto> getPost(@PathVariable Long id) {
         return ResponseEntity.ok(postService.findById(id));
     }
 
     //게시글 전체 조회 API
     @GetMapping
 //    public ResponseEntity<List<PostResponseDto>> getAllPosts() {
-    public ResponseEntity<Page<PostResponseDto>> getAllPosts(
+    public ResponseEntity<Page<PostSummaryResponseDto>> getAllPosts(
             @PageableDefault(size = 6, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(postService.findAll(pageable));
     }
 
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<Page<PostResponseDto>> getPostsByCategory(
+    public ResponseEntity<Page<PostSummaryResponseDto>> getPostsByCategory(
             @PathVariable Long categoryId,
             @PageableDefault(size = 6, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(postService.findByCategoryId(categoryId, pageable));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<PostResponseDto>> searchPosts(
+    public ResponseEntity<Page<PostSummaryResponseDto>> searchPosts(
             @RequestParam(required = false, defaultValue = "all") String type,
             @RequestParam String keyword,
             @RequestParam(required = false) Long categoryId,
