@@ -46,7 +46,15 @@ async function removePost() {
 <template>
   <v-container>
     <v-card v-if="postsStore.currentPost">
-      <v-chip color="primary" class="mb-4">{{ postsStore.currentPost.categoryName }}</v-chip>
+
+      <v-breadcrumbs :items="postsStore.currentPost.categoryPath" class="pa-0 mb-4">
+        <template v-slot:item="{ item }">
+          <v-breadcrumbs-item :to="`/?category=${item.id}`" :disabled="item.disabled">
+            {{ item.name }}
+          </v-breadcrumbs-item>
+        </template>
+      </v-breadcrumbs>
+
       <v-card-title class="text-h4">{{ postsStore.currentPost.title }}</v-card-title>
       <v-card-subtitle>
         작성자: {{ postsStore.currentPost.authorUsername }} |
