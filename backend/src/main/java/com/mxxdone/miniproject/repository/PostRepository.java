@@ -11,9 +11,28 @@ import org.springframework.data.repository.query.Param;
 //JpaRepository의 T -> Post, Id -> Long
 //모든 제네릭 메서드를 Post 타입에 특화된 버전으로 물려받음
 public interface PostRepository extends JpaRepository<Post, Long> {
-    // JpaRepository는 findAll(Pageable)을 기본 제공하지만,
-    // 조건 검색(예: 카테고리)과 함께 페이징하려면 직접 메서드를 정의하고 Page<T>로 반환해야 함.
-    Page<Post> findByCategoryId(Long categoryId, Pageable pageable);
+
+    /**
+     * 선택한 카테고리와 모든 하위 카테고리의 글을 페이지 단위로 조회.
+     *
+     * WITH RECURSIVE로 시작 카테고리부터 하위 카테고리를 모두 찾음
+     * 찾은 카테고리 ID들에 해당하는 게시글만 조회
+     */
+    @Query(value = "WITH RECURSIVE category_tree AS ( " +
+            "    SELECT id FROM category WHERE id = :categoryId " +
+            "    UNION ALL " +
+            "    SELECT c.id FROM category c JOIN category_tree ct ON c.parent_id = ct.id " +
+            ") " +
+            "SELECT p.* FROM post p WHERE p.category_id IN (SELECT id FROM category_tree)",
+            countQuery = "WITH RECURSIVE category_tree AS ( " +
+            "    SELECT id FROM category WHERE id = :categoryId " +
+            "    UNION ALL " +
+            "    SELECT c.id FROM category c JOIN category_tree ct ON c.parent_id = ct.id " +
+            ") " +
+            "SELECT count(p.*) FROM post p WHERE p.category_id IN (SELECT id FROM category_tree)",
+            nativeQuery = true)
+    Page<Post> findByCategoryId(@Param("categoryId") Long categoryId, Pageable pageable);
+
 
     // JPQL
     // 제목, 본문 통합 검색
