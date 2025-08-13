@@ -78,6 +78,7 @@ export const usePostsStore = defineStore('posts', () => {
 
   // ID로 게시글 단건 조회
   async function fetchPost(id) {
+    currentPost.value = null
     try {
       const response = await apiClient.get(`http://localhost:8080/api/v1/posts/${id}`)
       currentPost.value = response.data
