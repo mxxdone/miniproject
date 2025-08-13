@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui.js'
 import { useAuthStore } from '@/stores/auth'
+import { formatDateTime } from '@/utils/formatDate'
 
 const route = useRoute() // 현재 라우트(주소창) 정보를 가져오기
 const router = useRouter()
@@ -47,7 +48,10 @@ async function removePost() {
     <v-card v-if="postsStore.currentPost">
       <v-chip color="primary" class="mb-4">{{ postsStore.currentPost.categoryName }}</v-chip>
       <v-card-title class="text-h4">{{ postsStore.currentPost.title }}</v-card-title>
-      <v-card-subtitle> 작성일: {{ postsStore.currentPost.createdAt }}</v-card-subtitle>
+      <v-card-subtitle>
+        작성자: {{ postsStore.currentPost.authorUsername }} |
+        작성일: {{ formatDateTime(postsStore.currentPost.createdAt) }}
+      </v-card-subtitle>
       <v-divider class="my-4"></v-divider>
       <v-card-text class="text-body-1" style="white-space: pre-wrap">
         {{ postsStore.currentPost.content }}
