@@ -1,4 +1,4 @@
-package com.mxxdone.miniproject.dto;
+package com.mxxdone.miniproject.dto.post;
 
 import com.mxxdone.miniproject.domain.Post;
 

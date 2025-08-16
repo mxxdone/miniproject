@@ -1,7 +1,8 @@
-package com.mxxdone.miniproject.dto;
+package com.mxxdone.miniproject.dto.post;
 
 import com.mxxdone.miniproject.domain.Category;
 import com.mxxdone.miniproject.domain.Post;
+import com.mxxdone.miniproject.dto.category.CategoryDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

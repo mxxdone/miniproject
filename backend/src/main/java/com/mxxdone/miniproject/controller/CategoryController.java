@@ -1,7 +1,7 @@
 package com.mxxdone.miniproject.controller;
 
-import com.mxxdone.miniproject.dto.CategoryResponseDto;
-import com.mxxdone.miniproject.dto.CategorySaveRequestDto;
+import com.mxxdone.miniproject.dto.category.CategoryResponseDto;
+import com.mxxdone.miniproject.dto.category.CategorySaveRequestDto;
 import com.mxxdone.miniproject.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() //모든 OPTIONS 요청을 허용
                         // 조회(GET) API들은 누구나 접근 가능
-                        .requestMatchers(HttpMethod.GET, "/api/v1/posts/**", "api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/posts/**", "/api/v1/comments/**", "/api/v1/categories/**").permitAll()
                         // 회원가입, 로그인 API는 누구나 접근 가능
                         .requestMatchers("/api/v1/users/signup", "/api/v1/users/login").permitAll()
                         //그 외 모든 요청은 인증 사용자만 접근 가능

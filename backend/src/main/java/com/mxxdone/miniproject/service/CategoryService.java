@@ -1,8 +1,8 @@
 package com.mxxdone.miniproject.service;
 
 import com.mxxdone.miniproject.domain.Category;
-import com.mxxdone.miniproject.dto.CategoryResponseDto;
-import com.mxxdone.miniproject.dto.CategorySaveRequestDto;
+import com.mxxdone.miniproject.dto.category.CategoryResponseDto;
+import com.mxxdone.miniproject.dto.category.CategorySaveRequestDto;
 import com.mxxdone.miniproject.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

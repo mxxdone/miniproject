@@ -1,7 +1,7 @@
 package com.mxxdone.miniproject.controller;
 
-import com.mxxdone.miniproject.dto.LoginRequestDto;
-import com.mxxdone.miniproject.dto.SignUpRequestDto;
+import com.mxxdone.miniproject.dto.user.LoginRequestDto;
+import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
 import com.mxxdone.miniproject.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

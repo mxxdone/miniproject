@@ -1,9 +1,9 @@
 package com.mxxdone.miniproject.controller;
 
-import com.mxxdone.miniproject.dto.PostDetailResponseDto;
-import com.mxxdone.miniproject.dto.PostSaveRequestDto;
-import com.mxxdone.miniproject.dto.PostSummaryResponseDto;
-import com.mxxdone.miniproject.dto.PostUpdateRequestDto;
+import com.mxxdone.miniproject.dto.post.PostDetailResponseDto;
+import com.mxxdone.miniproject.dto.post.PostSaveRequestDto;
+import com.mxxdone.miniproject.dto.post.PostSummaryResponseDto;
+import com.mxxdone.miniproject.dto.post.PostUpdateRequestDto;
 import com.mxxdone.miniproject.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -7,6 +7,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // 기본생성자 추가
 @Getter @Setter
@@ -37,6 +39,9 @@ public class Post {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     // DTO를 위한 생성자 추가
     public Post(String title, String content) {
