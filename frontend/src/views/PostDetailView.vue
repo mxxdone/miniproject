@@ -5,6 +5,7 @@ import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui.js'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/formatDate'
+import CommentSection from '@/components/CommentSection.vue'
 
 const route = useRoute() // 현재 라우트(주소창) 정보를 가져오기
 const router = useRouter()
@@ -74,12 +75,10 @@ async function removePost() {
         </template>
       </v-card-actions>
     </v-card>
+    <CommentSection v-if="postsStore.currentPost" :post-id="postsStore.currentPost.id" />
     <!-- 로딩 스피너 추가 -->
     <v-row v-else align="center" justify="center" class="my-12">
       <v-progress-circular indeterminate color="primary" size="48" />
     </v-row>
-    <!--    <div v-else>
-          <p>게시글을 불러오는 중...</p>
-        </div>-->
   </v-container>
 </template>
