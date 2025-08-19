@@ -3,19 +3,20 @@ package com.mxxdone.miniproject.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE comment SET is_deleted = true, content = '삭제된 댓글입니다.' WHERE id = ?") // delete 쿼리 대신 실행될 SQL
-@SQLRestriction("is_deleted = false") // select 쿼리 시 기본 조건
+@SQLDelete(sql = "UPDATE comment SET is_deleted = true WHERE id = ?") // delete 쿼리 대신 실행될 SQL
 public class Comment {
 
     @Id
@@ -37,6 +38,13 @@ public class Comment {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Comment parent;
+
+    @OneToMany(mappedBy = "parent", orphanRemoval = true)
+    private List<Comment> children = new ArrayList<>();
+
     @CreatedDate
     private LocalDateTime createdAt;
 
@@ -53,5 +61,10 @@ public class Comment {
     // 수정 편의 메서드
     public void update(String content) {
         this.content = content;
+    }
+
+    // soft delete 메서드
+    public void softDelete() {
+        this.isDeleted = true;
     }
 }

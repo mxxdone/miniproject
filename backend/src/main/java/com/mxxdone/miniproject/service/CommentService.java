@@ -44,8 +44,11 @@ public class CommentService {
     // 특정 게시글 댓글 조회
     @Transactional(readOnly = true)
     public List<CommentResponseDto> findByPostId(Long postId) {
-        return commentRepository.findByPostId(postId).stream()
+        List<Comment> comments = commentRepository.findByPostId(postId);
+        return comments.stream()
+                .filter(comment -> comment.getParent() == null) // 최상위 댓글 조회
                 .map(CommentResponseDto::from)
+                .filter(dto -> !dto.isDeleted() || !dto.children().isEmpty())
                 .collect(Collectors.toList());
     }
 
@@ -71,6 +74,6 @@ public class CommentService {
             throw new IllegalStateException("삭제 권한이 없습니다.");
         }
 
-        commentRepository.delete(comment);
+        comment.softDelete();
     }
 }
