@@ -38,12 +38,18 @@ public class CommentService {
                 .author(author)
                 .build();
 
+        if (requestDto.parentId() != null) {
+            Comment parent = commentRepository.findById(requestDto.parentId())
+                    .orElseThrow(() -> new IllegalArgumentException("상위 댓글을 찾을 수 없습니다."));
+            comment.setParent(parent);
+        }
+
         return commentRepository.save(comment).getId();
     }
 
     // 특정 게시글 댓글 조회
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> findByPostId(Long postId) {
+    public List<CommentResponseDto> findByPostIdOrderByCreatedAtAsc(Long postId) {
         List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId);
         return comments.stream()
                 .filter(comment -> comment.getParent() == null) // 최상위 댓글 조회
