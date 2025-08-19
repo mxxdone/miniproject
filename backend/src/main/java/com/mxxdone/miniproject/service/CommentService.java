@@ -44,7 +44,7 @@ public class CommentService {
     // 특정 게시글 댓글 조회
     @Transactional(readOnly = true)
     public List<CommentResponseDto> findByPostId(Long postId) {
-        List<Comment> comments = commentRepository.findByPostId(postId);
+        List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId);
         return comments.stream()
                 .filter(comment -> comment.getParent() == null) // 최상위 댓글 조회
                 .map(CommentResponseDto::from)
