@@ -13,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,11 +52,33 @@ public class CommentService {
 
     // 특정 게시글 댓글 조회
     @Transactional(readOnly = true)
-    public List<CommentResponseDto> findByPostIdOrderByCreatedAtAsc(Long postId) {
+    public List<CommentResponseDto> findByPostId(Long postId) {
         List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(postId);
-        return comments.stream()
-                .filter(comment -> comment.getParent() == null) // 최상위 댓글 조회
-                .map(CommentResponseDto::from)
+        List<CommentResponseDto> commentDtos = new ArrayList<>();
+        Map<Long, CommentResponseDto> commentDtoMap = new HashMap<>();
+
+        // 모든 댓글을 DTO로 변환 후 Map에 저장
+        comments.forEach(comment -> {
+            CommentResponseDto dto = CommentResponseDto.from(comment);
+            commentDtoMap.put(dto.id(), dto);
+            if (comment.getParent() == null) {
+                commentDtos.add(dto); // 최상위 댓글은 바로 노출될 리스트로 추가
+            }
+        });
+
+        // 대댓글들을 상위 댓글의 children 리스트에 추가
+        comments.forEach(comment-> {
+            if (comment.getParent() != null) {
+                CommentResponseDto parentDto = commentDtoMap.get(comment.getParent().getId());
+                // 상위 댓글 DTO의 children 리스트에 대댓글 DTO 추가
+                if (parentDto != null) {
+                    parentDto.children().add(commentDtoMap.get(comment.getId()));
+                }
+            }
+        });
+
+        // 삭제되었거나 대댓글 없는 댓글은 노출될 리스트에서 제외
+        return commentDtos.stream()
                 .filter(dto -> !dto.isDeleted() || !dto.children().isEmpty())
                 .collect(Collectors.toList());
     }

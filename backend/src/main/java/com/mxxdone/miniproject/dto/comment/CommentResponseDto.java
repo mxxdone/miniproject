@@ -3,8 +3,8 @@ package com.mxxdone.miniproject.dto.comment;
 import com.mxxdone.miniproject.domain.Comment;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record CommentResponseDto(Long id,
                                  String content,
@@ -18,11 +18,9 @@ public record CommentResponseDto(Long id,
         return new CommentResponseDto(
                 comment.getId(),
                 comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent(),
-                comment.getAuthor().getUsername(),
+                comment.getAuthor() != null ? comment.getAuthor().getUsername() : null,
                 comment.isDeleted(),
-                comment.getChildren().stream()
-                        .map(CommentResponseDto::from)
-                        .collect(Collectors.toList()),
+                new ArrayList<>(), // 자식 목록은 빈 리스트로 초기화
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()
         );
