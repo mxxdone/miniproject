@@ -3,6 +3,7 @@ package com.mxxdone.miniproject.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -43,6 +44,8 @@ public class Comment {
     private Comment parent;
 
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
+    @SQLRestriction("is_deleted = false")
+    @OrderBy("createdAt ASC")
     private List<Comment> children = new ArrayList<>();
 
     @CreatedDate
