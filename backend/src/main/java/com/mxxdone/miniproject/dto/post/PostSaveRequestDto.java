@@ -1,6 +1,11 @@
 package com.mxxdone.miniproject.dto.post;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.mxxdone.miniproject.config.XssSanitizer;
+
 //게시글 생성 요청 DTO
-public record PostSaveRequestDto(String title, String content, Long categoryId) {
+public record PostSaveRequestDto(@JsonDeserialize(using = XssSanitizer.class) String title,
+                                 @JsonDeserialize(using = XssSanitizer.class) String content,
+                                 Long categoryId) {
 }
 

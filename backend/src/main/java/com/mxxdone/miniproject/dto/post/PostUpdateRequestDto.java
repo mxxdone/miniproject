@@ -1,4 +1,8 @@
 package com.mxxdone.miniproject.dto.post;
 
-public record PostUpdateRequestDto(String title, String content) {
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.mxxdone.miniproject.config.XssSanitizer;
+
+public record PostUpdateRequestDto(@JsonDeserialize(using = XssSanitizer.class) String title,
+                                   @JsonDeserialize(using = XssSanitizer.class) String content) {
 }
