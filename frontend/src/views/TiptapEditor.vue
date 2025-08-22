@@ -30,7 +30,7 @@ const editor = useEditor({
       ></v-btn>
       <v-btn
         icon="mdi-format-italic"
-        size="small"d
+        size="small"
         variant="text"
         @click="editor.chain().focus().toggleItalic().run()"
         :class="{ 'is-active': editor.isActive('italic') }"
