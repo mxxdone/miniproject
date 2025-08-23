@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useRoute, useRouter } from 'vue-router'
+import { stripHtml } from "@/utils/formatText";
 
 // posts.js에 작성한 posts 스토어를 사용
 const postsStore = usePostsStore()
@@ -18,6 +19,14 @@ const searchTypes = [
 ]
 
 const currentCategory = computed(() => (route.query.category ? Number(route.query.category) : null))
+const processedPosts = computed(() => {
+  // postsStore.posts가 변경될 때만 이 부분이 다시 계산됩니다.
+  return postsStore.posts.map(post => ({
+    ...post, // 기존 post 객체의 모든 속성을 복사
+    // HTML 태그가 제거된 순수 텍스트를 새로운 속성으로 추가
+    plainContent: stripHtml(post.content)
+  }))
+})
 
 onMounted(() => {
   // URL 쿼리에서 검색어 상태 복원
@@ -95,12 +104,14 @@ function handleSearch() {
       </v-col>
     </v-row>
     <v-row>
-      <v-col v-for="post in postsStore.posts" :key="post.id" cols="12" sm="6" md="4">
+      <v-col v-for="post in processedPosts" :key="post.id" cols="12" sm="6" md="4">
         <RouterLink :to="`/posts/${post.id}`" class="text-decoration-none">
           <v-card class="h-100 d-flex flex-column justify-space-between">
             <div>
               <v-card-title>{{ post.title }}</v-card-title>
-              <v-card-text class="content-truncate pb-10">{{ post.content }}</v-card-text>
+              <v-card-text class="content-truncate pb-10">
+                <div v-html="post.plainContent"></div>
+              </v-card-text>
               <div style="height: 10px"></div>
             </div>
           </v-card>

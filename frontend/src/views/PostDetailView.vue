@@ -47,7 +47,6 @@ async function removePost() {
 <template>
   <v-container>
     <v-card v-if="postsStore.currentPost">
-
       <v-breadcrumbs :items="postsStore.currentPost.categoryPath" class="pa-0 mb-4">
         <template v-slot:item="{ item }">
           <v-breadcrumbs-item :to="`/?category=${item.id}`" :disabled="item.disabled">
@@ -58,14 +57,14 @@ async function removePost() {
 
       <v-card-title class="text-h4">{{ postsStore.currentPost.title }}</v-card-title>
       <v-card-subtitle>
-        작성자: {{ postsStore.currentPost.authorUsername }} |
-        작성일: {{ formatDateTime(postsStore.currentPost.createdAt) }}
+        작성자: {{ postsStore.currentPost.authorUsername }} | 작성일:
+        {{ formatDateTime(postsStore.currentPost.createdAt) }}
       </v-card-subtitle>
       <v-divider class="my-4"></v-divider>
-      <v-card-text class="text-body-1" style="white-space: pre-wrap">
-        {{ postsStore.currentPost.content }}
+      <!-- tiptap 적용후 v-html로 변경 -->
+      <v-card-text class="text-body-1">
+        <div v-html="postsStore.currentPost.content"></div>
       </v-card-text>
-
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="primary" @click="goBack">뒤로가기</v-btn>
