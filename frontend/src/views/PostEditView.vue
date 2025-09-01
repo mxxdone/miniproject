@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui'
+import TiptapEditor from '@/views/TiptapEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,6 +36,11 @@ const rules = {
 
 async function submitUpdate() {
   const { valid } = await form.value.validate()
+  if (!content.value || content.value === '<p></p>') {
+    uiStore.showSnackbar({ text: '내용을 입력해주세요.', color: 'error' })
+    return
+  }
+
   if (valid) {
     const isSuccess = await postsStore.updatePost(postId, {
       title: title.value,
@@ -62,13 +68,8 @@ async function submitUpdate() {
             :rules="[rules.required, rules.minLength]"
             required
           ></v-text-field>
-          <v-textarea
-            v-model="content"
-            label="내용"
-            :rules="[rules.required, rules.minLength]"
-            required
-            rows="10"
-          ></v-textarea>
+          <div class="text-subtitle-1 font-weight-medium mb-2">내용</div>
+          <TiptapEditor v-model:content="content" />
           <v-btn color="primary" to="/" class="mt-4 mr-2">뒤로가기</v-btn>
           <v-btn type="submit" color="primary" class="mt-4">수정</v-btn>
         </v-form>

@@ -8,4 +8,3 @@ public record PostSaveRequestDto(@JsonDeserialize(using = XssSanitizer.class) St
                                  @JsonDeserialize(using = XssSanitizer.class) String content,
                                  Long categoryId) {
 }
-
