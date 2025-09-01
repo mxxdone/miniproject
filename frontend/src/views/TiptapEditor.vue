@@ -4,17 +4,29 @@ import StarterKit from '@tiptap/starter-kit'
 import { watch } from 'vue'
 import Image from '@tiptap/extension-image'
 import apiClient from '@/api' // apiClient 추가
-
 import { createLowlight } from 'lowlight'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 
-import java from 'highlight.js/lib/languages/java'
-import javascript from 'highlight.js/lib/languages/javascript'
-import css from 'highlight.js/lib/languages/css'
-import sql from 'highlight.js/lib/languages/sql'
+import java from 'highlight.js/lib/languages/java.js'
+import javascript from 'highlight.js/lib/languages/javascript.js'
+import css from 'highlight.js/lib/languages/css.js'
+import sql from 'highlight.js/lib/languages/sql.js'
+import xml from 'highlight.js/lib/languages/xml.js'
+import html from 'highlight.js/lib/languages/xml.js' // HTML을 XML로 처리
+import json from 'highlight.js/lib/languages/json.js'
+import yaml from 'highlight.js/lib/languages/yaml.js'
+import typescript from 'highlight.js/lib/languages/typescript.js'
 
 const lowlight = createLowlight()
-lowlight.register({ java, javascript, css, sql })
+lowlight.register('java', java)
+lowlight.register('javascript', javascript)
+lowlight.register('css', css)
+lowlight.register('sql', sql)
+lowlight.register('xml', xml)
+lowlight.register('json', json)
+lowlight.register('yaml', yaml)
+lowlight.register('typescript', typescript)
+lowlight.register('html', html)
 
 // v-model로 content를 받을 수 있도록 설정
 const content = defineModel('content')
@@ -43,9 +55,10 @@ const editor = useEditor({
     StarterKit.configure({
       codeBlock: false,
     }),
-    // configure에 생성된 lowlight 인스턴스 전달
+    // configure에 생성된 lowlight 인스턴스 전달 및 설정 추가
     CodeBlockLowlight.configure({
       lowlight,
+      languageClassPrefix: 'language-', // 클래스 접두사를 추가
     }),
     Image, // 이미지 확장팩 추가
   ],
@@ -73,12 +86,12 @@ const editor = useEditor({
       }
     },
     handleDrop(view, event) {
-      event.preventDefault()
       const files = event.dataTransfer?.files
       if (!files || files.length === 0) return
 
       const file = files[0]
-      if (file.type.indexOf('image') === 0) {
+      if (file.type.startsWith('image/')) {
+        event.preventDefault() // 이미지일 때만 기본 동작 막기
         handleImageUpload(file).then((url) => {
           if (url) {
             editor.value.chain().focus().setImage({ src: url }).run()
@@ -129,7 +142,6 @@ watch(content, (newContent) => {
       ></v-btn>
     </div>
 
-    <!-- 편집 영역 -->
     <EditorContent :editor="editor" class="editor-content" />
   </div>
 </template>

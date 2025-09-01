@@ -2,7 +2,6 @@ package com.mxxdone.miniproject.config;
 
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
-
 import java.util.regex.Pattern;
 
 public class HtmlSanitizer {
@@ -36,10 +35,10 @@ public class HtmlSanitizer {
             .matching(true, "noopener", "noreferrer")
             .onElements("a")
 
-            // 4. 코드블록 클래스 제한
+            // 4. 코드블록 클래스 제한 (pre 태그 추가)
             .allowAttributes("class")
             .matching(Pattern.compile("^language-[a-zA-Z0-9]+$"))
-            .onElements("code")
+            .onElements("code", "pre") // "pre" 태그를 추가했습니다.
 
             // 5. 하이라이팅 span 클래스 제한
             .allowAttributes("class")

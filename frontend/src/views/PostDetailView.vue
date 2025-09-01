@@ -1,11 +1,12 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui.js'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/formatDate'
 import CommentSection from '@/components/CommentSection.vue'
+import hljs from 'highlight.js' // highlight.js 임포트 추가
 
 const route = useRoute() // 현재 라우트(주소창) 정보를 가져오기
 const router = useRouter()
@@ -28,6 +29,23 @@ onMounted(() => {
   // 주소창에서 id 값을 가져와서 fetchPost 액션을 호출
   postsStore.fetchPost(postId)
 })
+
+// highlight.js를 적용하는 로직을 추가
+watch(
+  () => postsStore.currentPost,
+  (newPost) => {
+    if (newPost) {
+      // DOM이 업데이트 된 후에 highlightAll을 호출
+      nextTick(() => {
+        document.querySelectorAll('pre code').forEach((block) => {
+          hljs.highlightElement(block)
+        })
+      })
+    }
+  },
+  { deep: true, immediate: true }
+)
+
 
 function goBack() {
   router.back()
