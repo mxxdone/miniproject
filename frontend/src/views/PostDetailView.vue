@@ -63,7 +63,7 @@ async function removePost() {
       <v-divider class="my-4"></v-divider>
       <!-- tiptap 적용후 v-html로 변경 -->
       <v-card-text class="text-body-1">
-        <div v-html="postsStore.currentPost.content"></div>
+        <div class="prose-content" v-html="postsStore.currentPost.content"></div>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>

@@ -33,3 +33,17 @@ a,
     padding: 0 2rem;
   }
 }
+
+/* Tiptap 코드 블록을 위한 highlight.js 스타일 */
+.prose-content pre {
+  background: #161B22; /* github-dark 테마 배경색 */
+  color: #C9D1D9;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.prose-content pre code {
+  font-size: 0.9em;
+}

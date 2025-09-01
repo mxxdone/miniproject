@@ -21,8 +21,11 @@ public class S3Uploader {
 
     private final S3Client s3Client;
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
+
+    @Value("${spring.cloud.aws.cloudfront.domain}")
+    private String cloudfrontDomain;
 
     public String upload(MultipartFile multipartFile, String dirName) throws IOException {
         String originalFilename = multipartFile.getOriginalFilename();
@@ -35,7 +38,7 @@ public class S3Uploader {
                 extension = originalFilename.substring(dotIndex);
             }
         }
-        // 날짜 폴더 경로 생성 (yyyy/MM/dd)
+        // 날짜 폴더 경로 생성 (yyyy/MM/dd): 추후 배치로 미사용 파일 제거 고려
         String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
         // 최종 파일 경로에 날짜 경로 추가 (파일명은 UUID + 확장자)
@@ -48,7 +51,6 @@ public class S3Uploader {
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(multipartFile.getBytes()));
 
-        // 업로드된 파일의 URL을 반환
-        return s3Client.utilities().getUrl(builder -> builder.bucket(bucket).key(savedFileName)).toString();
+        return "https://" + cloudfrontDomain + "/" + savedFileName;
     }
 }

@@ -3,6 +3,8 @@ import { createPinia } from 'pinia' // pinia 라이브러리에서 createPinia�
 import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
+import 'highlight.js/styles/github-dark.css';
+
 
 const app = createApp(App)
 
