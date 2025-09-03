@@ -99,3 +99,25 @@ async function removePost() {
     </v-row>
   </v-container>
 </template>
+
+<style>
+.v-card-text .prose-content p {
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.v-card-text .prose-content p:first-child {
+  margin-top: 0;
+}
+
+.v-card-text .prose-content p:last-child {
+  margin-bottom: 0;
+}
+
+.v-card-text .prose-content h1,
+.v-card-text .prose-content h2,
+.v-card-text .prose-content h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+</style>
