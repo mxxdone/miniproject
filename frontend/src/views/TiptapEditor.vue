@@ -1,9 +1,11 @@
 <script setup>
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import Image from '@tiptap/extension-image'
-import apiClient from '@/api' // apiClient 추가
+import apiClient from '@/api'
+import { useUiStore } from '@/stores/ui'
+
 import { createLowlight } from 'lowlight'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 
@@ -30,8 +32,19 @@ lowlight.register('html', html)
 
 // v-model로 content를 받을 수 있도록 설정
 const content = defineModel('content')
+// 파일 입력 참조를 위한 ref
+const fileInput = ref(null)
+const uiStore = useUiStore()
+
+// 이미지 파일인지 확인
+const isImageFile = (file) => file && file.type.startsWith('image/')
 
 async function handleImageUpload(file) {
+  // 파일 업로드 전 이미지 형식 확인
+  if (!isImageFile(file)) {
+    uiStore.showSnackbar({ text: '이미지 파일만 업로드할 수 있습니다.', color: 'error' })
+    return null
+  }
   const formData = new FormData()
   formData.append('image', file)
 
@@ -44,7 +57,27 @@ async function handleImageUpload(file) {
     return response.data // 업로드된 이미지 URL 반환
   } catch (error) {
     console.error('이미지 업로드 실패: ', error)
+    uiStore.showSnackbar({ text: '이미지 업로드에 실패했습니다.', color: 'error' })
     return null
+  }
+}
+
+//  에디터에 이미지 삽입
+function insertImage(url) {
+  if (url && editor.value) {
+    editor.value.chain().focus().setImage({ src: url }).run()
+  }
+}
+
+// 파일 선택 버튼을 통해 파일이 변경되었을 때 처리
+function onFileChange(event) {
+  const file = event.target.files[0]
+  if (file) {
+    handleImageUpload(file).then(insertImage)
+  }
+  // 동일한 파일을 다시 선택해도 change 이벤트가 발생하도록 값을 초기화
+  if (fileInput.value) {
+    fileInput.value.value = ''
   }
 }
 
@@ -72,31 +105,27 @@ const editor = useEditor({
       if (!items) return
 
       for (const item of items) {
-        if (item.type.indexOf('image') === 0) {
+        // 붙여넣기도 이미지 파일인지 확인
+        if (item.type.startsWith('image/')) {
           event.preventDefault()
           const file = item.getAsFile()
           if (file) {
-            handleImageUpload(file).then((url) => {
-              if (url) {
-                editor.value.chain().focus().setImage({ src: url }).run()
-              }
-            })
+            handleImageUpload(file).then(insertImage)
           }
         }
       }
     },
     handleDrop(view, event) {
+      event.preventDefault()
       const files = event.dataTransfer?.files
       if (!files || files.length === 0) return
 
       const file = files[0]
-      if (file.type.startsWith('image/')) {
-        event.preventDefault() // 이미지일 때만 기본 동작 막기
-        handleImageUpload(file).then((url) => {
-          if (url) {
-            editor.value.chain().focus().setImage({ src: url }).run()
-          }
-        })
+      // 드래그 앤 드롭 시에도 이미지 파일이 아닌 경우 알림
+      if (isImageFile(file)) {
+        handleImageUpload(file).then(insertImage)
+      } else {
+        uiStore.showSnackbar({ text: '이미지 파일만 드롭하여 업로드할 수 있습니다.', color: 'error' })
       }
     },
   },
@@ -108,11 +137,9 @@ const editor = useEditor({
 })
 
 watch(content, (newContent) => {
-  const isSame = editor.value.getHTML() === newContent
-  if (isSame) {
-    return
+  if (editor.value && editor.value.getHTML() !== newContent) {
+    editor.value.commands.setContent(newContent, false)
   }
-  editor.value.commands.setContent(newContent, false)
 })
 </script>
 
@@ -140,6 +167,20 @@ watch(content, (newContent) => {
         @click="editor.chain().focus().toggleStrike().run()"
         :class="{ 'is-active': editor.isActive('strike') }"
       ></v-btn>
+
+      <v-btn
+        icon="mdi-image-plus"
+        size="small"
+        variant="text"
+        @click="fileInput.click()"
+      ></v-btn>
+      <input
+        type="file"
+        ref="fileInput"
+        @change="onFileChange"
+        accept=".png, .jpg, .jpeg, .gif, .webp"
+        hidden
+      />
     </div>
 
     <EditorContent :editor="editor" class="editor-content" />
