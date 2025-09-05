@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useCommentsStore } from '@/stores/comments'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/formatDate'
@@ -22,6 +22,15 @@ const editingCommentId = ref(null) // 현재 수정 중인 댓글 id 저장할 �
 const editedContent = ref('') // 수정 중인 댓글 내용 담을 변수
 const newReplyContent = ref('')   // 대댓글 내용
 const replyingToCommentId = ref(null) // 대댓글을 작성 중인 상위 댓글 ID
+
+const commentCount = computed(() => {
+  let count = 0
+  for (const c of commentsStore.comments) {
+    count += 1 // 자기 자신
+    count += c.children ? c.children.length : 0 // 대댓글
+  }
+  return count
+})
 
 onMounted(() => {
   commentsStore.fetchComments(props.postId)
@@ -89,7 +98,9 @@ function submitUpdate(commentId) {
 <template>
   <v-container>
     <v-divider class="my-8"></v-divider>
-    <h3 class="text-h6 mb-4">댓글</h3>
+    <h3 class="text-h6 mb-4">
+      댓글<span class="text-black">({{ commentCount }})</span>
+    </h3>
 
     <v-list lines="two" class="bg-transparent">
       <template v-for="(comment, index) in commentsStore.comments" :key="comment.id">
@@ -97,7 +108,7 @@ function submitUpdate(commentId) {
           <div v-if="editingCommentId === comment.id">
             <v-textarea v-model="editedContent" rows="2" no-resize hide-details></v-textarea>
             <div class="mt-2 text-right">
-              <v-btn size="small" @click="cancelEdit">닫기</v-btn>
+              <v-btn size="small" @click="exitEdit">닫기</v-btn>
               <v-btn size="small" color="primary" @click="submitUpdate(comment.id)">등록</v-btn>
             </div>
           </div>
@@ -135,7 +146,7 @@ function submitUpdate(commentId) {
             <div v-if="editingCommentId === reply.id">
               <v-textarea v-model="editedContent" rows="2" no-resize hide-details></v-textarea>
               <div class="mt-2 text-right">
-                <v-btn size="small" @click="cancelEdit">닫기</v-btn>
+                <v-btn size="small" @click="exitEdit">닫기</v-btn>
                 <v-btn size="small" color="primary" @click="submitUpdate(reply.id)">등록</v-btn>
               </div>
             </div>
@@ -170,7 +181,7 @@ function submitUpdate(commentId) {
       </template>
     </v-list>
 
-    <v-card v-if="authStore.isLoggedIn" class="mt-6">
+    <v-card v-if="authStore.isLoggedIn && !editingCommentId && !replyingToCommentId" class="mt-6">
       <v-card-text>
         <v-textarea v-model="newCommentContent" label="댓글을 입력하세요" rows="3" no-resize hide-details></v-textarea>
         <div class="text-right mt-4">
