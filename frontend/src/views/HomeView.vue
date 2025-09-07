@@ -59,6 +59,7 @@ watch(
 
 // 페이지네이션 클릭시 page 쿼리 파라미터 변경
 function handlePageChange(newPage) {
+  console.log(newPage);
   router.push({ query: { ...route.query, page: newPage } })
 }
 
@@ -115,6 +116,10 @@ function handleSearch() {
               </v-card-text>
               <div style="height: 10px"></div>
             </div>
+            <v-card-actions class="px-4">
+              <v-icon size="small">mdi-comment-text-outline</v-icon>
+              <span class="text-caption ml-1">{{ post.commentCount }}</span>
+            </v-card-actions>
           </v-card>
         </RouterLink>
       </v-col>
