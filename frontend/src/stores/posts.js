@@ -39,40 +39,27 @@ export const usePostsStore = defineStore('posts', () => {
     currentCategoryId.value = categoryId
     currentSearch.value = { type, keyword }
 
-    let url = 'http://localhost:8080/api/v1/posts'
-    let params = {
-      page: pageNumber - 1,
-      size: page.value.size
-    }
-
-    if (keyword) { // 키워드가 있으면 검색 API 사용
-      url = `http://localhost:8080/api/v1/posts/search`
-      params.keyword = keyword
-      params.type = type
-      if (categoryId) {
-        params.categoryId = categoryId;
-      }
-    } else if (categoryId) { // 카테고리 IPD가 있으면 카테고리별 조회 API 사용
-      url = `http://localhost:8080/api/v1/posts/category/${categoryId}`
-    }
-
     try {
-      // 백엔드 API 호출 (주소는 백엔드 서버 주소에 맞게 확인)
-      const response = await apiClient.get(url, { params })
-      // 현재 페이지의 상태 확정, 기록
+      const response = await apiClient.get('/api/v1/posts', {
+        params: {
+          page: pageNumber - 1,
+          size: page.value.size,
+          categoryId: categoryId,
+          type: type,
+          keyword: keyword
+        }
+      })
+
       const data = response.data
       posts.value = data.content
       page.value = {
-        //기존 page 상태 객체의 내용을 복사해서 아래 내용들을 덮어쓰기
-        // a.g. Size값 고정
         ...page.value,
-        totalPages: data.totalPages,
+        totalPages:  data.totalPages,
         totalElements: data.totalElements,
-        currentPage: data.number + 1, // 프론트용 1-based
+        currentPage: data.number + 1
       }
-
     } catch (error) {
-      console.error('게시글을 불러오는 중 오류가 발생했습니다:', error)
+      console.error('게시물을 불러오는 중 오류가 발생했습니다: ', error)
     }
   }
 
