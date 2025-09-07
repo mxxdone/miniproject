@@ -1,4 +1,4 @@
-package com.mxxdone.miniproject.config;
+package com.mxxdone.miniproject.util;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;

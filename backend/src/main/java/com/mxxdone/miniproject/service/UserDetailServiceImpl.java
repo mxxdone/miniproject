@@ -1,4 +1,4 @@
-package com.mxxdone.miniproject.config.security;
+package com.mxxdone.miniproject.service;
 
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.repository.UserRepository;

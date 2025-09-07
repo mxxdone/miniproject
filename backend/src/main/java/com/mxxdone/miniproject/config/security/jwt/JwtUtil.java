@@ -1,4 +1,4 @@
-package com.mxxdone.miniproject.config.jwt;
+package com.mxxdone.miniproject.config.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

@@ -1,6 +1,6 @@
-package com.mxxdone.miniproject.config.jwt;
+package com.mxxdone.miniproject.config.security.jwt;
 
-import com.mxxdone.miniproject.config.security.UserDetailServiceImpl;
+import com.mxxdone.miniproject.service.UserDetailServiceImpl;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

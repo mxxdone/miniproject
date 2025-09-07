@@ -1,4 +1,4 @@
-package com.mxxdone.miniproject.config;
+package com.mxxdone.miniproject.util;
 
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
