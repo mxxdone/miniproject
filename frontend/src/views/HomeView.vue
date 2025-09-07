@@ -18,6 +18,7 @@ const searchTypes = [
   { title: '내용', value: 'content' },
 ]
 
+const currentPage = computed(() => Number(route.query.page) || 1)
 const currentCategory = computed(() => (route.query.category ? Number(route.query.category) : null))
 const processedPosts = computed(() => {
   // postsStore.posts가 변경될 때만 이 부분이 다시 계산됩니다.

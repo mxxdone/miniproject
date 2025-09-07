@@ -93,43 +93,9 @@ public class PostService {
         return PostDetailResponseDto.from(entity);
     }
 
-    //게시글 전체 조회
+    // 게시글 목록 조회
     @Transactional(readOnly = true)
-    public Page<PostSummaryResponseDto> findAll(Pageable pageable) {
-        Page<Post> posts = postRepository.findAll(pageable);
-        return posts.map(PostSummaryResponseDto::from);
-    }
-
-    // 카테고리별 게시글 조회
-    public Page<PostSummaryResponseDto> findByCategoryId(Long categoryId, Pageable pageable) {
-        Page<Post> posts = postRepository.findByCategoryId(categoryId, pageable);
-        return posts.map(PostSummaryResponseDto::from);
-    }
-
-    // 검색
-    @Transactional(readOnly = true)
-    public Page<PostSummaryResponseDto> searchByKeyword(String type, String keyword, Long categoryId, Pageable pageable) {
-        Page<Post> posts;
-
-        if (categoryId != null) {
-            // 카테고리 id가 있을 때
-            if ("title".equals(type)) {
-                posts = postRepository.searchByTitleAndCategory(categoryId, keyword, pageable);
-            } else if ("content".equals(type)) {
-                posts = postRepository.searchByContentAndCategory(categoryId, keyword, pageable);
-            } else {
-                posts = postRepository.searchByKeywordAndCategory(categoryId, keyword, pageable);
-            }
-        } else {
-            // 카테고리 id가 없을 때
-            if ("title".equals(type)) {
-                posts = postRepository.searchByTitle(keyword, pageable);
-            } else if ("content".equals(type)) {
-                posts = postRepository.searchByContent(keyword, pageable);
-            } else {
-                posts = postRepository.searchByTitleOrContent(keyword, pageable);
-            }
-        }
-        return posts.map(PostSummaryResponseDto::from);
+    public Page<PostSummaryResponseDto> findPosts(Long categoryId, String searchType, String keyword, Pageable pageable) {
+        return postRepository.findPostsWithConditions(categoryId, searchType, keyword, pageable);
     }
 }

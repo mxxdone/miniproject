@@ -1,8 +1,8 @@
 package com.mxxdone.miniproject.config;
 
-import com.mxxdone.miniproject.config.jwt.JwtAuthenticationFilter;
-import com.mxxdone.miniproject.config.jwt.JwtUtil;
-import com.mxxdone.miniproject.config.security.UserDetailServiceImpl;
+import com.mxxdone.miniproject.config.security.jwt.JwtAuthenticationFilter;
+import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
+import com.mxxdone.miniproject.service.UserDetailServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

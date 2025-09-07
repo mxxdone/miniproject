@@ -1,6 +1,6 @@
 package com.mxxdone.miniproject.service;
 
-import com.mxxdone.miniproject.config.jwt.JwtUtil;
+import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
 import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
