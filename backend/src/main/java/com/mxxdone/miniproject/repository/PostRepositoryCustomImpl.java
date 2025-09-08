@@ -22,7 +22,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<PostSummaryResponseDto> findPostsWithConditions(Long categoryId, String searchType, String keyword, Pageable pageable) {
+    public Page<PostSummaryResponseDto> findPostsWithConditions(List<Long> categoryIds, String searchType, String keyword, Pageable pageable) {
         List<PostSummaryResponseDto> content = queryFactory
                 .select(new QPostSummaryResponseDto(
                         post.id,
@@ -38,7 +38,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .leftJoin(post.category, category)
                 .leftJoin(post.comments, comment)
                 .where(
-                        categoryEq(categoryId),
+                        categoryIn(categoryIds),
                         searchEq(searchType, keyword)
                 )
                 .groupBy(post.id, category.name, user.username)
@@ -52,7 +52,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                 .select(post.count())
                 .from(post)
                 .where(
-                        categoryEq(categoryId),
+                        categoryIn(categoryIds),
                         searchEq(searchType, keyword)
                 )
                 .fetchOne();
@@ -60,8 +60,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
         return new PageImpl<>(content, pageable, total != null ? total : 0L);
     }
 
-    private BooleanExpression categoryEq(Long categoryId) {
-        return categoryId != null ? post.category.id.eq(categoryId) : null;
+    private BooleanExpression categoryIn(List<Long> categoryIds) {
+        return categoryIds != null && !categoryIds.isEmpty() ? post.category.id.in(categoryIds) : null;
     }
 
     private BooleanExpression searchEq(String searchType, String keyword) {

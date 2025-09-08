@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -96,6 +98,12 @@ public class PostService {
     // 게시글 목록 조회
     @Transactional(readOnly = true)
     public Page<PostSummaryResponseDto> findPosts(Long categoryId, String searchType, String keyword, Pageable pageable) {
-        return postRepository.findPostsWithConditions(categoryId, searchType, keyword, pageable);
+        List<Long> categoryIds = null;
+        if (categoryId != null) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() ->new IllegalArgumentException("해당 카테고리를 찾을 수 없습니다. id= " + categoryId));
+            categoryIds = category.getDescendantIdsAndSelf();
+        }
+        return postRepository.findPostsWithConditions(categoryIds, searchType, keyword, pageable);
     }
 }

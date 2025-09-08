@@ -41,4 +41,18 @@ public class Category {
             parent.getChildren().add(this);
         }
     }
+
+    // 자신 + 하위 카테고리 id를 리스트로 반환
+    public List<Long> getDescendantIdsAndSelf() {
+        List<Long> ids = new ArrayList<>();
+        collectIds(this, ids);
+        return ids;
+    }
+
+    private void collectIds(Category category, List<Long> ids) {
+        ids.add(category.getId());
+        for (Category child : category.getChildren()) {
+            collectIds(child, ids);
+        }
+    }
 }
