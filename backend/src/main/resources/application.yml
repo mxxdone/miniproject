@@ -1,28 +1,21 @@
-spring:
-  config:
-    import: optional:application-secret.yml
-  application:
-    name: miniproject
-  datasource:
-    url: jdbc:postgresql://localhost:5432/miniproject
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true # 출력되는 SQL을 정렬
-    show-sql: true # SQL 로깅 활성화
-  cloud:
-    aws:
-      region:
-        static: ap-northeast-2
-      stack:
-        auto: false
-      s3:
-        bucket: mxxdone-miniproject-bucket
-      cloudfront:
-        domain: dkp5ibty51lgj.cloudfront.net
-  logging:
-    level:
-      org.hibernate.orm.jdbc.bind: trace  # SQL의 '?'에 바인딩되는 파라미터 값을 로그로 확인
+  spring:
+    profiles:
+      default: dev
+      group:
+        "dev": ["secret-dev"]
+        "prod": ["prod", "secret-prod"]
+    application:
+      name: miniproject
+    cloud:
+      aws:
+        region:
+          static: ap-northeast-2
+        stack:
+          auto: false
+        s3:
+          bucket: mxxdone-miniproject-bucket
+        cloudfront:
+          domain: dkp5ibty51lgj.cloudfront.net
+    logging:
+      level:
+        org.hibernate.orm.jdbc.bind: trace

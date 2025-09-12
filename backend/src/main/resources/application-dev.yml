@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/miniproject
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_DEV_USERNAME} # 환경 변수 사용
+    password: ${DB_DEV_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true # 출력되는 SQL을 정렬
+    show-sql: true # SQL 로깅 활성화
