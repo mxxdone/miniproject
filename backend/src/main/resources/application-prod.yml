@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://miniproject-db.cs3y22eqerq5.us-east-1.rds.amazonaws.com:5432/miniproject
+    url: jdbc:postgresql://miniproject-db.cv0468m20ioy.ap-northeast-2.rds.amazonaws.com:5432/miniproject
     username: ${DB_USERNAME} # 환경 변수 사용
     password: ${DB_PASSWORD}
   jpa:
