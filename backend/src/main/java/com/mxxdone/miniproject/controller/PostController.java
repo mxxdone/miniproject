@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ public class PostController {
 
     //게시글 생성 API
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> savePost(
             @RequestBody PostSaveRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails // 현재 로그인한 사용자 정보
@@ -34,6 +36,7 @@ public class PostController {
 
     //게시글 수정 API
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> updatePost(@PathVariable Long id,
                                            @RequestBody PostUpdateRequestDto requestDto,
                                            @AuthenticationPrincipal UserDetails userDetails
@@ -43,6 +46,7 @@ public class PostController {
 
     //게시글 삭제 API
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePost(@PathVariable Long id,
                                            @AuthenticationPrincipal UserDetails userDetails
     ) {

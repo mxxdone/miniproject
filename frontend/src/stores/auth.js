@@ -8,8 +8,14 @@ export const useAuthStore = defineStore('auth', () => {
   // state
   const token = ref(localStorage.getItem('jwt'))
   const username = ref(null)
+  const userRole = ref(null)
+  const isAdmin = computed(() => userRole.value === 'ROLE_ADMIN')
+
+  // 시작 시 토큰 있으면 사용자 정보 초기화
   if (token.value) {
-    username.value = jwtDecode(token.value).sub; // sub: 토큰의 주체
+    const decoded = jwtDecode(token.value)
+    username.value = decoded.sub // sub: 토큰의 주체
+    userRole.value = decoded.auth
   }
   const isLoggedIn = computed(() => !!token.value)
 
@@ -18,10 +24,13 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = newToken
     if (newToken) {
       localStorage.setItem('jwt', newToken)
-      username.value = jwtDecode(newToken).sub // 토큰 설정 시 username도 설정
+      const decoded = jwtDecode(newToken)
+      username.value = decoded.sub
+      userRole.value = decoded.auth
     } else {
       localStorage.removeItem('jwt')
       username.value = null // 토큰 삭제 시 username 삭제
+      userRole.value = null
     }
   }
 
@@ -51,5 +60,5 @@ export const useAuthStore = defineStore('auth', () => {
     router.push('/')
   }
 
-  return { token, username, isLoggedIn, signup, login, logout }
+  return { token, username, isLoggedIn, isAdmin, signup, login, logout }
 })

@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.config.security.jwt;
 
+import com.mxxdone.miniproject.domain.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -32,12 +33,13 @@ public class JwtUtil {
     }
 
     // 토큰 생성
-    public String createToken(String username) {
+    public String createToken(String username, Role role) {
         Instant now = Instant.now();
         Instant expiry = now.plus(EXPIRATION_MINUTES, ChronoUnit.MINUTES);
 
         return Jwts.builder()
                 .subject(username) // 사용자 id
+                .claim("auth", role.getKey()) // auth"라는 이름으로 권한 정보 추가
                 .issuedAt(Date.from(now)) //만료 시간
                 .expiration(Date.from(expiry))
                 .signWith(key)

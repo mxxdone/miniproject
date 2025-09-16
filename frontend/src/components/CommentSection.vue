@@ -114,6 +114,7 @@ function submitUpdate(commentId) {
           </div>
           <div v-else>
             <div v-if="comment.isDeleted">
+              <v-list-item-title class="font-weight-bold">{{ comment.authorUsername }}</v-list-item-title>
               <v-list-item-subtitle class="text-grey">삭제된 댓글입니다.</v-list-item-subtitle>
             </div>
             <div v-else>
@@ -128,7 +129,7 @@ function submitUpdate(commentId) {
           <template v-slot:append>
             <div v-if="!comment.isDeleted && authStore.isLoggedIn && editingCommentId !== comment.id" class="d-flex align-center">
               <v-btn icon="mdi-comment-outline" variant="text" size="small" @click="openReplyForm(comment.id)"></v-btn>
-              <div v-if="authStore.username === comment.authorUsername">
+              <div v-if="authStore.isAdmin || authStore.username === comment.authorUsername">
                 <v-btn icon="mdi-pencil" variant="text" size="small" @click="startEdit(comment)"></v-btn>
                 <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(comment.id)"></v-btn>
               </div>
@@ -151,6 +152,11 @@ function submitUpdate(commentId) {
               </div>
             </div>
 
+            <div v-else-if="reply.isDeleted">
+              <v-list-item-title class="font-weight-bold">{{ reply.authorUsername }}</v-list-item-title>
+              <v-list-item-subtitle class="text-grey">삭제된 댓글입니다.</v-list-item-subtitle>
+            </div>
+
             <div v-else>
               <v-list-item-title class="font-weight-bold">{{ reply.authorUsername }}</v-list-item-title>
               <v-list-item-subtitle style="white-space: pre-wrap;">{{ reply.content }}</v-list-item-subtitle>
@@ -161,7 +167,7 @@ function submitUpdate(commentId) {
             </div>
 
             <template v-slot:append>
-              <div v-if="!reply.isDeleted && authStore.username === reply.authorUsername && editingCommentId !== reply.id">
+              <div v-if="!reply.isDeleted && (authStore.isAdmin || authStore.username === reply.authorUsername) && editingCommentId !== reply.id">
                 <v-btn icon="mdi-pencil" variant="text" size="small" @click="startEdit(reply)"></v-btn>
                 <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(reply.id)"></v-btn>
               </div>

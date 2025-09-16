@@ -1,11 +1,13 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
+import { useAuthStore } from '@/stores/auth'
 import { useRoute, useRouter } from 'vue-router'
 import { stripHtml } from "@/utils/formatText";
 
 // posts.js에 작성한 posts 스토어를 사용
 const postsStore = usePostsStore()
+const authStore = useAuthStore()
 const route = useRoute() // 현재 경로 정보 읽기
 const router = useRouter() // 경로 변경에 필요
 
@@ -97,7 +99,7 @@ function handleSearch() {
     <v-row>
       <v-col class="d-flex justify-end">
         <v-btn
-          v-if="currentCategory"
+          v-if="currentCategory && authStore.isAdmin"
           color="primary"
           :to="`/posts/new?categoryId=${currentCategory}`"
         >

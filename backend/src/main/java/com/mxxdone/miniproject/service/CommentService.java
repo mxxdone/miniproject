@@ -2,6 +2,7 @@ package com.mxxdone.miniproject.service;
 
 import com.mxxdone.miniproject.domain.Comment;
 import com.mxxdone.miniproject.domain.Post;
+import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.comment.CommentResponseDto;
 import com.mxxdone.miniproject.dto.comment.CommentSaveRequestDto;
@@ -52,8 +53,6 @@ public class CommentService {
         List<Comment> roots = commentRepository.findRootsWithChildren(postId);
 
         return roots.stream()
-                // 스레드 유지: 삭제된 루트라도 자식이 있으면 남김
-                .filter(r -> !r.isDeleted() || (r.getChildren() != null && r.getChildren().stream().anyMatch(ch -> !ch.isDeleted())))
                 .map(CommentResponseDto::from)
                 .toList();
     }
@@ -62,10 +61,12 @@ public class CommentService {
     public void update(Long commentId, CommentUpdateRequestDto requestDto, String username) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 권한 확인
-        if (!comment.getAuthor().getUsername().equals(username)) {
-            throw new IllegalStateException("수정 권한이 없습니다.");
+        if (currentUser.getRole() != Role.ADMIN && !comment.getAuthor().getUsername().equals(username)) {
+            throw new IllegalStateException("댓글을 수정할 권한이 없습니다.");
         }
         comment.update(requestDto.content());
     }
@@ -74,10 +75,12 @@ public class CommentService {
     public void delete(Long commentId, String username) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 권한 확인
-        if (!comment.getAuthor().getUsername().equals(username)) {
-            throw new IllegalStateException("삭제 권한이 없습니다.");
+        if (currentUser.getRole() != Role.ADMIN && !comment.getAuthor().getUsername().equals(username)) {
+            throw new IllegalStateException("댓글을 삭제할 권한이 없습니다.");
         }
 
         comment.softDelete();
