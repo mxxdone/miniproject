@@ -11,6 +11,7 @@ import com.mxxdone.miniproject.repository.CommentRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
 import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,19 +25,30 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 댓글 생성
     public Long save(CommentSaveRequestDto requestDto, String username) {
         Post post = postRepository.findById(requestDto.postId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
-        User author = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        Comment comment = Comment.builder()
+        Comment.CommentBuilder commentBuilder = Comment.builder()
                 .content(requestDto.content())
-                .post(post)
-                .author(author)
-                .build();
+                .post(post);
+
+        // username이 null이 아니면 (로그인 사용자)
+        if (username != null) {
+            User author = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            commentBuilder.author(author);
+        }
+        // username이 null이면 (비로그인 사용자)
+        else {
+            commentBuilder.guestName(requestDto.guestName());
+            // guest 사용자 비밀번호 암호화 후 저장
+            commentBuilder.guestPassword(passwordEncoder.encode(requestDto.guestPassword()));
+        }
+        Comment comment = commentBuilder.build();
 
         if (requestDto.parentId() != null) {
             Comment parent = commentRepository.findById(requestDto.parentId())

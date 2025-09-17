@@ -2,6 +2,8 @@ package com.mxxdone.miniproject.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -30,9 +32,18 @@ public class Comment {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
+    // 비로그인 사용자를 위해 nullable = false 제거
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private User author;
+
+    // 비로그인 사용자명
+    @Column
+    private String guestName;
+
+    @Column
+    private String guestPassword;
 
     // soft delete
     @Column(nullable = false)
@@ -53,10 +64,12 @@ public class Comment {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Comment(String content, Post post, User author) {
+    public Comment(String content, Post post, User author, String guestName, String guestPassword) {
         this.content = content;
         this.post = post;
         this.author = author;
+        this.guestName = guestName;
+        this.guestPassword = guestPassword; // 암호화 필요
     }
 
     // 수정 편의 메서드

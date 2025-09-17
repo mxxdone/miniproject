@@ -22,7 +22,9 @@ public class CommentController {
     @PostMapping
     public ResponseEntity<Long> saveComment(@RequestBody CommentSaveRequestDto requestDto,
                                             @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(commentService.save(requestDto, userDetails.getUsername()));
+        // 비로그인 사용자의 경우 username을 null로 고정
+        String username = (userDetails != null) ? userDetails.getUsername() : null;
+        return ResponseEntity.ok(commentService.save(requestDto, username));
     }
 
     @GetMapping("/post/{postId}")

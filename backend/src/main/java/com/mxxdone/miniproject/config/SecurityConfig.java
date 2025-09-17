@@ -50,6 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/posts/**", "/api/v1/comments/**", "/api/v1/categories/**").permitAll()
                         // 회원가입, 로그인 API는 누구나 접근 가능
                         .requestMatchers("/api/v1/users/signup", "/api/v1/users/login").permitAll()
+                        // 게스트 댓글 허용
+                        .requestMatchers(HttpMethod.POST, "/api/v1/comments/**").permitAll()
                         //그 외 모든 요청은 인증 사용자만 접근 가능
                         .anyRequest().authenticated()
                 )

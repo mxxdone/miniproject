@@ -5,5 +5,7 @@ import com.mxxdone.miniproject.util.XssSanitizer;
 
 public record CommentSaveRequestDto(Long postId,
                                     @JsonDeserialize(using = XssSanitizer.class) String content,
-                                    Long parentId) {
+                                    Long parentId,
+                                    String guestName,
+                                    String guestPassword) {
 }

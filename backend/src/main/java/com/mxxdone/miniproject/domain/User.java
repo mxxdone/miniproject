@@ -37,7 +37,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "author")
     private List<Post> posts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
     // 빌더를 써서 각 필드 명까지 입력하도록, 혼동 방지

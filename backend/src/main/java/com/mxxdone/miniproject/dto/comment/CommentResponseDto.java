@@ -14,10 +14,18 @@ public record CommentResponseDto(Long id,
                                  LocalDateTime updatedAt
 ) {
     public static CommentResponseDto from(Comment comment) {
+        String authorName;
+        if (comment.getAuthor() != null) {
+            authorName = comment.getAuthor().getUsername();
+        } else if (comment.getGuestName() != null) {
+            authorName = comment.getGuestName();
+        } else {
+            authorName = "탈퇴한 회원";
+        }
         return new CommentResponseDto(
                 comment.getId(),
                 comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent(),
-                comment.getAuthor() != null ? comment.getAuthor().getUsername() : null,
+                authorName,
                 comment.isDeleted(),
                 comment.getChildren().stream()
                         .map(CommentResponseDto::from)
