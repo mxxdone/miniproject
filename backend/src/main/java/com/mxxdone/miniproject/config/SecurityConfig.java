@@ -52,6 +52,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/signup", "/api/v1/users/login").permitAll()
                         // 게스트 댓글 허용
                         .requestMatchers(HttpMethod.POST, "/api/v1/comments/**").permitAll()
+                        // 게스트 댓글 삭제 허용
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/comments/**").permitAll()
                         //그 외 모든 요청은 인증 사용자만 접근 가능
                         .anyRequest().authenticated()
                 )

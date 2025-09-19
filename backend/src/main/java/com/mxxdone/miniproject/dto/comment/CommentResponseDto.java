@@ -8,6 +8,7 @@ import java.util.List;
 public record CommentResponseDto(Long id,
                                  String content,
                                  String authorUsername,
+                                 boolean isGuest,
                                  boolean isDeleted,
                                  List<CommentResponseDto> children,
                                  LocalDateTime createdAt,
@@ -26,6 +27,7 @@ public record CommentResponseDto(Long id,
                 comment.getId(),
                 comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent(),
                 authorName,
+                comment.getAuthor() == null, // 작성자가 없으면 true
                 comment.isDeleted(),
                 comment.getChildren().stream()
                         .map(CommentResponseDto::from)

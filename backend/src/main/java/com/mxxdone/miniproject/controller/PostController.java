@@ -23,7 +23,7 @@ public class PostController {
 
     private final PostService postService;
 
-    //게시글 생성 API
+    // 게시글 생성 API
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> savePost(
@@ -34,7 +34,7 @@ public class PostController {
         return ResponseEntity.ok(postService.save(requestDto, username));
     }
 
-    //게시글 수정 API
+    // 게시글 수정 API
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Long> updatePost(@PathVariable Long id,
@@ -44,7 +44,7 @@ public class PostController {
         return ResponseEntity.ok(postService.update(id, requestDto, userDetails.getUsername()));
     }
 
-    //게시글 삭제 API
+    // 게시글 삭제 API
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePost(@PathVariable Long id,
@@ -59,12 +59,13 @@ public class PostController {
         //위의 경우에는 Void로 직접 응답 본문 만들어줘야함.
     }
 
-    //게시글 단건 조회 API
+    // 게시글 단건 조회 API
     @GetMapping("/{id}")
     public ResponseEntity<PostDetailResponseDto> getPost(@PathVariable Long id) {
         return ResponseEntity.ok(postService.findById(id));
     }
 
+    // 게시글 목록 조회 API
     @GetMapping
     public ResponseEntity<Page<PostSummaryResponseDto>> getPosts(
             @RequestParam(required = false) Long categoryId,

@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.controller;
 
+import com.mxxdone.miniproject.dto.comment.CommentDeleteRequestDto;
 import com.mxxdone.miniproject.dto.comment.CommentResponseDto;
 import com.mxxdone.miniproject.dto.comment.CommentSaveRequestDto;
 import com.mxxdone.miniproject.dto.comment.CommentUpdateRequestDto;
@@ -43,8 +44,15 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId, @AuthenticationPrincipal UserDetails userDetails) {
-        commentService.delete(commentId, userDetails.getUsername());
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId,
+                                              @AuthenticationPrincipal UserDetails userDetails,
+                                              @RequestBody(required = false)CommentDeleteRequestDto requestDto
+                                              ) {
+
+        String username = (userDetails != null) ? userDetails.getUsername() : null;
+        String password = (requestDto != null) ? requestDto.password() : null;
+
+        commentService.delete(commentId, username, password);
         return ResponseEntity.ok().build();
     }
 }

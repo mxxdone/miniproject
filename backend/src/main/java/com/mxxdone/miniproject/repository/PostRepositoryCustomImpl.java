@@ -3,6 +3,7 @@ package com.mxxdone.miniproject.repository;
 import com.mxxdone.miniproject.dto.post.PostSummaryResponseDto;
 import com.mxxdone.miniproject.dto.post.QPostSummaryResponseDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,7 +31,11 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         post.content,
                         category.name,
                         user.username,
-                        comment.count(),
+                        new CaseBuilder()
+                                .when(comment.isDeleted.isFalse())
+                                .then(1L)
+                                .otherwise(0L)
+                                .sum(), // 삭제되지 않은 댓글만 count 
                         post.createdAt
                 ))
                 .from(post)

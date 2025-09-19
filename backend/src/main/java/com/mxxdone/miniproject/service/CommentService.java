@@ -66,6 +66,7 @@ public class CommentService {
 
         return roots.stream()
                 .map(CommentResponseDto::from)
+                .filter(dto -> !dto.isDeleted() || !dto.children().isEmpty())
                 .toList();
     }
 
@@ -84,14 +85,27 @@ public class CommentService {
     }
 
     // 댓글 삭제
-    public void delete(Long commentId, String username) {
+    public void delete(Long commentId, String username, String password) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        boolean isAuthorized = false;
+        // 로그인 사용자
+        if (username != null) {
+            User currentUser = userRepository.findByUsername(username).orElse(null);
+            // admin이거나 본인 댓글일 경우 권한 있음
+            if (currentUser != null && (currentUser.getRole() == Role.ADMIN || comment.getAuthor().equals(currentUser))) {
+                isAuthorized = true;
+            }
+        //비로그인 사용자의 경우
+        } else if (comment.getAuthor() == null && password != null) {
+            if (passwordEncoder.matches(password, comment.getGuestPassword())) {
+                isAuthorized = true;
+            }
+        }
 
         // 권한 확인
-        if (currentUser.getRole() != Role.ADMIN && !comment.getAuthor().getUsername().equals(username)) {
+        if (!isAuthorized) {
             throw new IllegalStateException("댓글을 삭제할 권한이 없습니다.");
         }
 

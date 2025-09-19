@@ -29,9 +29,11 @@ export const useCommentsStore = defineStore('comments', () => {
     }
   }
 
-  async function deleteComment(postId, commentId) {
+  async function deleteComment(postId, commentId, password) {
     try {
-      await apiClient.delete(`/api/v1/comments/${commentId}`)
+      await apiClient.delete(`/api/v1/comments/${commentId}`, {
+        data: { password: password } // 요청 본문에 비밀번호 추가
+      })
       await fetchComments(postId)
       uiStore.showSnackbar({ text: '댓글이 삭제되었습니다.', color: 'success' })
     } catch (error) {
