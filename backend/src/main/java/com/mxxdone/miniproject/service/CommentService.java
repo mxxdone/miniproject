@@ -62,11 +62,10 @@ public class CommentService {
     // 특정 게시글 댓글 조회
     @Transactional(readOnly = true)
     public List<CommentResponseDto> findByPostId(Long postId) {
-        List<Comment> roots = commentRepository.findRootsWithChildren(postId);
+        List<Comment> roots = commentRepository.findVisibleCommentsByPostId(postId);
 
         return roots.stream()
                 .map(CommentResponseDto::from)
-                .filter(dto -> !dto.isDeleted() || !dto.children().isEmpty())
                 .toList();
     }
 
