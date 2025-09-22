@@ -9,6 +9,7 @@ export const useCommentsStore = defineStore('comments', () => {
 
   // 특정 게시물의 댓글 목록 불러오기
   async function fetchComments(postId) {
+    comments.value = []
     try {
       const response = await apiClient.get(`api/v1/comments/post/${postId}`)
       comments.value = response.data
