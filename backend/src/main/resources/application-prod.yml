@@ -8,4 +8,4 @@ spring:
       ddl-auto: update # 운영 환경에서는 create, create-drop 사용 금지
 app:
   oauth2:
-    redirect-uri: http://13.209.122.52/oauth2/redirect
+    redirect-uri: https://13.209.122.52/oauth2/redirect
