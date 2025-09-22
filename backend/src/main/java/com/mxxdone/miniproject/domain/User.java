@@ -25,7 +25,10 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String username;
+    private String username; // 시스템 내부용 고유 로그인id
+
+    @Column(nullable = false, unique = true)
+    private String nickname; // 화면 표시용
 
     @Column(nullable = false)
     private String password;
@@ -33,6 +36,11 @@ public class User implements UserDetails {
     // Enum 타입을 DB에 저장할 때 문자열로 저장
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Column(unique = true)
+    private String email;
+
+    private String provider; // 소셜 로그인 제공자(e.g. "google")
 
     @OneToMany(mappedBy = "author")
     private List<Post> posts = new ArrayList<>();
@@ -42,10 +50,13 @@ public class User implements UserDetails {
 
     // 빌더를 써서 각 필드 명까지 입력하도록, 혼동 방지
     @Builder
-    public User(String username, String password, Role role) {
+    public User(String username, String password, Role role, String email, String provider, String nickname) {
         this.username = username;
         this.password = password;
         this.role = role;
+        this.email = email;
+        this.provider = provider;
+        this.nickname = nickname;
     }
 
     // UserDetails 구현 메서드 추가

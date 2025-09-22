@@ -8,6 +8,7 @@ import java.util.List;
 public record CommentResponseDto(Long id,
                                  String content,
                                  String authorUsername,
+                                 String authorNickname,
                                  boolean isGuest,
                                  boolean isDeleted,
                                  List<CommentResponseDto> children,
@@ -17,7 +18,7 @@ public record CommentResponseDto(Long id,
     public static CommentResponseDto from(Comment comment) {
         String authorName;
         if (comment.getAuthor() != null) {
-            authorName = comment.getAuthor().getUsername();
+            authorName = comment.getAuthor().getNickname();
         } else if (comment.getGuestName() != null) {
             authorName = comment.getGuestName();
         } else {
@@ -26,6 +27,7 @@ public record CommentResponseDto(Long id,
         return new CommentResponseDto(
                 comment.getId(),
                 comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent(),
+                comment.getAuthor().getUsername(),
                 authorName,
                 comment.getAuthor() == null, // 작성자가 없으면 true
                 comment.isDeleted(),

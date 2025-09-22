@@ -1,8 +1,9 @@
 package com.mxxdone.miniproject.config;
 
+import com.mxxdone.miniproject.config.security.PrincipalOAuth2UserService;
 import com.mxxdone.miniproject.config.security.jwt.JwtAuthenticationFilter;
 import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
-import com.mxxdone.miniproject.service.UserDetailServiceImpl;
+import com.mxxdone.miniproject.service.PrincipalDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +24,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
-    private final UserDetailServiceImpl userDetailService;
+    private final PrincipalDetailService userDetailService;
+    private final PrincipalOAuth2UserService principalOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -57,7 +60,13 @@ public class SecurityConfig {
                         //그 외 모든 요청은 인증 사용자만 접근 가능
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailService), UsernamePasswordAuthenticationFilter.class);
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(principalOAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                );
+
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailService), UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 }

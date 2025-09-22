@@ -1,6 +1,6 @@
 package com.mxxdone.miniproject.config.security.jwt;
 
-import com.mxxdone.miniproject.service.UserDetailServiceImpl;
+import com.mxxdone.miniproject.service.PrincipalDetailService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +21,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserDetailServiceImpl userDetailService;
+    private final PrincipalDetailService userDetailService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
