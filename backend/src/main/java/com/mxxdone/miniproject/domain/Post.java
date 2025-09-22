@@ -2,6 +2,10 @@ package com.mxxdone.miniproject.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -13,7 +17,9 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // 기본생성자 추가
 @Getter @Setter
 @Entity
-@EntityListeners(AuditingEntityListener.class) // 추가
+@EntityListeners(AuditingEntityListener.class)
+@SQLDelete(sql = "UPDATE post SET is_deleted = true WHERE id = ?")
+@SQLRestriction("is_deleted = false") // select 기본 조건
 public class Post {
 
     @Id
@@ -32,6 +38,7 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private User author; // 작성자
 
     @CreatedDate
@@ -42,6 +49,9 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
+
+    @Column(nullable = false)
+    private boolean isDeleted = false;
 
     // DTO를 위한 생성자 추가
     public Post(String title, String content) {
