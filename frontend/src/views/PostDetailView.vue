@@ -75,8 +75,9 @@ async function removePost() {
 
       <v-card-title class="text-h4">{{ postsStore.currentPost.title }}</v-card-title>
       <v-card-subtitle>
-        작성자: {{ postsStore.currentPost.authorUsername }} | 작성일:
-        {{ formatDateTime(postsStore.currentPost.createdAt) }}
+        <span class="author">작성자: {{ postsStore.currentPost.authorNickname }}</span>
+        <span class="separator">|</span>
+        <span class="date">작성일: {{ formatDateTime(postsStore.currentPost.createdAt) }}</span>
       </v-card-subtitle>
       <v-divider class="my-4"></v-divider>
       <!-- tiptap 적용후 v-html로 변경 -->
@@ -119,5 +120,12 @@ async function removePost() {
 .v-card-text .prose-content h3 {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
+}
+
+.author {
+  margin-right: 12px;
+}
+.separator {
+  margin-right: 12px;
 }
 </style>

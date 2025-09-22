@@ -198,13 +198,13 @@ function submitUpdate(commentId) {
           <div v-else>
             <div v-if="comment.isDeleted">
               <v-list-item-title class="font-weight-bold">{{
-                comment.authorUsername
+                comment.authorNickname
               }}</v-list-item-title>
               <v-list-item-subtitle class="text-grey">삭제된 댓글입니다.</v-list-item-subtitle>
             </div>
             <div v-else>
               <v-list-item-title class="font-weight-bold">{{
-                comment.authorUsername
+                comment.authorNickname
               }}</v-list-item-title>
               <v-list-item-subtitle style="white-space: pre-wrap">{{
                 comment.content
@@ -280,14 +280,14 @@ function submitUpdate(commentId) {
 
             <div v-else-if="reply.isDeleted">
               <v-list-item-title class="font-weight-bold">{{
-                reply.authorUsername
+                reply.authorNickname
               }}</v-list-item-title>
               <v-list-item-subtitle class="text-grey">삭제된 댓글입니다.</v-list-item-subtitle>
             </div>
 
             <div v-else>
               <v-list-item-title class="font-weight-bold">{{
-                reply.authorUsername
+                reply.authorNickname
               }}</v-list-item-title>
               <v-list-item-subtitle style="white-space: pre-wrap">{{
                 reply.content

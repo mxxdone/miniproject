@@ -20,6 +20,7 @@ public record PostDetailResponseDto(
         List<CategoryDto> categoryPath,
         Long categoryId,
         String authorUsername,
+        String authorNickname,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -43,6 +44,7 @@ public record PostDetailResponseDto(
                 // 연관관계인 필드만 null 체크
                 post.getCategory() != null ? post.getCategory().getId() : null,
                 post.getAuthor() != null ? post.getAuthor().getUsername() : null,
+                post.getAuthor() != null ? post.getAuthor().getNickname() : null,
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );

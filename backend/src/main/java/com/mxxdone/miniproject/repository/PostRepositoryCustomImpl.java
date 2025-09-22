@@ -31,6 +31,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         post.content,
                         category.name,
                         user.username,
+                        user.nickname,
                         new CaseBuilder()
                                 .when(comment.isDeleted.isFalse())
                                 .then(1L)
@@ -46,7 +47,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         categoryIn(categoryIds),
                         searchEq(searchType, keyword)
                 )
-                .groupBy(post.id, category.name, user.username)
+                .groupBy(post.id, category.name, user.username, user.nickname)
                 .orderBy(post.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
