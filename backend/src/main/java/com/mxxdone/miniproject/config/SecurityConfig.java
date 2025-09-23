@@ -29,11 +29,6 @@ public class SecurityConfig {
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 // 1. CSRF(Cross-Site Request Forgery) 비활성화
