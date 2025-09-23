@@ -21,6 +21,13 @@ const submitLogin = () => {
           <v-text-field v-model="password" label="비밀번호" type="password" required></v-text-field>
           <v-btn type="submit" color="primary" block class="mt-4">로그인</v-btn>
         </v-form>
+        <v-divider class="my-4"></v-divider>
+        <a href="http://localhost:8080/oauth2/authorization/google" class="text-decoration-none">
+          <v-btn color="red-lighten-1" block>
+            <v-icon start>mdi-google</v-icon>
+            Google로 로그인
+          </v-btn>
+        </a>
       </v-card-text>
     </v-card>
   </v-container>

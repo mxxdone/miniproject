@@ -41,6 +41,11 @@ const router = createRouter({
       path: '/about',
       name: 'aboutMe',
       component: () => import('../views/AboutMeView.vue')
+    },
+    {
+      path: '/oauth2/redirect',
+      name: 'oauth2Redirect',
+      component: () => import('../views/OAuth2RedirectHandler.vue')
     }
   ]
 })

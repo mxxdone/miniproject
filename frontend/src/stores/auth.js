@@ -10,28 +10,41 @@ export const useAuthStore = defineStore('auth', () => {
   const username = ref(null)
   const userRole = ref(null)
   const isAdmin = computed(() => userRole.value === 'ROLE_ADMIN')
-
-  // 시작 시 토큰 있으면 사용자 정보 초기화
-  if (token.value) {
-    const decoded = jwtDecode(token.value)
-    username.value = decoded.sub // sub: 토큰의 주체
-    userRole.value = decoded.auth
-  }
   const isLoggedIn = computed(() => !!token.value)
 
-  // action
+  // 시작 시 토큰 있으면 사용자 정보 초기화
+  function initUserFromToken(tokenToDecode) {
+    if (tokenToDecode) {
+      try {
+        const decoded = jwtDecode(tokenToDecode)
+        username.value = decoded.sub
+        userRole.value = decoded.auth
+      } catch {
+        localStorage.removeItem('jwt')
+        token.value = null
+        username.value = null
+        userRole.value = null
+      }
+    } else {
+      username.value = null
+      userRole.value = null
+    }
+  }
+
+  // state 초기화: 앱 시작 시
+  if (token.value) {
+    initUserFromToken(token.value)
+  }
+
+  // action 내 토큰 설정 로직
   function setToken(newToken) {
     token.value = newToken
     if (newToken) {
       localStorage.setItem('jwt', newToken)
-      const decoded = jwtDecode(newToken)
-      username.value = decoded.sub
-      userRole.value = decoded.auth
     } else {
       localStorage.removeItem('jwt')
-      username.value = null // 토큰 삭제 시 username 삭제
-      userRole.value = null
     }
+    initUserFromToken(newToken)
   }
 
   async function signup(payload) {
@@ -60,5 +73,5 @@ export const useAuthStore = defineStore('auth', () => {
     router.push('/')
   }
 
-  return { token, username, isLoggedIn, isAdmin, signup, login, logout }
+  return { token, username, userRole, isLoggedIn, isAdmin, setToken, signup, login, logout }
 })
