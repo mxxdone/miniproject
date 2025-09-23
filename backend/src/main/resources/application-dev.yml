@@ -14,3 +14,5 @@ spring:
 app:
   oauth2:
     redirect-uri: http://localhost:5173/oauth2/redirect
+admin:
+  password: ${ADMIN_PASSWORD}
