@@ -1,12 +1,5 @@
 @import './base.css';
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
-}
-
 a,
 .green {
   text-decoration: none;
@@ -18,19 +11,6 @@ a,
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);
-  }
-}
-
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
   }
 }
 
@@ -47,3 +27,21 @@ a,
 .prose-content pre code {
   font-size: 0.9em;
 }
+
+:root {
+  --anyang-outline: #E7E5EA;   /* light outline */
+}
+
+.bordered { border: 1px solid var(--anyang-outline); }
+.prose {
+  max-width: 840px; line-height: 1.7; font-size: 16px;
+}
+.prose h1, .prose h2, .prose h3 { line-height: 1.25; font-weight: 800; }
+.prose h1 { font-size: 2rem; margin: 0 0 0.5rem; }
+.prose h2 { font-size: 1.5rem; margin: 2rem 0 0.75rem; }
+.prose pre {
+  background: #0b0f14; color: #e6edf3; padding: 16px; border-radius: 12px; overflow: auto;
+}
+
+/* 다크 모드에서 경계선 색 재정의 */
+.v-theme--anyangDark .bordered { border-color: #3c2757; }

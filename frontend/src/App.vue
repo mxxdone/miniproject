@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useTheme } from 'vuetify'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import CategoryNav from '@/components/CategoryNav.vue'
@@ -7,39 +8,59 @@ import CategoryNav from '@/components/CategoryNav.vue'
 const uiStore = useUiStore()
 const authStore = useAuthStore()
 const drawer = ref(true) // 카테고리 서랍 열림 닫힘 제어
+const theme = useTheme()
+const isDark = computed(() => theme.global.current.value.dark)
+function toggleTheme() {
+  // 현재 테마가 다크 모드인지 확인하고, 아니면 anyangDark로, 맞으면 anyangLight로 변경
+  theme.global.name.value = isDark.value ? 'anyangLight' : 'anyangDark'
+}
 </script>
 
 <template>
   <v-app>
-    <v-app-bar app>
-      <!-- 좌측 카테고리 서랍 열고 닫기-->
-      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <!-- 상단 앱바 -->
-      <v-toolbar-title>
-        <RouterLink to="/" class="text-decoration-none text-grey-darken-3">My Blog</RouterLink>
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
+    <v-layout>
+      <!-- 보라색 상단바 + 내부 텍스트/아이콘 on-primary로 통일 -->
+      <v-app-bar color="primary" flat>
+        <v-app-bar-nav-icon
+          variant="text"
+          color="on-primary"
+          @click="drawer = !drawer"
+        />
 
-      <!-- 로그인 상태에 따라 버튼 다르게 보여줌 -->
-      <div v-if="!authStore.isLoggedIn">
-        <v-btn to="/signup">회원가입</v-btn>
-        <v-btn to="/login">로그인</v-btn>
-      </div>
-      <div v-else>
-        <v-btn @click="authStore.logout()">로그아웃</v-btn>
-      </div>
-    </v-app-bar>
+        <v-toolbar-title class="text-white">
+          <RouterLink to="/" class="text-decoration-none text-white">
+            My Blog
+          </RouterLink>
+        </v-toolbar-title>
 
-    <v-navigation-drawer v-model="drawer">
-      <categoryNav />
-    </v-navigation-drawer>
+        <v-spacer />
 
-    <!-- 메인 뷰 -->
-    <v-main>
-      <RouterView />
-    </v-main>
+        <!-- 토글: 아이콘 버튼 권장 -->
+        <v-btn variant="text" icon color="on-primary" @click="toggleTheme">
+          <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+        </v-btn>
 
-    <!-- 스낵바 (알림창) -->
+        <!-- 인증 버튼들 -->
+        <template v-if="!authStore.isLoggedIn">
+          <v-btn variant="text" color="on-primary" to="/signup">회원가입</v-btn>
+          <v-btn variant="text" color="on-primary" to="/login">로그인</v-btn>
+        </template>
+        <template v-else>
+          <v-btn variant="text" color="on-primary" @click="authStore.logout()">로그아웃</v-btn>
+        </template>
+      </v-app-bar>
+
+      <!-- Drawer: 컴포넌트 이름 수정 -->
+      <v-navigation-drawer v-model="drawer">
+        <CategoryNav />
+        <!-- 또는 <category-nav /> -->
+      </v-navigation-drawer>
+
+      <v-main>
+        <RouterView />
+      </v-main>
+    </v-layout>
+
     <v-snackbar
       v-model="uiStore.snackbar.visible"
       :color="uiStore.snackbar.color"

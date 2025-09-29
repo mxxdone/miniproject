@@ -4,6 +4,7 @@ import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
 import 'highlight.js/styles/github-dark.css';
+import '@/assets/main.css';
 
 
 const app = createApp(App)
