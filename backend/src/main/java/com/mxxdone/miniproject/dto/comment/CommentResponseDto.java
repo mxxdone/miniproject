@@ -27,7 +27,7 @@ public record CommentResponseDto(Long id,
         return new CommentResponseDto(
                 comment.getId(),
                 comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent(),
-                comment.getAuthor().getUsername(),
+                comment.getAuthor() != null ? comment.getAuthor().getUsername() : null,
                 authorName,
                 comment.getAuthor() == null, // 작성자가 없으면 true
                 comment.isDeleted(),
