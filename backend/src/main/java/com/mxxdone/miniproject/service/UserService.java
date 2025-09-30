@@ -26,6 +26,14 @@ public class UserService {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
 
+        if (userRepository.existsByEmail(requestDto.email())) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        if (userRepository.existsByNickname(requestDto.nickname())) {
+            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+        }
+
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(requestDto.password());
 
@@ -33,6 +41,8 @@ public class UserService {
         User user = User.builder()
                 .username(requestDto.username())
                 .password(encodedPassword)
+                .nickname(requestDto.nickname())
+                .email(requestDto.email())
                 .role(Role.USER)
                 .build();
 
