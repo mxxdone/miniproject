@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useTheme } from 'vuetify'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
@@ -10,10 +10,24 @@ const authStore = useAuthStore()
 const drawer = ref(true) // 카테고리 서랍 열림 닫힘 제어
 const theme = useTheme()
 const isDark = computed(() => theme.global.current.value.dark)
+
 function toggleTheme() {
-  // 현재 테마가 다크 모드인지 확인하고, 아니면 anyangDark로, 맞으면 anyangLight로 변경
-  theme.global.name.value = isDark.value ? 'anyangLight' : 'anyangDark'
+  // 현재 테마가 다크 모드인지 확인하고, 아니면 anyangDark로, 맞으면 anyangLight
+  const newTheme = theme.global.name.value = isDark.value ? 'anyangLight' : 'anyangDark'
+  // 현재 테마 변경
+  theme.global.name.value = newTheme
+  // 선택한 테마를 localStorage에 저장
+  localStorage.setItem('theme', newTheme)
 }
+
+// 페이지가 로드될 때 테마 값 설정
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme')
+
+  if (savedTheme) {
+    theme.global.name.value = savedTheme
+  }
+})
 </script>
 
 <template>
