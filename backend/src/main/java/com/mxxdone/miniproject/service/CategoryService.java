@@ -5,6 +5,8 @@ import com.mxxdone.miniproject.dto.category.CategoryResponseDto;
 import com.mxxdone.miniproject.dto.category.CategorySaveRequestDto;
 import com.mxxdone.miniproject.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    @CacheEvict(value = "categories", allEntries = true) // 캐시 지우기
     public Long save(CategorySaveRequestDto requestDto) {
         Category category = requestDto.toEntity();
 
@@ -30,6 +33,7 @@ public class CategoryService {
         return categoryRepository.save(category).getId();
     }
 
+    @Cacheable("categories")
     @Transactional(readOnly = true)
     public List<CategoryResponseDto> findAll() {
         return categoryRepository.findByParentIsNull().stream()
