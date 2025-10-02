@@ -56,7 +56,7 @@ export const usePostsStore = defineStore('posts', () => {
         ...page.value,
         totalPages:  data.totalPages,
         totalElements: data.totalElements,
-        currentPage: data.number + 1
+        currentPage: data.pageNumber + 1
       }
     } catch (error) {
       console.error('게시물을 불러오는 중 오류가 발생했습니다: ', error)

@@ -1,12 +1,12 @@
 package com.mxxdone.miniproject.controller;
 
+import com.mxxdone.miniproject.dto.PageDto;
 import com.mxxdone.miniproject.dto.post.PostDetailResponseDto;
 import com.mxxdone.miniproject.dto.post.PostSaveRequestDto;
 import com.mxxdone.miniproject.dto.post.PostSummaryResponseDto;
 import com.mxxdone.miniproject.dto.post.PostUpdateRequestDto;
 import com.mxxdone.miniproject.service.PostService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -67,7 +67,7 @@ public class PostController {
 
     // 게시글 목록 조회 API
     @GetMapping
-    public ResponseEntity<Page<PostSummaryResponseDto>> getPosts(
+    public ResponseEntity<PageDto<PostSummaryResponseDto>> getPosts(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false, defaultValue = "all") String type,
             @RequestParam(required = false) String keyword,
