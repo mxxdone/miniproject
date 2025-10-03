@@ -11,3 +11,8 @@ app:
     redirect-uri: https://13.209.122.52/oauth2/redirect
 admin:
   password: ${ADMIN_PASSWORD}
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
