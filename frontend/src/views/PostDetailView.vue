@@ -17,12 +17,11 @@ const uiStore = useUiStore()
 const postId = route.params.id
 
 // 현재 로그인 사용자가 글 작성자인지 확인
-const isAuthor = computed(() => {
-  return (
-    authStore.isLoggedIn &&
-    postsStore.currentPost &&
-    authStore.username === postsStore.currentPost.authorUsername
-  )
+const isAuthorOrAdmin = computed(() => {
+  if (!authStore.isLoggedIn || !postsStore.currentPost) {
+    return false
+  }
+  return authStore.isAdmin || authStore.username === postsStore.currentPost.authorUsername
 })
 
 onMounted(() => {
@@ -87,7 +86,7 @@ async function removePost() {
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="primary" @click="goBack">뒤로가기</v-btn>
-        <template v-if="isAuthor">
+        <template v-if="isAuthorOrAdmin">
           <v-btn color="red" @click="removePost">삭제</v-btn>
           <v-btn color="blue" :to="`/posts/${postId}/edit`">수정</v-btn>
         </template>

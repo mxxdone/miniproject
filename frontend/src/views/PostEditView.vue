@@ -3,12 +3,14 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui'
+import { useAuthStore } from '@/stores/auth'
 import TiptapEditor from '@/views/TiptapEditor.vue'
 
 const route = useRoute()
 const router = useRouter()
 const postsStore = usePostsStore()
 const uiStore = useUiStore()
+const authStore = useAuthStore()
 
 const postId = route.params.id
 const form = ref(null)
@@ -24,6 +26,23 @@ onMounted(() => {
 // 스토어의 currentPost 값이 변경(로드 완료)되면, 폼 데이터에 채워 넣음
 watch(() => postsStore.currentPost, (newPost) => {
   if (newPost) {
+    // 권한 확인
+    const isAuthor = authStore.username === newPost.authorUsername
+    const isAdmin = authStore.isAdmin
+
+    if (!isAuthor && !isAdmin) {
+      uiStore.showSnackbar({ text: '이 게시글을 수정할 권한이 없습니다.', color: 'error'})
+      if (window.history.length > 2) {
+        // 브라우저 히스토리가 충분히 있는 경우 (앱 내에서 이동)
+        router.go(-1)
+      } else {
+        // 히스토리가 부족한 경우 (직접 URL 접근 또는 외부 링크)
+        router.replace(`/posts/${postId}`) // 게시글 상세로
+      }
+      return
+    }
+
+    //권한이 있는 경우에 폼 데이터 채우기
     title.value = newPost.title
     content.value = newPost.content
   }

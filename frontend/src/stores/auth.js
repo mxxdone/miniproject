@@ -61,7 +61,10 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await apiClient.post('/api/v1/users/login', payload)
       setToken(response.data) // 로그인 성공시 토큰 저장
-      await router.push('/')
+
+      const currentRoute = router.currentRoute.value
+      const redirectPath = currentRoute.query.redirect || '/'
+      await router.push(redirectPath)
     } catch (error) {
       alert('로그인에 실패했습니다: ' + (error.response?.data?.message || error.message))
     }

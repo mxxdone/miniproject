@@ -36,7 +36,7 @@ public class PostController {
 
     // 게시글 수정 API
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Long> updatePost(@PathVariable Long id,
                                            @RequestBody PostUpdateRequestDto requestDto,
                                            @AuthenticationPrincipal UserDetails userDetails
@@ -46,7 +46,7 @@ public class PostController {
 
     // 게시글 삭제 API
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deletePost(@PathVariable Long id,
                                            @AuthenticationPrincipal UserDetails userDetails
     ) {
