@@ -13,9 +13,9 @@ const isDark = computed(() => theme.global.current.value.dark)
 
 function toggleTheme() {
   // 현재 테마가 다크 모드인지 확인하고, 아니면 anyangDark로, 맞으면 anyangLight
-  const newTheme = theme.global.name.value = isDark.value ? 'anyangLight' : 'anyangDark'
+  const newTheme = isDark.value ? 'anyangLight' : 'anyangDark'
   // 현재 테마 변경
-  theme.global.name.value = newTheme
+  theme.change(newTheme)
   // 선택한 테마를 localStorage에 저장
   localStorage.setItem('theme', newTheme)
 }
