@@ -1,9 +1,9 @@
 package com.mxxdone.miniproject.controller;
 
-import com.mxxdone.miniproject.dto.comment.CommentDeleteRequestDto;
 import com.mxxdone.miniproject.dto.comment.CommentResponseDto;
 import com.mxxdone.miniproject.dto.comment.CommentSaveRequestDto;
 import com.mxxdone.miniproject.dto.comment.CommentUpdateRequestDto;
+import com.mxxdone.miniproject.dto.comment.GuestPasswordRequestDto;
 import com.mxxdone.miniproject.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -43,16 +43,19 @@ public class CommentController {
         return ResponseEntity.ok().build();
     }
 
+    // 로그인 사용자 전용 삭제 API
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId,
-                                              @AuthenticationPrincipal UserDetails userDetails,
-                                              @RequestBody(required = false)CommentDeleteRequestDto requestDto
-                                              ) {
+    public ResponseEntity<Void> deleteCommentForMember(@PathVariable Long commentId,
+                                                       @AuthenticationPrincipal UserDetails userDetails) {
+        commentService.delete(commentId, userDetails.getUsername(), null);
+        return ResponseEntity.ok().build();
+    }
 
-        String username = (userDetails != null) ? userDetails.getUsername() : null;
-        String password = (requestDto != null) ? requestDto.password() : null;
-
-        commentService.delete(commentId, username, password);
+    // 게스트 전용 삭제 API
+    @DeleteMapping("/{commentId}/guest")
+    public ResponseEntity<Void> deleteCommentForGuest(@PathVariable Long commentId,
+                                                      @RequestBody GuestPasswordRequestDto requestDto) {
+        commentService.delete(commentId, null, requestDto.password());
         return ResponseEntity.ok().build();
     }
 }
