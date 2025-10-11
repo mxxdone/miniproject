@@ -11,6 +11,7 @@ import com.mxxdone.miniproject.repository.CommentRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
 import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,7 +79,7 @@ public class CommentService {
 
         // 권한 확인
         if (currentUser.getRole() != Role.ADMIN && !comment.getAuthor().getUsername().equals(username)) {
-            throw new IllegalStateException("댓글을 수정할 권한이 없습니다.");
+            throw new AccessDeniedException("댓글을 수정할 권한이 없습니다.");
         }
         comment.update(requestDto.content());
     }
@@ -105,7 +106,7 @@ public class CommentService {
 
         // 권한 확인
         if (!isAuthorized) {
-            throw new IllegalStateException("댓글을 삭제할 권한이 없습니다.");
+            throw new AccessDeniedException("댓글을 삭제할 권한이 없습니다.");
         }
 
         comment.softDelete();

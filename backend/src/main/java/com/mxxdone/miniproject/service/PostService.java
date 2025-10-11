@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,7 +78,7 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
-            throw new IllegalArgumentException("게시글 수정 권한이 없습니다.");
+            throw new AccessDeniedException("게시글 수정 권한이 없습니다.");
         }
 
         post.update(requestDto.title(), requestDto.content());
@@ -96,7 +97,7 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
-            throw new IllegalArgumentException("게시글 삭제 권한이 없습니다.");
+            throw new AccessDeniedException("게시글 삭제 권한이 없습니다.");
         }
 
         postRepository.delete(post);

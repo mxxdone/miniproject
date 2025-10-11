@@ -2,6 +2,7 @@ package com.mxxdone.miniproject.config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -11,7 +12,13 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // IllegalArgumentException을 받아서 처리
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, String>> handleAccessDeniedException(AccessDeniedException e) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN) // 403 Forbidden 상태 코드 반환
+                .body(Map.of("message", "접근 권한이 없습니다."));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handlerIllegalArgumentException(IllegalArgumentException e){
         // 프론트엔드에 맞는 JSON 형식으로 에러 메세지 포장-전달
