@@ -5,6 +5,7 @@ import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
+import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,7 +51,7 @@ public class UserService {
         return userRepository.save(user).getId();
     }
 
-    public String login(LoginRequestDto requestDto) {
+    public TokenResponseDto login(LoginRequestDto requestDto) {
         User user = userRepository.findByUsername(requestDto.username())
                 .orElseThrow(() -> new IllegalArgumentException("등록된 사용자가 없습니다."));
 
@@ -59,6 +60,13 @@ public class UserService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        return jwtUtil.createToken(user.getUsername(), user.getRole());
+        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole());
+        String refreshToken = jwtUtil.createRefreshToken(user.getUsername());
+
+        // 생성된 리프레시 토큰을 User 엔티티에 저장 (DB 업데이트)
+        user.updateRefreshToken(refreshToken);
+        userRepository.save(user);
+
+        return new TokenResponseDto(accessToken, refreshToken);
     }
 }

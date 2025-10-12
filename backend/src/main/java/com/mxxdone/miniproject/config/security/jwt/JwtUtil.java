@@ -24,7 +24,8 @@ public class JwtUtil {
     @Value("${jwt.secret.key}")
     private String secretKey; // application-secret.yml에 설정한값
     private SecretKey key;
-    private static final long EXPIRATION_MINUTES = 60; //토큰 유효시간 60분
+    private static final long ACCESS_TOKEN_EXPIRATION_MINUTES  = 30; //토큰 유효시간 30분
+    private static final long REFRESH_TOKEN_EXPIRATION_DAYS  = 7;
 
     @PostConstruct
     public void init() {
@@ -32,15 +33,28 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // 토큰 생성
-    public String createToken(String username, Role role) {
+    // 액세스 토큰 생성 (인증, 인가)
+    public String createAccessToken(String username, Role role) {
         Instant now = Instant.now();
-        Instant expiry = now.plus(EXPIRATION_MINUTES, ChronoUnit.MINUTES);
+        Instant expiry = now.plus(ACCESS_TOKEN_EXPIRATION_MINUTES, ChronoUnit.MINUTES);
 
         return Jwts.builder()
                 .subject(username) // 사용자 id
                 .claim("auth", role.getKey()) // auth"라는 이름으로 권한 정보 추가
                 .issuedAt(Date.from(now)) //만료 시간
+                .expiration(Date.from(expiry))
+                .signWith(key)
+                .compact();
+    }
+
+    // 리프레시 토큰 생성
+    public String createRefreshToken(String username) {
+        Instant now = Instant.now();
+        Instant expiry = now.plus(REFRESH_TOKEN_EXPIRATION_DAYS, ChronoUnit.DAYS);
+
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
                 .signWith(key)
                 .compact();

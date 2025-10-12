@@ -2,6 +2,7 @@ package com.mxxdone.miniproject.controller;
 
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
+import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +24,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequestDto requestDto) {
-        String token = userService.login(requestDto);
-        // 토큰을 클라이언트에게 전달
-        return ResponseEntity.ok(token);
+    public ResponseEntity<TokenResponseDto> login(@RequestBody LoginRequestDto requestDto) {
+        return ResponseEntity.ok(userService.login(requestDto));
     }
 }

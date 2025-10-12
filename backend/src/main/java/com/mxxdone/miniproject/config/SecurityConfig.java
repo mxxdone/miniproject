@@ -41,7 +41,10 @@ public class SecurityConfig {
 
                 // API 엔드포인트별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() //모든 OPTIONS 요청을 허용
+                        //모든 OPTIONS 요청을 허용
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // 토큰 재발급 허용
+                        .requestMatchers("/api/v1/auth/refresh").permitAll()
                         // 조회(GET) API들은 누구나 접근 가능
                         .requestMatchers(HttpMethod.GET, "/api/v1/posts/**", "/api/v1/comments/**", "/api/v1/categories/**").permitAll()
                         // 회원가입, 로그인 API는 누구나 접근 가능
