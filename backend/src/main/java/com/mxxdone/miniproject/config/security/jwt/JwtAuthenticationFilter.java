@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -24,7 +25,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final PrincipalDetailService userDetailService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+        // /api/v1/auth/refresh 경로의 경우, 이 필터를 건너뛰도록
+        if ("/api/v1/auth/refresh".equals(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = jwtUtil.getTokenFromRequest(request);
 
         if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {

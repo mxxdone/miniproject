@@ -6,7 +6,8 @@ import { jwtDecode } from 'jwt-decode'
 
 export const useAuthStore = defineStore('auth', () => {
   // state
-  const token = ref(localStorage.getItem('jwt'))
+  const token = ref(localStorage.getItem('accessToken'))
+  const refreshToken = ref(localStorage.getItem('refreshToken'))
   const username = ref(null)
   const userRole = ref(null)
   const isAdmin = computed(() => userRole.value === 'ROLE_ADMIN')
@@ -20,10 +21,8 @@ export const useAuthStore = defineStore('auth', () => {
         username.value = decoded.sub
         userRole.value = decoded.auth
       } catch {
-        localStorage.removeItem('jwt')
-        token.value = null
-        username.value = null
-        userRole.value = null
+        // 토큰 파싱 실패 -> 모든 토큰 삭제
+        setToken(null, null)
       }
     } else {
       username.value = null
@@ -34,17 +33,27 @@ export const useAuthStore = defineStore('auth', () => {
   // state 초기화: 앱 시작 시
   if (token.value) {
     initUserFromToken(token.value)
+    refreshToken.value = localStorage.getItem('refreshToken')
   }
 
   // action 내 토큰 설정 로직
-  function setToken(newToken) {
-    token.value = newToken
-    if (newToken) {
-      localStorage.setItem('jwt', newToken)
+  function setToken(newAccessToken, newRefreshToken) {
+    token.value = newAccessToken
+    refreshToken.value = newRefreshToken
+    if (newAccessToken) {
+      localStorage.setItem('accessToken', newAccessToken)
     } else {
-      localStorage.removeItem('jwt')
+      localStorage.removeItem('accessToken')
     }
-    initUserFromToken(newToken)
+
+    if (newRefreshToken) {
+      if (newRefreshToken) {
+        localStorage.setItem('refreshToken', newRefreshToken)
+      } else {
+        localStorage.removeItem('refreshToken')
+      }
+    }
+    initUserFromToken(newAccessToken)
   }
 
   async function signup(payload) {
@@ -60,7 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(payload) {
     try {
       const response = await apiClient.post('/api/v1/users/login', payload)
-      setToken(response.data) // 로그인 성공시 토큰 저장
+      setToken(response.data.accessToken, response.data.refreshToken) // 로그인 성공시 토큰 저장
 
       const currentRoute = router.currentRoute.value
       const redirectPath = currentRoute.query.redirect || '/'
@@ -71,10 +80,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
-    setToken(null) // 토큰 삭제
+    setToken(null, null) // 토큰 삭제
     alert('로그아웃 되었습니다.')
     router.push('/')
   }
 
-  return { token, username, userRole, isLoggedIn, isAdmin, setToken, signup, login, logout }
+  return { token, refreshToken, username, userRole, isLoggedIn, isAdmin, setToken, signup, login, logout }
 })

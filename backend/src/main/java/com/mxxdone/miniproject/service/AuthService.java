@@ -7,9 +7,11 @@ import com.mxxdone.miniproject.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,7 +36,8 @@ public class AuthService {
         String refreshToken = jwtUtil.getTokenFromRequest(request);
 
         if (refreshToken == null || !jwtUtil.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않은 리프레쉬 토큰입니다.");
+            log.error("리프레시 토큰 검증 실패 token: {}", refreshToken);
+            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
         }
 
         Claims info = jwtUtil.getUserInfoFromToken(refreshToken);
@@ -44,12 +47,15 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (!refreshToken.equals(user.getRefreshToken())) {
+            log.error("DB의 리프레시 토큰과 일치하지 않습니다. Provided: {}, DB: {}", refreshToken, user.getRefreshToken());
             throw new IllegalArgumentException("저장된 리프레시 토큰과 일치하지 않습니다.");
         }
 
         String newAccessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole());
         String newRefreshToken = jwtUtil.createRefreshToken(user.getUsername());
         user.updateRefreshToken(newRefreshToken);
+
+        userRepository.save(user);
 
         return new TokenResponseDto(newAccessToken, newRefreshToken);
     }
