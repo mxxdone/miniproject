@@ -3,6 +3,7 @@ package com.mxxdone.miniproject.service;
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
+import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -141,17 +142,23 @@ public class UserServiceTest {
                 "테스트유저1",
                 "test@example.com"
         );
-        userService.signup(signUpRequestDto);
+        Long userId = userService.signup(signUpRequestDto);
 
         LoginRequestDto loginRequestDto = new LoginRequestDto(
                 "testuser001",
                 "password1234!"
         );
         // when
-        String token = userService.login(loginRequestDto);
+        TokenResponseDto tokenDto = userService.login(loginRequestDto);
         // then
-        assertThat(token).isNotNull();
-        assertThat(token).isNotEmpty();
+        assertThat(tokenDto).isNotNull();
+        assertThat(tokenDto.accessToken()).isNotNull().isNotEmpty();
+        assertThat(tokenDto.refreshToken()).isNotNull().isNotEmpty();
+
+        // DB에 리프레시 토큰이 정상적으로 저장되었는지 확인
+        User savedUser = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        assertThat(savedUser.getRefreshToken()).isEqualTo(tokenDto.refreshToken());
     }
 
     @Test

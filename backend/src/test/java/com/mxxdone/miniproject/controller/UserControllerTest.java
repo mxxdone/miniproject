@@ -7,6 +7,7 @@ import com.mxxdone.miniproject.config.security.PrincipalOAuth2UserService;
 import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
+import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.service.PrincipalDetailService;
 import com.mxxdone.miniproject.service.UserService;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class) // UserController만 테스트하도록 지정
 @Import(SecurityConfig.class)     // SecurityConfig를 함께 로드
@@ -61,17 +61,24 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("로그인 API가 정상적으로 호출되면 200 OK와 토큰 반환")
+    @DisplayName("로그인 API가 정상적으로 호출되면 200 OK / 토큰 DTO를 JSON 형태로 반환")
     void login_api_success() throws Exception {
-        // given: UserService의 login 메서드는 "test-token"을 반환하도록 설정
+        // given: UserService의 login 메서드는 TokenResponseDto를 반환하도록 설정
         LoginRequestDto requestDto = new LoginRequestDto("testuser", "password123!");
-        given(userService.login(any(LoginRequestDto.class))).willReturn("test-token");
+
+        TokenResponseDto tokenDto = new TokenResponseDto(
+                "mock-access-token",
+                "mock-refresh-token"
+        );
+
+        given(userService.login(any(LoginRequestDto.class))).willReturn(tokenDto);
 
         // when & then
         mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("test-token"));
+                .andExpect(jsonPath("$.accessToken").value("mock-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("mock-refresh-token"));
     }
 }

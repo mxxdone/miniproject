@@ -24,10 +24,6 @@ spring:
     aws:
       s3:
         enabled: false
-      stack:
-        auto: false
-      credentials:
-        use-default-aws-credentials-chain: false
 
   # 5. 테스트용 OAuth2 설정
   security:
@@ -46,6 +42,8 @@ jwt:
 app:
   oauth2:
     redirect-uri: http://localhost:8080/test
+  cors:
+    allowed-origins: http://localhost:5173
 
 admin:
   password: test-admin-password
