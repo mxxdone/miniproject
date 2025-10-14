@@ -36,7 +36,7 @@ public class CategoryService {
     @Cacheable("categories")
     @Transactional(readOnly = true)
     public List<CategoryResponseDto> findAll() {
-        return categoryRepository.findByParentIsNull().stream()
+        return categoryRepository.findByParentIsNullOrderByDisplayOrderAsc().stream()
                 .map(CategoryResponseDto::from)
                 .collect(Collectors.toList());
     }

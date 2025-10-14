@@ -23,19 +23,24 @@ public class Category {
     @Column(nullable = false)
     private String slug;
 
+    @Column(nullable = false)
+    private Integer displayOrder;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Category parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("displayOrder ASC")
     private List<Category> children = new ArrayList<>();
 
     @OneToMany(mappedBy = "category")
     private List<Post> posts = new ArrayList<>();
 
-    public Category(String name, String slug) {
+    public Category(String name, String slug, Integer displayOrder) {
         this.name = name;
         this.slug = slug;
+        this.displayOrder = displayOrder;
     }
 
     //양방향 편의 메서드
