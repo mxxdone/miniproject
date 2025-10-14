@@ -20,6 +20,9 @@ public class Category {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(nullable = false)
+    private String slug;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Category parent;
@@ -30,8 +33,9 @@ public class Category {
     @OneToMany(mappedBy = "category")
     private List<Post> posts = new ArrayList<>();
 
-    public Category(String name) {
+    public Category(String name, String slug) {
         this.name = name;
+        this.slug = slug;
     }
 
     //양방향 편의 메서드
