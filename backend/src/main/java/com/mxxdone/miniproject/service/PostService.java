@@ -16,6 +16,7 @@ import com.mxxdone.miniproject.repository.PostRepository;
 import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -38,6 +39,7 @@ public class PostService {
     private final ObjectMapper objectMapper;
 
     // 게시글 저장
+    @CacheEvict(value = "categories", allEntries = true)
     public Long save(PostSaveRequestDto requestDto, String username) {
         Category category = categoryRepository.findById(requestDto.categoryId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
@@ -70,6 +72,7 @@ public class PostService {
     }
 
     //게시글 수정
+    @CacheEvict(value = "categories", allEntries = true)
     public Long update(Long id, PostUpdateRequestDto requestDto, String username) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
@@ -89,6 +92,7 @@ public class PostService {
     }
 
     //게시글 삭제
+    @CacheEvict(value = "categories", allEntries = true)
     public void delete(Long id, String username) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import apiClient from '@/api'
 import { useUiStore } from './ui'
+import { useCategoriesStore } from './categories'
 
 // 'posts'라는 이름의 스토어를 정의
 export const usePostsStore = defineStore('posts', () => {
@@ -18,13 +19,15 @@ export const usePostsStore = defineStore('posts', () => {
   const currentCategoryId = ref(null) // 현재 선택된 카테고리id를 저장할 상태 추가
   const currentSearch = ref({ type: 'all', keyword: '' }) // 기본은 전체 검색
   const uiStore = useUiStore()
-
-  /** Actions **/
+  const categoriesStore = useCategoriesStore()
 
   // 게시글 생성
   async function createPost(newPost) {
     try {
       await apiClient.post('http://localhost:8080/api/v1/posts', newPost)
+      setTimeout(() => {
+        categoriesStore.fetchCategories()
+      }, 100)
       return true
     } catch (error) {
       console.error('게시글 생성 중 오류가 발생했습니다:', error)
