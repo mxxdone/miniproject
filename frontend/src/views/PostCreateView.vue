@@ -68,7 +68,7 @@ async function submitPost() {
 
     if (isSuccess) {
       uiStore.showSnackbar({ text: '게시글이 성공적으로 작성되었습니다.', color: 'success' })
-      await router.push('/')
+      await router.push(`/?category=${selectedCategoryId.value}`)
     } else {
       uiStore.showSnackbar({ text: '게시글 생성에 실패했습니다.', color: 'error' })
     }
