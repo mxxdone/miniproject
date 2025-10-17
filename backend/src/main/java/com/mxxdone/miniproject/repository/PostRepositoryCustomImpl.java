@@ -4,6 +4,7 @@ import com.mxxdone.miniproject.domain.QCategory;
 import com.mxxdone.miniproject.dto.post.PostSummaryResponseDto;
 import com.mxxdone.miniproject.dto.post.QPostSummaryResponseDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -50,19 +51,22 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                                         comment.isDeleted.isFalse() // 삭제되지 않은 댓글만
                                 ),
                         post.createdAt,
-                        // 프론트엔드 SEO URL 구성을 위한 slug 정보 조회PostSummaryResponseDto
-                        // 'parentCategory' 별칭을 이용해 부모 카테고리의 slug 조회
-                        parentCategory.slug.as("parentSlug"),
-                        // 기본 'category'를 이용해 자식 카테고리(게시글이 직접 속한 카테고리)의 slug 조회
-                        category.slug.as("childSlug")
+                        new CaseBuilder()
+                                .when(category.parent.isNotNull()).then(parentCategory.slug) // 부모가 있으면 부모 slug
+                                .otherwise(category.slug) // 부모가 없으면 자신의 slug
+                                .as("parentSlug"),
+                        new CaseBuilder()
+                                .when(category.parent.isNotNull()).then(category.slug) // 부모가 있으면 자신의 slug
+                                .otherwise((String) null) // 부모가 없으면 null
+                                .as("childSlug")
                 ))
                 .from(post)
-                .leftJoin(post.author, user).fetchJoin()
-                .leftJoin(post.category, category).fetchJoin()
+                .leftJoin(post.author, user)
+                .leftJoin(post.category, category)
                 // 부모 카테고리 정보를 위한 JOIN
                 // 자식 카테고리(category)의 parent 필드를 이용해 부모 카테고리 별칭(parentCategory)과 연결
                 // ON 절을 명시적으로 사용하여 셀프 조인 관계를 정확히 지정
-                .leftJoin(parentCategory).on(category.parent.id.eq(parentCategory.id))
+                .leftJoin(category.parent, parentCategory)
                 .where(
                         categoryIn(categoryIds),
                         searchEq(searchType, keyword)
