@@ -4,13 +4,12 @@ import com.mxxdone.miniproject.domain.QCategory;
 import com.mxxdone.miniproject.dto.post.PostSummaryResponseDto;
 import com.mxxdone.miniproject.dto.post.QPostSummaryResponseDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions; // 스칼라 서브쿼리를 사용하기 위해 import 합니다.
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils; // count 쿼리 최적화를 위해 import 합니다.
+import org.springframework.data.support.PageableExecutionUtils;
 
 import java.util.List;
 
