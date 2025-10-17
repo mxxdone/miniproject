@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useAuthStore } from '@/stores/auth'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { stripHtml } from '@/utils/formatText'
 import { useCategoriesStore } from '@/stores/categories'
 
@@ -19,67 +19,58 @@ const searchKeyword = ref('')
 const searchTypes = [
   { title: '전체', value: 'all' },
   { title: '제목', value: 'title' },
-  { title: '내용', value: 'content' },
+  { title: '내용', value: 'content' }
 ]
 
 const currentPage = computed(() => Number(route.query.page) || 1)
 
+// '글쓰기' 버튼에 현재 카테고리 ID를 전달하기 위한 computed
 const currentCategory = computed(() => {
   const { parentSlug, childSlug } = route.params
-
   if (!parentSlug) return null
-
-  // childSlug가 있으면 하위 카테고리
   if (childSlug) {
     const parent = categoriesStore.categories.find((c) => c.slug === parentSlug)
     const child = parent?.children.find((c) => c.slug === childSlug)
     return child?.id || null
   }
-
-  // parentSlug만 있으면 상위 카테고리
   const parent = categoriesStore.categories.find((c) => c.slug === parentSlug)
   return parent?.id || null
 })
 
+// Breadcrumb과 유사한 카테고리 경로 텍스트
 const categoryPathText = computed(() => {
   const { parentSlug, childSlug } = route.params
-
   if (!parentSlug) return ''
-
   const parent = categoriesStore.categories.find((c) => c.slug === parentSlug)
   if (!parent) return ''
-
   if (childSlug) {
     const child = parent.children?.find((c) => c.slug === childSlug)
     return child ? `${parent.name} > ${child.name}` : parent.name
   }
-
   return parent.name
 })
 
+// 목록에서는 HTML 태그를 제거하여 순수 텍스트만 보여주기 위한 computed
 const processedPosts = computed(() => {
   // postsStore.posts가 변경될 때만 이 부분이 다시 계산됩니다.
   return postsStore.posts.map((post) => ({
     ...post, // 기존 post 객체의 모든 속성을 복사
-    // HTML 태그가 제거된 순수 텍스트를 새로운 속성으로 추가
     plainContent: stripHtml(post.content),
   }))
 })
 
 onMounted(async () => {
-  // URL 쿼리에서 검색어 상태 복원
   searchType.value = route.query.type || 'all'
   searchKeyword.value = route.query.keyword || ''
   await categoriesStore.fetchCategories()
   if (categoriesStore.categories.length > 0) {
     fetchPostsWithCategory()
-  }})
+  }
+})
 
 // ⭐ 게시글 조회 로직을 함수로 분리
 function fetchPostsWithCategory() {
   const { parentSlug, childSlug } = route.params
-
-  // categories가 없으면 실행하지 않음
   if (categoriesStore.categories.length === 0) {
     return
   }
@@ -102,11 +93,10 @@ function fetchPostsWithCategory() {
   postsStore.fetchPosts({ pageNumber, categoryId, type, keyword })
 }
 
-// categories와 route를 함께 감시
+// categories와 route를 함께 감시하여 데이터 동기화
 watch(
   [() => route.params, () => route.query, () => categoriesStore.categories.length],
   () => {
-    // categories가 로드되었을 때만 실행
     if (categoriesStore.categories.length > 0) {
       fetchPostsWithCategory()
     }
@@ -119,14 +109,15 @@ function handlePageChange(newPage) {
   router.push({ query: { ...route.query, page: newPage } })
 }
 
+// 검색 버튼 클릭 시 검색 관련 쿼리 파라미터 변경
 function handleSearch() {
   router.push({
     query: {
-      ...route.query, // 현재 카테고리 유지
+      ...route.query,
       type: searchType.value,
       keyword: searchKeyword.value,
-      page: 1, // 검색 시 항상 1페이지로
-    },
+      page: 1
+    }
   })
 }
 </script>
@@ -179,15 +170,12 @@ function handleSearch() {
     </v-row>
     <v-row>
       <v-col v-for="post in processedPosts" :key="post.id" cols="12" sm="6" md="4">
-        <RouterLink
-          :to="`${route.path === '/' ? '' : route.path}/posts/${post.id}`"
-          class="text-decoration-none text-black"
-        >
+        <RouterLink :to="`/${post.parentSlug}/${post.childSlug}/posts/${post.id}`" class="text-decoration-none text-black">
           <v-card class="h-100 d-flex flex-column justify-space-between">
             <div>
               <v-card-title>{{ post.title }}</v-card-title>
               <v-card-text class="content-truncate pb-10">
-                <div v-html="post.plainContent"></div>
+                <div>{{ post.plainContent }}</div>
               </v-card-text>
               <div style="height: 10px"></div>
             </div>
@@ -212,6 +200,7 @@ function handleSearch() {
     </v-row>
   </v-container>
 </template>
+
 <style scoped>
 .content-truncate {
   display: -webkit-box;

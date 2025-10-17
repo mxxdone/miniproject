@@ -1,9 +1,10 @@
 <script setup>
-import { computed, onMounted, watch, nextTick } from 'vue'
+import { computed, nextTick, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui.js'
 import { useAuthStore } from '@/stores/auth'
+import { useCategoriesStore } from '@/stores/categories'
 import { formatDateTime } from '@/utils/formatDate'
 import CommentSection from '@/components/CommentSection.vue'
 import hljs from 'highlight.js' // highlight.js 임포트 추가
@@ -13,6 +14,7 @@ const router = useRouter()
 const postsStore = usePostsStore()
 const authStore = useAuthStore()
 const uiStore = useUiStore()
+const categoriesStore = useCategoriesStore()
 // 주소창의 파라미터의 id 값을 가져온다
 const postId = route.params.id
 
@@ -22,6 +24,41 @@ const isAuthorOrAdmin = computed(() => {
     return false
   }
   return authStore.isAdmin || authStore.username === postsStore.currentPost.authorUsername
+})
+
+// breadcrumbs를 slug 기반으로 재구성
+const breadcrumbItems = computed(() => {
+  if (!postsStore.currentPost?.categoryPath || !categoriesStore.categories.length) {
+    return []
+  }
+
+  const categoryPath = postsStore.currentPost.categoryPath
+
+  return categoryPath.map((pathItem, index) => {
+    // categoriesStore에서 slug 찾기
+    let slug = null
+    let parentSlug = null
+
+    if (index === 0) {
+      // 부모 카테고리
+      const parent = categoriesStore.categories.find((c) => c.id === pathItem.id)
+      slug = parent?.slug
+    } else {
+      // 자식 카테고리
+      const parent = categoriesStore.categories.find((c) => c.id === categoryPath[0].id)
+      const child = parent?.children.find((c) => c.id === pathItem.id)
+      slug = child?.slug
+      parentSlug = parent?.slug
+    }
+
+    return {
+      ...pathItem,
+      slug,
+      parentSlug,
+      disabled: index === 0, // 부모는 비활성화
+      to: index === 0 ? null : `/${parentSlug}/${slug}`, // 자식만 링크 제공
+    }
+  })
 })
 
 onMounted(() => {
@@ -42,9 +79,8 @@ watch(
       })
     }
   },
-  { deep: true, immediate: true }
+  { deep: true, immediate: true },
 )
-
 
 function goBack() {
   router.back()
@@ -64,9 +100,10 @@ async function removePost() {
 <template>
   <v-container>
     <v-card v-if="postsStore.currentPost">
-      <v-breadcrumbs :items="postsStore.currentPost.categoryPath" class="pa-0 mb-4">
+      <!-- breadcrumbs -->
+      <v-breadcrumbs v-if="breadcrumbItems.length > 0" :items="breadcrumbItems" class="pa-0 mb-4">
         <template v-slot:item="{ item }">
-          <v-breadcrumbs-item :to="`/?category=${item.id}`" :disabled="item.disabled">
+          <v-breadcrumbs-item :to="item.to" :disabled="item.disabled">
             {{ item.name }}
           </v-breadcrumbs-item>
         </template>
@@ -88,7 +125,7 @@ async function removePost() {
         <v-btn color="primary" @click="goBack">뒤로가기</v-btn>
         <template v-if="isAuthorOrAdmin">
           <v-btn color="red" @click="removePost">삭제</v-btn>
-          <v-btn color="blue" :to="`/posts/${postId}/edit`">수정</v-btn>
+          <v-btn color="blue" :to="`${route.path}/edit`">수정</v-btn>
         </template>
       </v-card-actions>
     </v-card>

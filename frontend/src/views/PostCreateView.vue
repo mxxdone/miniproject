@@ -6,7 +6,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUiStore } from '@/stores/ui'
 import TiptapEditor from '@/views/TiptapEditor.vue' // ui 스토어 import
 
-
 const route = useRoute()
 const postsStore = usePostsStore()
 const categoriesStore = useCategoriesStore()
@@ -17,7 +16,7 @@ const uiStore = useUiStore() // ui 스토어 사용
 const form = ref(null)
 const title = ref('')
 const content = ref('')
-const selectedCategoryId = ref(route.query.categoryId ? Number(route.query.categoryId) : null)
+const selectedCategoryId = ref(null)
 
 const flatCategories = computed(() => {
   const result = []
@@ -37,6 +36,9 @@ const flatCategories = computed(() => {
 // 페이지 로드시 카테고리 목록 불러오기
 onMounted(async () => {
   categoriesStore.fetchCategories()
+  if (route.query.category) {
+    selectedCategoryId.value = Number(route.query.category)
+  }
 })
 
 function goBack() {
@@ -68,7 +70,23 @@ async function submitPost() {
 
     if (isSuccess) {
       uiStore.showSnackbar({ text: '게시글이 성공적으로 작성되었습니다.', color: 'success' })
-      await router.push(`/?category=${selectedCategoryId.value}`)
+      // slug를 역으로 찾아 SEO URL로 이동
+      let parentSlug = '',
+        childSlug = ''
+      // 모든 최상위 카테고리를 하나씩 순서대로 확인
+      for (const parent of categoriesStore.categories) {
+        const foundChild = parent.children.find((child) => child.id === selectedCategoryId.value)
+        if (foundChild) {
+          parentSlug = parent.slug
+          childSlug = foundChild.slug
+          break
+        }
+      }
+      if (parentSlug && childSlug) {
+        await router.push(`/${parentSlug}/${childSlug}`)
+      } else {
+        await router.push('/') // 만약 못찾으면 홈으로
+      }
     } else {
       uiStore.showSnackbar({ text: '게시글 생성에 실패했습니다.', color: 'error' })
     }

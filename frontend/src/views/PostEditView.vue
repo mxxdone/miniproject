@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui'
@@ -24,33 +24,36 @@ onMounted(() => {
 
 // watch(source, callback)
 // 스토어의 currentPost 값이 변경(로드 완료)되면, 폼 데이터에 채워 넣음
-watch(() => postsStore.currentPost, (newPost) => {
-  if (newPost) {
-    // 권한 확인
-    const isAuthor = authStore.username === newPost.authorUsername
-    const isAdmin = authStore.isAdmin
+watch(
+  () => postsStore.currentPost,
+  (newPost) => {
+    if (newPost) {
+      // 권한 확인
+      const isAuthor = authStore.username === newPost.authorUsername
+      const isAdmin = authStore.isAdmin
 
-    if (!isAuthor && !isAdmin) {
-      uiStore.showSnackbar({ text: '이 게시글을 수정할 권한이 없습니다.', color: 'error'})
-      if (window.history.length > 2) {
-        // 브라우저 히스토리가 충분히 있는 경우 (앱 내에서 이동)
-        router.go(-1)
-      } else {
-        // 히스토리가 부족한 경우 (직접 URL 접근 또는 외부 링크)
-        router.replace(`/posts/${postId}`) // 게시글 상세로
+      if (!isAuthor && !isAdmin) {
+        uiStore.showSnackbar({ text: '이 게시글을 수정할 권한이 없습니다.', color: 'error' })
+        if (window.history.length > 2) {
+          // 브라우저 히스토리가 충분히 있는 경우 (앱 내에서 이동)
+          router.go(-1)
+        } else {
+          // 히스토리가 부족한 경우 (직접 URL 접근 또는 외부 링크)
+          router.replace(`/posts/${postId}`) // 게시글 상세로
+        }
+        return
       }
-      return
-    }
 
-    //권한이 있는 경우에 폼 데이터 채우기
-    title.value = newPost.title
-    content.value = newPost.content
-  }
-})
+      //권한이 있는 경우에 폼 데이터 채우기
+      title.value = newPost.title
+      content.value = newPost.content
+    }
+  },
+)
 
 const rules = {
-  required: value => !!value || '필수 항목입니다.',
-  minLength: value => value.length >= 2 || '2글자 이상 입력해 주세요.',
+  required: (value) => !!value || '필수 항목입니다.',
+  minLength: (value) => value.length >= 2 || '2글자 이상 입력해 주세요.',
 }
 
 async function submitUpdate() {
@@ -63,11 +66,20 @@ async function submitUpdate() {
   if (valid) {
     const isSuccess = await postsStore.updatePost(postId, {
       title: title.value,
-      content: content.value
+      content: content.value,
     })
     if (isSuccess) {
       uiStore.showSnackbar({ text: '게시글이 성공적으로 수정되었습니다.', color: 'success' })
-      await router.push(`/posts/${postId}`) // 수정된 상세 페이지로 이동
+      // 현재 URL 정보를 이용해 상세 페이지로 이동
+      const { parentSlug, childSlug, id } = route.params
+      if (parentSlug && childSlug && id) {
+        await router.push(`/${parentSlug}/${childSlug}/posts/${id}`)
+      } else if (parentSlug && id) {
+        // 자식 없는 상위 카테고리 게시글의 경우
+        await router.push(`/${parentSlug}/posts/${id}`)
+      } else {
+        await router.push('/') // 그 외 경우 홈으로
+      }
     } else {
       uiStore.showSnackbar({ text: '게시글 수정에 실패했습니다.', color: 'error' })
     }
