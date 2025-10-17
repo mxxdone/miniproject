@@ -10,6 +10,18 @@ const router = createRouter({
       name: 'home',
       component: HomeView
     },
+    // 상위 카테고리 경로 (e.g., /project)
+    {
+      path: '/:parentSlug',
+      name: 'parentCategory',
+      component: HomeView
+    },
+    // 하위 카테고리 경로 (e.g., /backend/java-spring)
+    {
+      path: '/:parentSlug/:childSlug',
+      name: 'childCategory',
+      component: HomeView
+    },
     {
       path: '/posts/new', // 새 글 작성 경로 추가
       name: 'postCreate',
@@ -18,12 +30,12 @@ const router = createRouter({
       component: () => import('../views/PostCreateView.vue')
     },
     {
-      path: '/posts/:id', // :id는 동적으로 변하는 값을 의미
+      path: '/:parentSlug/:childSlug/posts/:id', // :id는 동적으로 변하는 값을 의미
       name: 'postDetail',
       component: () => import('../views/PostDetailView.vue')
     },
     {
-      path: '/posts/:id/edit', // 수정 페이지 경로
+      path: '/:parentSlug/:childSlug/posts/:id/edit',
       name: 'postEdit',
       component: () => import('../views/PostEditView.vue')
       //
@@ -39,7 +51,7 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue')
     },
     {
-      path: '/about',
+      path: '/about-me',
       name: 'aboutMe',
       component: () => import('../views/AboutMeView.vue')
     },
