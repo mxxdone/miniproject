@@ -53,11 +53,18 @@ dependencies {
 tasks.named('test') {
 }
 
+// Q-Type 클래스가 생성될 위치를 변수로 지정
 def generated = 'src/main/generated'
 
 // querydsl Q-Type 소스 경로를 main 소스셋에 추가
 sourceSets {
     main.java.srcDirs += [ generated ]
+}
+
+// Gradle이 자바 코드를 컴파일할 때
+// Q-Type을 'generated' 폴더에 생성하도록 지시
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))
 }
 
 // gradle clean 시 생성된 Q-Type 디렉터리 삭제
