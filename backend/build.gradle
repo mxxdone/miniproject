@@ -63,7 +63,7 @@ sourceSets {
 
 // Gradle이 자바 코드를 컴파일할 때
 // Q-Type을 'generated' 폴더에 생성하도록 지시
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.getGeneratedSourceOutputDirectory().set(file(generated))
 }
 
