@@ -88,7 +88,7 @@ class PostControllerTest {
                 .build());
 
         // 카테고리 생성
-        Category testCategory = categoryRepository.save(new Category("테스트 카테고리"));
+        Category testCategory = categoryRepository.save(new Category("테스트 카테고리", "test-category", 10));
         testCategoryId = testCategory.getId();
 
         // 수정/삭제 테스트에 사용될 게시글 작성자 'user'로 생성

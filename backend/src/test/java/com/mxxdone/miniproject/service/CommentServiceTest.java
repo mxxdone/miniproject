@@ -73,7 +73,7 @@ class CommentServiceTest {
                 .build()
         );
 
-        Category testCategory = categoryRepository.save(new Category("테스트 카테고리"));
+        Category testCategory = categoryRepository.save(new Category("테스트 카테고리", "test-category", 10));
 
         testPost = postRepository.save(Post.builder()
                 .title("테스트 게시글")
