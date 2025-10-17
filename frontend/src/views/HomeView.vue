@@ -3,13 +3,15 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useAuthStore } from '@/stores/auth'
 import { useRoute, useRouter } from 'vue-router'
-import { stripHtml } from "@/utils/formatText";
+import { stripHtml } from '@/utils/formatText'
+import { useCategoriesStore } from '@/stores/categories'
 
 // posts.js에 작성한 posts 스토어를 사용
 const postsStore = usePostsStore()
 const authStore = useAuthStore()
 const route = useRoute() // 현재 경로 정보 읽기
 const router = useRouter() // 경로 변경에 필요
+const categoriesStore = useCategoriesStore()
 
 // 검색 UI와 연결될 로컬 상태
 const searchType = ref('all')
@@ -21,47 +23,99 @@ const searchTypes = [
 ]
 
 const currentPage = computed(() => Number(route.query.page) || 1)
-const currentCategory = computed(() => (route.query.category ? Number(route.query.category) : null))
+
+const currentCategory = computed(() => {
+  const { parentSlug, childSlug } = route.params
+
+  if (!parentSlug) return null
+
+  // childSlug가 있으면 하위 카테고리
+  if (childSlug) {
+    const parent = categoriesStore.categories.find((c) => c.slug === parentSlug)
+    const child = parent?.children.find((c) => c.slug === childSlug)
+    return child?.id || null
+  }
+
+  // parentSlug만 있으면 상위 카테고리
+  const parent = categoriesStore.categories.find((c) => c.slug === parentSlug)
+  return parent?.id || null
+})
+
+const categoryPathText = computed(() => {
+  const { parentSlug, childSlug } = route.params
+
+  if (!parentSlug) return ''
+
+  const parent = categoriesStore.categories.find((c) => c.slug === parentSlug)
+  if (!parent) return ''
+
+  if (childSlug) {
+    const child = parent.children?.find((c) => c.slug === childSlug)
+    return child ? `${parent.name} > ${child.name}` : parent.name
+  }
+
+  return parent.name
+})
+
 const processedPosts = computed(() => {
   // postsStore.posts가 변경될 때만 이 부분이 다시 계산됩니다.
-  return postsStore.posts.map(post => ({
+  return postsStore.posts.map((post) => ({
     ...post, // 기존 post 객체의 모든 속성을 복사
     // HTML 태그가 제거된 순수 텍스트를 새로운 속성으로 추가
-    plainContent: stripHtml(post.content)
+    plainContent: stripHtml(post.content),
   }))
 })
 
-onMounted(() => {
+onMounted(async () => {
   // URL 쿼리에서 검색어 상태 복원
   searchType.value = route.query.type || 'all'
   searchKeyword.value = route.query.keyword || ''
-})
+  await categoriesStore.fetchCategories()
+  if (categoriesStore.categories.length > 0) {
+    fetchPostsWithCategory()
+  }})
 
-// URL의 쿼리 변경시 데이터 새로 불러오기
+// ⭐ 게시글 조회 로직을 함수로 분리
+function fetchPostsWithCategory() {
+  const { parentSlug, childSlug } = route.params
+
+  // categories가 없으면 실행하지 않음
+  if (categoriesStore.categories.length === 0) {
+    return
+  }
+
+  let categoryId = null
+
+  if (childSlug) {
+    const parent = categoriesStore.categories.find((c) => c.slug === parentSlug)
+    const child = parent?.children.find((c) => c.slug === childSlug)
+    categoryId = child?.id
+  } else if (parentSlug) {
+    const parent = categoriesStore.categories.find((c) => c.slug === parentSlug)
+    categoryId = parent?.id
+  }
+
+  const pageNumber = Number(route.query.page) || 1
+  const type = route.query.type || 'all'
+  const keyword = route.query.keyword || ''
+
+  postsStore.fetchPosts({ pageNumber, categoryId, type, keyword })
+}
+
+// categories와 route를 함께 감시
 watch(
-  () => route.query,
-  (newQuery, oldQuery) => {
-    if (oldQuery && newQuery.category !== oldQuery.category) {
-      searchKeyword.value = '';
-      searchType.value = 'all';
+  [() => route.params, () => route.query, () => categoriesStore.categories.length],
+  () => {
+    // categories가 로드되었을 때만 실행
+    if (categoriesStore.categories.length > 0) {
+      fetchPostsWithCategory()
     }
-
-    const pageNumber = Number(newQuery.page) || 1
-    const categoryId = newQuery.category ? Number(newQuery.category) : null
-    const type = newQuery.type || 'all'
-    const keyword = newQuery.keyword || ''
-
-    postsStore.fetchPosts({ pageNumber, categoryId, type, keyword })
-    // onMounted 이후 중복 호출 방지
   },
-  // immediate: 페이지 처음 진입시에도 즉시 실행
-  // deep: true로 객체 내부 변경 감지
-  { immediate: true, deep: true },
+  { deep: true }
 )
 
 // 페이지네이션 클릭시 page 쿼리 파라미터 변경
 function handlePageChange(newPage) {
-  console.log(newPage);
   router.push({ query: { ...route.query, page: newPage } })
 }
 
@@ -71,8 +125,8 @@ function handleSearch() {
       ...route.query, // 현재 카테고리 유지
       type: searchType.value,
       keyword: searchKeyword.value,
-      page: 1 // 검색 시 항상 1페이지로
-    }
+      page: 1, // 검색 시 항상 1페이지로
+    },
   })
 }
 </script>
@@ -84,10 +138,21 @@ function handleSearch() {
         <v-card class="pa-4">
           <v-row align="center" no-gutters>
             <v-col cols="3" class="pr-2">
-              <v-select v-model="searchType" :items="searchTypes" density="compact" hide-details></v-select>
+              <v-select
+                v-model="searchType"
+                :items="searchTypes"
+                density="compact"
+                hide-details
+              ></v-select>
             </v-col>
             <v-col cols="7">
-              <v-text-field v-model="searchKeyword" placeholder="검색어를 입력하세요" density="compact" hide-details @keyup.enter="handleSearch"></v-text-field>
+              <v-text-field
+                v-model="searchKeyword"
+                placeholder="검색어를 입력하세요"
+                density="compact"
+                hide-details
+                @keyup.enter="handleSearch"
+              ></v-text-field>
             </v-col>
             <v-col cols="2" class="pl-2">
               <v-btn color="primary" block @click="handleSearch">검색</v-btn>
@@ -96,12 +161,17 @@ function handleSearch() {
         </v-card>
       </v-col>
     </v-row>
-    <v-row>
+    <v-row v-if="categoryPathText">
+      <v-col cols="8">
+        <div class="text-h6 text-grey-darken-1 mb-4">
+          {{ categoryPathText }}
+        </div>
+      </v-col>
       <v-col class="d-flex justify-end">
         <v-btn
           v-if="currentCategory && authStore.isAdmin"
           color="primary"
-          :to="`/posts/new?categoryId=${currentCategory}`"
+          :to="`/posts/new?category=${currentCategory}`"
         >
           글쓰기
         </v-btn>
@@ -109,7 +179,10 @@ function handleSearch() {
     </v-row>
     <v-row>
       <v-col v-for="post in processedPosts" :key="post.id" cols="12" sm="6" md="4">
-        <RouterLink :to="`/posts/${post.id}`" class="text-decoration-none">
+        <RouterLink
+          :to="`${route.path === '/' ? '' : route.path}/posts/${post.id}`"
+          class="text-decoration-none text-black"
+        >
           <v-card class="h-100 d-flex flex-column justify-space-between">
             <div>
               <v-card-title>{{ post.title }}</v-card-title>
