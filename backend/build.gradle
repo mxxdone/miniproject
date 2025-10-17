@@ -54,7 +54,7 @@ tasks.named('test') {
 }
 
 // Q-Type 클래스가 생성될 위치를 변수로 지정
-def generated = 'src/main/generated'
+def generated = 'build/generated/querydsl'
 
 // querydsl Q-Type 소스 경로를 main 소스셋에 추가
 sourceSets {
