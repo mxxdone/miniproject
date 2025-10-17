@@ -12,7 +12,9 @@ public record PostSummaryResponseDto(
         String authorUsername,
         String authorNickname,
         Long commentCount,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        String parentSlug,
+        String childSlug
 ) {
     // QueryDSL에서 직접 DTO로 조회할 것이므로 @QueryProjection 추가
     // 수정시 clean build 필요

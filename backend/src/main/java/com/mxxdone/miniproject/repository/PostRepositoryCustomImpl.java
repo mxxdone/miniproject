@@ -1,14 +1,16 @@
 package com.mxxdone.miniproject.repository;
 
+import com.mxxdone.miniproject.domain.QCategory;
 import com.mxxdone.miniproject.dto.post.PostSummaryResponseDto;
 import com.mxxdone.miniproject.dto.post.QPostSummaryResponseDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.jpa.JPAExpressions; // 스칼라 서브쿼리를 사용하기 위해 import 합니다.
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils; // count 쿼리 최적화를 위해 import 합니다.
 
 import java.util.List;
 
@@ -24,6 +26,14 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 
     @Override
     public Page<PostSummaryResponseDto> findPostsWithConditions(List<Long> categoryIds, String searchType, String keyword, Pageable pageable) {
+
+        // 셀프 조인(Self-Join)을 위한 Q-Type 별칭(Alias) 생성
+        // category 테이블은 parent_id로 자기 자신을 참조하는 계층 구조
+        // 게시글의 '자식 카테고리'와 '부모 카테고리' 정보를 한 번에 가져오기 위해
+        // category 테이블을 두 개인 것처럼 사용해야함
+        // 'parentCategory'는 부모 카테고리 정보를 담기 위한 가상 테이블
+        QCategory parentCategory = new QCategory("parentCategory");
+
         List<PostSummaryResponseDto> content = queryFactory
                 .select(new QPostSummaryResponseDto(
                         post.id,
@@ -32,38 +42,49 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         category.name,
                         user.username,
                         user.nickname,
-                        new CaseBuilder()
-                                .when(comment.isDeleted.isFalse())
-                                .then(1L)
-                                .otherwise(0L)
-                                .sum(), // 삭제되지 않은 댓글만 count 
-                        post.createdAt
+                        // 스칼라 서브쿼리(Scalar Subquery)를 이용한 댓글 수 계산
+                        JPAExpressions
+                                .select(comment.count())
+                                .from(comment)
+                                .where(
+                                        comment.post.eq(post), // 현재 게시글(post)에 속한 댓글만
+                                        comment.isDeleted.isFalse() // 삭제되지 않은 댓글만
+                                ),
+                        post.createdAt,
+                        // 프론트엔드 SEO URL 구성을 위한 slug 정보 조회PostSummaryResponseDto
+                        // 'parentCategory' 별칭을 이용해 부모 카테고리의 slug 조회
+                        parentCategory.slug.as("parentSlug"),
+                        // 기본 'category'를 이용해 자식 카테고리(게시글이 직접 속한 카테고리)의 slug 조회
+                        category.slug.as("childSlug")
                 ))
                 .from(post)
-                .leftJoin(post.author, user)
-                .leftJoin(post.category, category)
-                .leftJoin(post.comments, comment)
+                .leftJoin(post.author, user).fetchJoin()
+                .leftJoin(post.category, category).fetchJoin()
+                // 부모 카테고리 정보를 위한 JOIN
+                // 자식 카테고리(category)의 parent 필드를 이용해 부모 카테고리 별칭(parentCategory)과 연결
+                // ON 절을 명시적으로 사용하여 셀프 조인 관계를 정확히 지정
+                .leftJoin(parentCategory).on(category.parent.id.eq(parentCategory.id))
                 .where(
                         categoryIn(categoryIds),
                         searchEq(searchType, keyword)
                 )
-                .groupBy(post.id, category.name, user.username, user.nickname)
                 .orderBy(post.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 페이징을 위한 post total 계산
-        Long total = queryFactory
+        // 페이징 성능 최적화를 위한 count 쿼리 분리
+        // PageableExecutionUtils.getPage()는 content.size()와 pageable.getPageSize()를 비교하여,
+        // 마지막 페이지일 경우 불필요한 count 쿼리를 실행하지 않도록 최적화
+        var countQuery = queryFactory
                 .select(post.count())
                 .from(post)
                 .where(
                         categoryIn(categoryIds),
                         searchEq(searchType, keyword)
-                )
-                .fetchOne();
+                );
 
-        return new PageImpl<>(content, pageable, total != null ? total : 0L);
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
     private BooleanExpression categoryIn(List<Long> categoryIds) {
