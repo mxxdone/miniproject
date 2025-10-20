@@ -41,7 +41,6 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true; // 무한 재발급 요청 방지
 
       try {
-        console.log("서버로 보내려는 리프레시 토큰:", authStore.refreshToken);
         // apiClient가 아닌 순수 axios를 사용하여 요청 인터셉터를 우회
         const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/refresh`, {}, {
           headers: { 'Authorization': `Bearer ${authStore.refreshToken}` }
