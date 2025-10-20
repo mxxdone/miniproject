@@ -15,7 +15,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     isLoading.value = true
 
     try {
-      const response = await apiClient.get('http://localhost:8080/api/v1/categories')
+      const response = await apiClient.get('/api/v1/categories')
       categories.value = response.data
       isLoaded.value = true
     } catch (error) {
