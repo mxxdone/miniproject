@@ -1,10 +1,7 @@
 package com.mxxdone.miniproject.controller;
 
 import com.mxxdone.miniproject.dto.PageDto;
-import com.mxxdone.miniproject.dto.post.PostDetailResponseDto;
-import com.mxxdone.miniproject.dto.post.PostSaveRequestDto;
-import com.mxxdone.miniproject.dto.post.PostSummaryResponseDto;
-import com.mxxdone.miniproject.dto.post.PostUpdateRequestDto;
+import com.mxxdone.miniproject.dto.post.*;
 import com.mxxdone.miniproject.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +23,7 @@ public class PostController {
     // 게시글 생성 API
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Long> savePost(
+    public ResponseEntity<PostSaveResponseDto> savePost(
             @RequestBody PostSaveRequestDto requestDto,
             @AuthenticationPrincipal UserDetails userDetails // 현재 로그인한 사용자 정보
     ) {

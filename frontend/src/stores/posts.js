@@ -24,11 +24,13 @@ export const usePostsStore = defineStore('posts', () => {
   // 게시글 생성
   async function createPost(newPost) {
     try {
-      await apiClient.post('http://localhost:8080/api/v1/posts', newPost)
+      const response = await apiClient.post('/api/v1/posts', newPost)
       setTimeout(() => {
         categoriesStore.fetchCategories()
       }, 100)
-      return true
+
+      return response.data;
+
     } catch (error) {
       console.error('게시글 생성 중 오류가 발생했습니다:', error)
       return false

@@ -62,32 +62,29 @@ async function submitPost() {
 
   // 모든 검사를 통과했을 때만 서버에 전송합니다.
   if (valid) {
-    const isSuccess = await postsStore.createPost({
+    const creationResult = await postsStore.createPost({
       title: title.value,
       content: content.value,
       categoryId: selectedCategoryId.value,
     })
 
-    if (isSuccess) {
+    if (creationResult && creationResult.postId) {
       uiStore.showSnackbar({ text: '게시글이 성공적으로 작성되었습니다.', color: 'success' })
       // slug를 역으로 찾아 SEO URL로 이동
-      let parentSlug = '',
-        childSlug = ''
-      // 모든 최상위 카테고리를 하나씩 순서대로 확인
-      for (const parent of categoriesStore.categories) {
-        const foundChild = parent.children.find((child) => child.id === selectedCategoryId.value)
-        if (foundChild) {
-          parentSlug = parent.slug
-          childSlug = foundChild.slug
-          break
-        }
-      }
-      if (parentSlug && childSlug) {
-        await router.push(`/${parentSlug}/${childSlug}`)
+
+      // 백엔드 응답에서 직접 slug와 id를 사용
+      const { postId, parentSlug, childSlug } = creationResult
+
+      // 생성된 게시글 상세 페이지로 바로 이동
+      if (parentSlug && childSlug && postId) {
+        await router.push(`/${parentSlug}/${childSlug}/posts/${postId}`)
       } else {
-        await router.push('/') // 만약 못찾으면 홈으로
+        // 정보 부족 시 예외 처리 (예: 홈으로 이동)
+        console.warn('Slug 정보가 부족하여 홈으로 이동합니다.', creationResult)
+        await router.push('/')
       }
     } else {
+      // 실패 처리 (creationResult가 false거나 postId가 없는 경우)
       uiStore.showSnackbar({ text: '게시글 생성에 실패했습니다.', color: 'error' })
     }
   }

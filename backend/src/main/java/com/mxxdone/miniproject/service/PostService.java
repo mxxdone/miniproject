@@ -7,10 +7,7 @@ import com.mxxdone.miniproject.domain.Post;
 import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.PageDto;
-import com.mxxdone.miniproject.dto.post.PostDetailResponseDto;
-import com.mxxdone.miniproject.dto.post.PostSaveRequestDto;
-import com.mxxdone.miniproject.dto.post.PostSummaryResponseDto;
-import com.mxxdone.miniproject.dto.post.PostUpdateRequestDto;
+import com.mxxdone.miniproject.dto.post.*;
 import com.mxxdone.miniproject.repository.CategoryRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
 import com.mxxdone.miniproject.repository.UserRepository;
@@ -40,7 +37,7 @@ public class PostService {
 
     // 게시글 저장
     @CacheEvict(value = "categories", allEntries = true)
-    public Long save(PostSaveRequestDto requestDto, String username) {
+    public PostSaveResponseDto save(PostSaveRequestDto requestDto, String username) {
         Category category = categoryRepository.findById(requestDto.categoryId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
 
@@ -59,16 +56,12 @@ public class PostService {
                 .author(author)
                 .build();
 
-        // postRepository-> db에 접근
-        // toEntity의 결과 Post 객체를 파라미터로 사용
-        // 저장후 반환 받은 엔티티 객체에서 id 추출
-        Long savedId =  postRepository.save(post).getId();
+        Post savedPost =  postRepository.save(post);
 
         // 새로운 글이 작성되었으면 1페이지 캐시 삭제
         redisTemplate.delete("posts::page_1");
-        log.info("캐시 정리:: posts::page_1");
 
-        return savedId;
+        return PostSaveResponseDto.from(savedPost);
     }
 
     //게시글 수정
