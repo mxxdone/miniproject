@@ -91,7 +91,18 @@ async function removePost() {
     const isSuccess = await postsStore.deletePost(postId)
     if (isSuccess) {
       uiStore.showSnackbar({ text: '게시글이 삭제되었습니다.', color: 'success' })
-      await router.push('/')
+      // 현재 URL 정보를 이용해 상세 페이지로 이동
+      const { parentSlug, childSlug } = route.params
+      if (parentSlug && childSlug) {
+        await router.push(`/${parentSlug}/${childSlug}`)
+      } else if (parentSlug) {
+        // 자식 없는 상위 카테고리 게시글의 경우
+        await router.push(`/${parentSlug}`)
+      } else {
+        await router.push('/') // 그 외 경우 홈으로
+      }
+    } else {
+      uiStore.showSnackbar({ text: '게시글 삭제에 실패했습니다.', color: 'error' })
     }
   }
 }
