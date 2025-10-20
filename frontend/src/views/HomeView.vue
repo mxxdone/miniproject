@@ -68,7 +68,7 @@ onMounted(async () => {
   }
 })
 
-// ⭐ 게시글 조회 로직을 함수로 분리
+// 게시글 조회 로직을 함수로 분리
 function fetchPostsWithCategory() {
   const { parentSlug, childSlug } = route.params
   if (categoriesStore.categories.length === 0) {
