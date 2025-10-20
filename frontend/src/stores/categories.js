@@ -7,8 +7,8 @@ export const useCategoriesStore = defineStore('categories', () => {
   const isLoaded = ref(false)
   const isLoading = ref(false)
 
-  async function fetchCategories() {
-    if (isLoaded.value || isLoading.value) {
+  async function fetchCategories(forceRefresh = false) {
+    if (!forceRefresh && (isLoaded.value || isLoading.value)) {
       return // // 이미 카테고리 로드된 경우 API 호출 안 함
     }
 

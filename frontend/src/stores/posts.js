@@ -25,9 +25,7 @@ export const usePostsStore = defineStore('posts', () => {
   async function createPost(newPost) {
     try {
       const response = await apiClient.post('/api/v1/posts', newPost)
-      setTimeout(() => {
-        categoriesStore.fetchCategories()
-      }, 100)
+      await categoriesStore.fetchCategories(true)
 
       return response.data;
 
@@ -72,7 +70,7 @@ export const usePostsStore = defineStore('posts', () => {
   async function fetchPost(id) {
     currentPost.value = null
     try {
-      const response = await apiClient.get(`http://localhost:8080/api/v1/posts/${id}`)
+      const response = await apiClient.get(`/api/v1/posts/${id}`)
       currentPost.value = response.data
     } catch (error) {
       console.error(`${id}번 게시글을 불러오는 중 오류가 발생했습니다:`, error)
@@ -83,7 +81,8 @@ export const usePostsStore = defineStore('posts', () => {
   // 게시글 삭제
   async function deletePost(id) {
     try {
-      await apiClient.delete(`http://localhost:8080/api/v1/posts/${id}`)
+      await apiClient.delete(`/api/v1/posts/${id}`)
+      await categoriesStore.fetchCategories(true)
       // 성공 시, 목록 페이지로 이동
       return true
     } catch (error) {
@@ -100,7 +99,8 @@ export const usePostsStore = defineStore('posts', () => {
   // 게시글 수정
   async function updatePost(id, postToUpdate){
     try {
-      await apiClient.put(`http://localhost:8080/api/v1/posts/${id}`, postToUpdate)
+      await apiClient.put(`/api/v1/posts/${id}`, postToUpdate)
+      await categoriesStore.fetchCategories(true)
       return true
     } catch (error) {
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
