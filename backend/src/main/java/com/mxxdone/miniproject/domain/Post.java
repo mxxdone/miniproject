@@ -60,9 +60,13 @@ public class Post {
     }
 
     // 수정 편의 메서드 추가
-    public void update(String title, String content) {
+    public void update(String title, String content, Category category) {
         this.title = title;
         this.content = content;
+        // category가 null이 아닐 경우에만 업데이트 (null이면 기존 카테고리 유지)
+        if (category != null) {
+            this.category = category;
+        }
     }
 
     @Builder

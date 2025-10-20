@@ -77,7 +77,17 @@ public class PostService {
             throw new AccessDeniedException("게시글 수정 권한이 없습니다.");
         }
 
-        post.update(requestDto.title(), requestDto.content());
+        Category category = null;
+        if (requestDto.categoryId() != null) {
+            category = categoryRepository.findById(requestDto.categoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
+            // 하위 카테고리만 글 작성 가능
+            if (!category.getChildren().isEmpty()) {
+                throw new IllegalArgumentException("하위 카테고리에만 게시글을 작성할 수 있습니다.");
+            }
+        }
+
+        post.update(requestDto.title(), requestDto.content(), category);
 
         redisTemplate.delete("posts::page_1");
         log.info("캐시 정리: posts::page_1");

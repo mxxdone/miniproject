@@ -1,9 +1,10 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
+import { useCategoriesStore } from '@/stores/categories'
 import TiptapEditor from '@/views/TiptapEditor.vue'
 
 const route = useRoute()
@@ -11,15 +12,33 @@ const router = useRouter()
 const postsStore = usePostsStore()
 const uiStore = useUiStore()
 const authStore = useAuthStore()
+const categoriesStore = useCategoriesStore()
 
 const postId = route.params.id
 const form = ref(null)
 const title = ref('')
 const content = ref('')
+const selectedCategoryId = ref(null)
+
+const flatCategories = computed(() => {
+  const result = []
+  categoriesStore.categories.forEach((parent) => {
+    // 상위 카테고리는 선택X, disabled: true 추가
+    result.push({ ...parent, disabled: true })
+    if (parent.children) {
+      parent.children.forEach((child) => {
+        // 하위 카테고리는 들여쓰기 된 것처럼 보이게
+        result.push({ ...child, name: `\u00A0 ${child.name}` })
+      })
+    }
+  })
+  return result
+})
 
 // 페이지가 로드될 때 기존 게시글 데이터를 불러옴
 onMounted(() => {
   postsStore.fetchPost(postId)
+  categoriesStore.fetchCategories()
 })
 
 // watch(source, callback)
@@ -47,6 +66,7 @@ watch(
       //권한이 있는 경우에 폼 데이터 채우기
       title.value = newPost.title
       content.value = newPost.content
+      selectedCategoryId.value = newPost.categoryId
     }
   },
 )
@@ -67,6 +87,7 @@ async function submitUpdate() {
     const isSuccess = await postsStore.updatePost(postId, {
       title: title.value,
       content: content.value,
+      categoryId: selectedCategoryId.value,
     })
     if (isSuccess) {
       uiStore.showSnackbar({ text: '게시글이 성공적으로 수정되었습니다.', color: 'success' })
@@ -93,6 +114,16 @@ async function submitUpdate() {
       <v-card-title class="text-h5">게시글 수정</v-card-title>
       <v-card-text>
         <v-form ref="form" @submit.prevent="submitUpdate">
+          <v-select
+            v-model="selectedCategoryId"
+            :items="flatCategories"
+            item-title="name"
+            item-value="id"
+            :item-props="(item) => ({ disabled: item.disabled })"
+            label="카테고리"
+            :rules="[rules.required]"
+            required
+          ></v-select>
           <v-text-field
             v-model="title"
             label="제목"
