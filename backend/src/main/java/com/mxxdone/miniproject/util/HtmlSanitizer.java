@@ -2,6 +2,7 @@ package com.mxxdone.miniproject.util;
 
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
+
 import java.util.regex.Pattern;
 
 public class HtmlSanitizer {
@@ -52,5 +53,16 @@ public class HtmlSanitizer {
             return null;
         }
         return POLICY_FACTORY.sanitize(rawHtml);
+    }
+
+    public static String sanitizeTitle(String title) {
+        if (title == null) {
+            return null;
+        }
+
+        String sanitized = title.replaceAll("<[^>]*>", "")
+                .replaceAll("(?i)javascript:", "")
+                .replaceAll("(?i)on\\w+\\s*=", "");
+        return sanitized.trim();
     }
 }
