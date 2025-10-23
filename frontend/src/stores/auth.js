@@ -31,10 +31,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // state 초기화: 앱 시작 시
-  if (token.value) {
+/*  if (token.value) {
     initUserFromToken(token.value)
     refreshToken.value = localStorage.getItem('refreshToken')
-  }
+  }*/
 
   // action 내 토큰 설정 로직
   function setToken(newAccessToken, newRefreshToken) {
