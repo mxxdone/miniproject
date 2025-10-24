@@ -5,6 +5,7 @@ import com.mxxdone.miniproject.domain.Post;
 import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.post.PostSaveRequestDto;
+import com.mxxdone.miniproject.dto.post.PostSaveResponseDto;
 import com.mxxdone.miniproject.dto.post.PostUpdateRequestDto;
 import com.mxxdone.miniproject.repository.CategoryRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Transactional
@@ -31,22 +35,19 @@ class PostServiceTest {
 
     @MockitoBean
     private RedisTemplate<String, String> redisTemplate;
-
     @MockitoBean
     private S3Uploader s3Uploader;
+    @MockitoBean
+    private ValueOperations<String, String> valueOperations;
 
     @Autowired
     private PostService postService;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private CategoryRepository categoryRepository;
-
     @Autowired
     private PostRepository postRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -81,6 +82,8 @@ class PostServiceTest {
                 .category(testCategory)
                 .build()
         );
+        // RedisTemplate의 opsForValue()가 Mock ValueOperations를 반환하도록 설정
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
@@ -90,20 +93,24 @@ class PostServiceTest {
         PostSaveRequestDto requestDto = new PostSaveRequestDto("게시글 제목", "게시글 내용", testCategory.getId());
 
         // when
-        Long postId = postService.save(requestDto, testAdmin.getUsername());
+        PostSaveResponseDto responseDto = postService.save(requestDto, testAdmin.getUsername());
 
         // then
-        assertThat(postId).isNotNull();
-        Post savedPost = postRepository.findById(postId).orElseThrow();
+        assertThat(responseDto).isNotNull();
+        assertThat(responseDto.postId()).isNotNull(); // postId 확인
+        Post savedPost = postRepository.findById(responseDto.postId()).orElseThrow();
         assertThat(savedPost.getTitle()).isEqualTo("게시글 제목");
         assertThat(savedPost.getAuthor().getUsername()).isEqualTo("admin");
+
+        // 캐시 삭제 로직 호출 검증
+        verify(redisTemplate).delete("posts::page_1");
     }
 
     @Test
     @DisplayName("게시글 작성자가 자신의 글을 수정하면 성공")
     void updatePost_success_by_author() {
         // given
-        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정된 제목", "수정된 내용");
+        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정된 제목", "수정된 내용", testCategory.getId());
 
         // when
         postService.update(testPost.getId(), requestDto, testUser.getUsername());
@@ -112,13 +119,16 @@ class PostServiceTest {
         Post updatedPost = postRepository.findById(testPost.getId()).orElseThrow();
         assertThat(updatedPost.getTitle()).isEqualTo("수정된 제목");
         assertThat(updatedPost.getContent()).isEqualTo("수정된 내용");
+
+        // 캐시 삭제 로직 호출 검증
+        verify(redisTemplate).delete("posts::page_1");
     }
 
     @Test
     @DisplayName("관리자는 다른 사람의 글을 수정 가능")
     void updatePost_success_by_admin() {
         // given
-        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("관리자가 수정한 제목", "관리자가 수정한 내용");
+        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("관리자가 수정한 제목", "관리자가 수정한 내용", testCategory.getId());
 
         // when
         postService.update(testPost.getId(), requestDto, testAdmin.getUsername());
@@ -126,14 +136,24 @@ class PostServiceTest {
         // then
         Post updatedPost = postRepository.findById(testPost.getId()).orElseThrow();
         assertThat(updatedPost.getTitle()).isEqualTo("관리자가 수정한 제목");
+
+        // 캐시 삭제 로직 호출 검증
+        verify(redisTemplate).delete("posts::page_1");
     }
 
     @Test
     @DisplayName("작성자가 아닌 사용자가 글 수정을 시도하면 AccessDeniedException이 발생")
     void updatePost_fail_by_not_author() {
         // given
-        User otherUser = userRepository.save(User.builder().username("otherUser").password(passwordEncoder.encode("password")).nickname("다른유저").email("other@test.com").role(Role.USER).build());
-        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정 시도", "수정 시도");
+        User otherUser = userRepository.save(User.builder()
+                .username("otherUser")
+                .password(passwordEncoder.encode("password"))
+                .nickname("다른유저")
+                .email("other@test.com")
+                .role(Role.USER)
+                .build()
+        );
+        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정 시도", "수정 시도", testCategory.getId());
 
         // when & then
         assertThatThrownBy(() -> postService.update(testPost.getId(), requestDto, otherUser.getUsername()))
@@ -149,6 +169,9 @@ class PostServiceTest {
 
         // then
         assertThat(postRepository.findById(testPost.getId())).isEmpty();
+
+        // 캐시 삭제 로직 호출 검증
+        verify(redisTemplate).delete("posts::page_1");
     }
 
     @Test
@@ -159,13 +182,23 @@ class PostServiceTest {
 
         // then
         assertThat(postRepository.findById(testPost.getId())).isEmpty();
+
+        // 캐시 삭제 로직 호출 검증
+        verify(redisTemplate).delete("posts::page_1");
     }
 
     @Test
     @DisplayName("작성자가 아닌 사용자가 글 삭제를 시도하면 AccessDeniedException이 발생")
     void deletePost_fail_by_not_author() {
         // given
-        User otherUser = userRepository.save(User.builder().username("otherUser2").password(passwordEncoder.encode("password")).nickname("다른유저2").email("other2@test.com").role(Role.USER).build());
+        User otherUser = userRepository.save(User.builder()
+                .username("otherUser2")
+                .password(passwordEncoder.encode("password"))
+                .nickname("다른유저2")
+                .email("other2@test.com")
+                .role(Role.USER)
+                .build()
+        );
 
         // when & then
         assertThatThrownBy(() -> postService.delete(testPost.getId(), otherUser.getUsername()))

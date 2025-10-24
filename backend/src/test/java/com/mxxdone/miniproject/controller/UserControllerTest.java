@@ -9,7 +9,10 @@ import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
 import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.service.PrincipalDetailService;
+import com.mxxdone.miniproject.service.RefreshTokenService;
 import com.mxxdone.miniproject.service.UserService;
+import com.mxxdone.miniproject.util.CookieUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +47,10 @@ class UserControllerTest {
     private PrincipalOAuth2UserService principalOAuth2UserService;
     @MockitoBean
     private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    @MockitoBean
+    private RefreshTokenService refreshTokenService;
+    @MockitoBean
+    private CookieUtil cookieUtil;
 
     @Test
     @DisplayName("회원가입 API가 정상적으로 호출되면 200 OK 반환")
@@ -67,18 +74,16 @@ class UserControllerTest {
         LoginRequestDto requestDto = new LoginRequestDto("testuser", "password123!");
 
         TokenResponseDto tokenDto = new TokenResponseDto(
-                "mock-access-token",
-                "mock-refresh-token"
+                "mock-access-token"
         );
 
-        given(userService.login(any(LoginRequestDto.class))).willReturn(tokenDto);
+        given(userService.login(any(LoginRequestDto.class), any(HttpServletResponse.class))).willReturn(tokenDto);
 
         // when & then
         mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("mock-access-token"))
-                .andExpect(jsonPath("$.refreshToken").value("mock-refresh-token"));
+                .andExpect(jsonPath("$.accessToken").value("mock-access-token"));
     }
 }
