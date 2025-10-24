@@ -53,7 +53,7 @@ class PostControllerTest {
     private RedisTemplate<String, String> redisTemplate;
 
     private Long testCategoryId;
-    private User  testUser;
+    private User testUser;
     private Post testPost;
 
     @BeforeEach
@@ -135,7 +135,7 @@ class PostControllerTest {
     @WithMockUser(username = "user", roles = "USER")
     void updatePost_success_by_author() throws Exception {
         // given
-        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정된 제목", "수정된 내용");
+        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정된 제목", "수정된 내용", testCategoryId);
         String requestBody = objectMapper.writeValueAsString(requestDto);
 
         // when & then
@@ -150,7 +150,7 @@ class PostControllerTest {
     @WithMockUser(username = "otherUser", roles = "USER") // 'user'가 아닌 다른 사용자
     void updatePost_fail_by_not_author() throws Exception {
         // given
-        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정된 제목", "수정된 내용");
+        PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정된 제목", "수정된 내용", testCategoryId);
         String requestBody = objectMapper.writeValueAsString(requestDto);
 
         // when & then
