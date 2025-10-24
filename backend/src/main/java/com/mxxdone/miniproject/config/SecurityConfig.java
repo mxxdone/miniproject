@@ -13,6 +13,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -45,14 +46,14 @@ public class SecurityConfig {
                 // CORS 설정을 사용
                 .cors(withDefaults())
                 // 1. CSRF(Cross-Site Request Forgery) 비활성화
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
 
                 // 2. 세션 관리 상태를 STATELESS로 설정 (JWT 사용을 위함)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // 3. FormLogin 비활성화 (JWT 사용을 위해서)
-                .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
 
                 // API 엔드포인트별 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
@@ -67,7 +68,7 @@ public class SecurityConfig {
                         // 게스트 댓글 허용
                         .requestMatchers(HttpMethod.POST, "/api/v1/comments/**").permitAll()
                         // 게스트 댓글 삭제 허용
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/comments/*/guest").permitAll() // 게스트 댓글 삭제만 허용
                         // OAS(Open API Specification) 관련 접근 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         //그 외 모든 요청은 인증 사용자만 접근 가능

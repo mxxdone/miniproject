@@ -7,10 +7,14 @@ import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
 import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.repository.UserRepository;
+import com.mxxdone.miniproject.util.CookieUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +24,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder; // SecurityConfig에 등록한 인코더
     private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
+    private final CookieUtil cookieUtil;
 
     public Long signup(SignUpRequestDto requestDto) {
         // 아이디 중복 확인
@@ -51,7 +57,7 @@ public class UserService {
         return userRepository.save(user).getId();
     }
 
-    public TokenResponseDto login(LoginRequestDto requestDto) {
+    public TokenResponseDto login(LoginRequestDto requestDto, HttpServletResponse response) {
         User user = userRepository.findByUsername(requestDto.username())
                 .orElseThrow(() -> new IllegalArgumentException("등록된 사용자가 없습니다."));
 
@@ -63,10 +69,13 @@ public class UserService {
         String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole());
         String refreshToken = jwtUtil.createRefreshToken(user.getUsername());
 
-        // 생성된 리프레시 토큰을 User 엔티티에 저장 (DB 업데이트)
-        user.updateRefreshToken(refreshToken);
-        userRepository.save(user);
+        // Redis에 저장
+        Duration refreshTokenDuration = Duration.ofDays(jwtUtil.getRefreshTokenExpirationDays()); // 만료 기간 Duration 객체로 생성
+        refreshTokenService.saveRefreshToken(user.getUsername(), refreshToken, refreshTokenDuration);
 
-        return new TokenResponseDto(accessToken, refreshToken);
+        long refreshTokenMaxAgeSeconds = refreshTokenDuration.toSeconds();
+        cookieUtil.addCookie(response, "refreshToken", refreshToken, refreshTokenMaxAgeSeconds); // response 객체 전달
+
+        return new TokenResponseDto(accessToken);
     }
 }

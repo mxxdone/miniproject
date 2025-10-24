@@ -48,8 +48,6 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
-    private String refreshToken; // 리프레시 토큰
-
     // 빌더를 써서 각 필드 명까지 입력하도록, 혼동 방지
     @Builder
     public User(String username, String password, Role role, String email, String provider, String nickname) {
@@ -59,11 +57,6 @@ public class User implements UserDetails {
         this.email = email;
         this.provider = provider;
         this.nickname = nickname;
-    }
-
-    // 리프레시 토큰 업데이트
-    public void updateRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
     }
 
     // UserDetails 구현 메서드 추가

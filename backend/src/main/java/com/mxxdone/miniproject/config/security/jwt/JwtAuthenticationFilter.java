@@ -28,8 +28,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-        // /api/v1/auth/refresh 경로의 경우, 이 필터를 건너뛰도록
-        if ("/api/v1/auth/refresh".equals(request.getRequestURI())) {
+
+        String requestURI = request.getRequestURI();
+        // /api/v1/auth/refresh 또는 logout 경로의 경우, 이 필터를 건너뛰도록
+        if ("/api/v1/auth/refresh".equals(requestURI) || "/api/v1/auth/logout".equals(requestURI)) {
             filterChain.doFilter(request, response);
             return;
         }

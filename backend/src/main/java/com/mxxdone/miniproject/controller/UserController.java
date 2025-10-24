@@ -4,6 +4,7 @@ import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
 import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponseDto> login(@RequestBody LoginRequestDto requestDto) {
-        return ResponseEntity.ok(userService.login(requestDto));
+    public ResponseEntity<TokenResponseDto> login(@RequestBody LoginRequestDto requestDto, HttpServletResponse response) {
+        return ResponseEntity.ok(userService.login(requestDto, response));
     }
 }

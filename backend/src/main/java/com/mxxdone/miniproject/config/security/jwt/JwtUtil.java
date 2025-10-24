@@ -24,7 +24,7 @@ public class JwtUtil {
     @Value("${jwt.secret.key}")
     private String secretKey; // application-secret.yml에 설정한값
     private SecretKey key;
-    private static final long ACCESS_TOKEN_EXPIRATION_MINUTES  = 30; //토큰 유효시간 30분
+    private static final long ACCESS_TOKEN_EXPIRATION_MINUTES  = 15; //토큰 유효시간 15분
     private static final long REFRESH_TOKEN_EXPIRATION_DAYS  = 7;
 
     @PostConstruct
@@ -82,6 +82,10 @@ public class JwtUtil {
 
     public Claims getUserInfoFromToken(String token) {
         return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+    }
 
+    // 리프레시 토큰 만료일 가져오기
+    public long getRefreshTokenExpirationDays() {
+        return REFRESH_TOKEN_EXPIRATION_DAYS;
     }
 }
