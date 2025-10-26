@@ -61,7 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 토큰 재발급 허용
                         .requestMatchers("/api/v1/auth/refresh").permitAll()
-                        .requestMatchers("/api/v1/auth/logout").authenticated()
+                        .requestMatchers("/api/v1/auth/logout").permitAll()
                         // 조회(GET) API들은 누구나 접근 가능
                         .requestMatchers(HttpMethod.GET, "/api/v1/posts/**", "/api/v1/comments/**", "/api/v1/categories/**").permitAll()
                         // 회원가입, 로그인 API는 누구나 접근 가능
