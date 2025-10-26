@@ -36,15 +36,20 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config
     const authStore = useAuthStore()
 
+    const isRefreshRequest = originalRequest.url?.includes('/auth/refresh');
+    const isLogoutRequest = originalRequest.url?.includes('/auth/logout');
+
     // 401 에러 & 재시도하지 않은 요청 & 로그아웃 요청이 아닐 때만 재발급 시도
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/logout')) {
+    if (error.response?.status === 401 &&
+        !originalRequest._retry &&
+        !isRefreshRequest &&  // 리프레시 요청 자체가 실패한 경우에도 제외
+        !isLogoutRequest) {
       originalRequest._retry = true // 무한 재발급 요청 방지
 
       try {
         // apiClient가 아닌 순수 axios를 사용하여 요청 인터셉터를 우회
         const response = await axios.post(
           `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/refresh`,
-          {},
           {},
           {
             withCredentials: true, // 쿠키 전송 활성화
