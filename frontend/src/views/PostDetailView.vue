@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, watch } from 'vue'
+import { computed, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { usePostsStore } from '@/stores/posts'
 import { useUiStore } from '@/stores/ui.js'
@@ -16,7 +16,7 @@ const authStore = useAuthStore()
 const uiStore = useUiStore()
 const categoriesStore = useCategoriesStore()
 // 주소창의 파라미터의 id 값을 가져온다
-const postId = route.params.id
+const postId = computed(() => Number(route.params.id))
 
 // 현재 로그인 사용자가 글 작성자인지 확인
 const isAuthorOrAdmin = computed(() => {
@@ -61,11 +61,6 @@ const breadcrumbItems = computed(() => {
   })
 })
 
-onMounted(() => {
-  // 주소창에서 id 값을 가져와서 fetchPost 액션을 호출
-  postsStore.fetchPost(postId)
-})
-
 // highlight.js를 적용하는 로직을 추가
 watch(
   () => postsStore.currentPost,
@@ -82,13 +77,20 @@ watch(
   { deep: true, immediate: true },
 )
 
+// 라우트 변경 감지하는
+watch(postId, (newId) => {
+  if (newId && !isNaN(newId)) {
+    postsStore.fetchPost(newId)
+  }
+}, { immediate: true })  // 컴포넌트 마운트 시에도 실행
+
 function goBack() {
   router.back()
 }
 
 async function removePost() {
   if (confirm('정말로 삭제하시겠습니까?')) {
-    const isSuccess = await postsStore.deletePost(postId)
+    const isSuccess = await postsStore.deletePost(postId.value)
     if (isSuccess) {
       uiStore.showSnackbar({ text: '게시글이 삭제되었습니다.', color: 'success' })
       // 현재 URL 정보를 이용해 상세 페이지로 이동
@@ -140,7 +142,11 @@ async function removePost() {
         </template>
       </v-card-actions>
     </v-card>
-    <CommentSection v-if="postsStore.currentPost" :post-id="postsStore.currentPost.id" />
+    <CommentSection
+      v-if="postsStore.currentPost"
+      :post-id="postsStore.currentPost.id"
+      :key="`comment-${postId}`"
+    />
     <!-- 로딩 스피너 추가 -->
     <v-row v-else align="center" justify="center" class="my-12">
       <v-progress-circular indeterminate color="primary" size="48" />
