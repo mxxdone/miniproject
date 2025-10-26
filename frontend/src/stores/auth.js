@@ -7,7 +7,6 @@ import { jwtDecode } from 'jwt-decode'
 export const useAuthStore = defineStore('auth', () => {
   // state
   const token = ref(localStorage.getItem('accessToken'))
-  const refreshToken = ref(localStorage.getItem('refreshToken'))
   const username = ref(null)
   const userRole = ref(null)
   const isAdmin = computed(() => userRole.value === 'ROLE_ADMIN')
@@ -18,11 +17,18 @@ export const useAuthStore = defineStore('auth', () => {
     if (tokenToDecode) {
       try {
         const decoded = jwtDecode(tokenToDecode)
-        username.value = decoded.sub
-        userRole.value = decoded.auth
+        // 액세스 토큰 유효기간 추가 검사
+        const currentTime = Date.now() / 1000; // 밀리초를 초로 변환
+        if (decoded.exp < currentTime) {
+          console.warn('초기화 과정에서 액세스 토큰이 이미 만료되었습니다.');
+          setToken(null); // 만료되었으면 토큰 제거
+        } else {
+          username.value = decoded.sub;
+          userRole.value = decoded.auth;
+        }
       } catch {
-        // 토큰 파싱 실패 -> 모든 토큰 삭제
-        setToken(null, null)
+        // 토큰 파싱 실패 -> 토큰 삭제
+        setToken(null)
       }
     } else {
       username.value = null
@@ -37,23 +43,20 @@ export const useAuthStore = defineStore('auth', () => {
   }*/
 
   // action 내 토큰 설정 로직
-  function setToken(newAccessToken, newRefreshToken) {
+  function setToken(newAccessToken) {
     token.value = newAccessToken
-    refreshToken.value = newRefreshToken
     if (newAccessToken) {
       localStorage.setItem('accessToken', newAccessToken)
     } else {
       localStorage.removeItem('accessToken')
     }
 
-    if (newRefreshToken) {
-      if (newRefreshToken) {
-        localStorage.setItem('refreshToken', newRefreshToken)
-      } else {
-        localStorage.removeItem('refreshToken')
-      }
-    }
     initUserFromToken(newAccessToken)
+  }
+
+  // 앱 시작 시 초기화 로직
+  if (token.value) {
+    initUserFromToken(token.value);
   }
 
   async function signup(payload) {
@@ -69,7 +72,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(payload) {
     try {
       const response = await apiClient.post('/api/v1/users/login', payload)
-      setToken(response.data.accessToken, response.data.refreshToken) // 로그인 성공시 토큰 저장
+      setToken(response.data.accessToken) // 로그인 성공시 토큰 저장
 
       const currentRoute = router.currentRoute.value
       const redirectPath = currentRoute.query.redirect || '/'
@@ -79,11 +82,18 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
-    setToken(null, null) // 토큰 삭제
-    alert('로그아웃 되었습니다.')
-    router.push('/')
+  async function logout() {
+    try {
+      await apiClient.post('/api/v1/auth/logout');
+    } catch (error) {
+      console.error('백엔드 로그아웃 에러:', error);
+    } finally {
+      // API 호출 성공 여부와 관계없이 프론트엔드 상태 초기화 진행
+      setToken(null); // 로컬 스토리지 액세스 토큰 및 상태 초기화
+      alert('로그아웃 되었습니다.');
+      router.push('/'); // 홈으로 이동
+    }
   }
 
-  return { token, refreshToken, username, userRole, isLoggedIn, isAdmin, setToken, signup, login, logout }
+  return { token, username, userRole, isLoggedIn, isAdmin, setToken, signup, login, logout }
 })

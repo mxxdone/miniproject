@@ -43,7 +43,7 @@ public class CookieUtil {
     public void addCookie(HttpServletResponse response, String name, String value, long maxAgeSeconds) {
         ResponseCookie cookie = ResponseCookie.from(name, value)
                 .httpOnly(true)       // JavaScript에서 접근 불가
-                .secure(true)         // HTTPS 환경에서만 전송
+                .secure(false)         // HTTPS 환경에서만 전송 (개발: false, 운영: true 필수)
                 .path("/")            // 쿠키 적용 경로
                 .maxAge(maxAgeSeconds)// 쿠키 유효 기간 설정
                 .sameSite("Lax")      // CSRF 공격 방지 설정 (필요에 따라 Strict 또는 None으로 변경 가능)
