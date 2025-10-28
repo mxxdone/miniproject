@@ -182,144 +182,149 @@ function submitUpdate(commentId) {
 
     <v-divider class="my-8"></v-divider>
     <h3 class="text-h6 mb-4">
-      댓글<span class="text-black">({{ commentCount }})</span>
+      Comments <span class="text-black">({{ commentCount }})</span>
     </h3>
 
-    <v-list lines="two" class="bg-transparent">
-      <template v-for="(comment, index) in commentsStore.comments" :key="comment.id">
-        <v-list-item class="mb-2">
-          <div v-if="editingCommentId === comment.id">
-            <v-textarea v-model="editedContent" rows="2" no-resize hide-details></v-textarea>
-            <div class="mt-2 text-right">
-              <v-btn size="small" @click="exitEdit">닫기</v-btn>
-              <v-btn size="small" color="primary" @click="submitUpdate(comment.id)">등록</v-btn>
-            </div>
-          </div>
-          <div v-else>
-            <div v-if="comment.isDeleted">
-              <v-list-item-title class="font-weight-bold">{{ comment.authorNickname }}</v-list-item-title>
-              <v-list-item-subtitle class="text-grey">삭제된 댓글입니다.</v-list-item-subtitle>
-            </div>
-            <div v-else>
-              <v-list-item-title class="font-weight-bold">{{ comment.authorNickname }}</v-list-item-title>
-              <v-list-item-subtitle style="white-space: pre-wrap">{{ comment.content }}</v-list-item-subtitle>
-              <div>
-                <span class="text-caption text-grey">{{ formatDateTime(comment.createdAt) }}</span>
-                <span v-if="comment.updatedAt && comment.updatedAt !== comment.createdAt" class="text-caption text-grey">(수정됨)</span>
-              </div>
-            </div>
-          </div>
-          <template v-slot:append>
-            <div v-if="!comment.isDeleted && editingCommentId !== comment.id" class="d-flex align-center">
-              <v-btn icon="mdi-comment-outline" variant="text" size="small" @click="openReplyForm(comment.id)"></v-btn>
-              <div v-if="authStore.isLoggedIn && (authStore.isAdmin || authStore.username === comment.authorUsername)">
-                <v-btn v-if="!comment.isGuest" icon="mdi-pencil" variant="text" size="small" @click="startEdit(comment)"></v-btn>
-                <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(comment)"></v-btn>
-              </div>
-              <div v-if="!authStore.isLoggedIn && comment.isGuest">
-                <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(comment)"></v-btn>
-              </div>
-            </div>
-          </template>
-        </v-list-item>
-
-        <div class="pl-10">
-          <v-list-item v-for="reply in comment.children" :key="reply.id" class="mb-2">
-            <template v-slot:prepend>
-              <v-icon>mdi-subdirectory-arrow-right</v-icon>
-            </template>
-            <div v-if="editingCommentId === reply.id">
+    <div v-if="commentCount > 0">
+      <v-list lines="two" class="bg-transparent">
+        <template v-for="(comment, index) in commentsStore.comments" :key="comment.id">
+          <v-list-item class="mb-2">
+            <div v-if="editingCommentId === comment.id">
               <v-textarea v-model="editedContent" rows="2" no-resize hide-details></v-textarea>
               <div class="mt-2 text-right">
                 <v-btn size="small" @click="exitEdit">닫기</v-btn>
-                <v-btn size="small" color="primary" @click="submitUpdate(reply.id)">등록</v-btn>
+                <v-btn size="small" color="primary" @click="submitUpdate(comment.id)">등록</v-btn>
               </div>
             </div>
-            <div v-else-if="reply.isDeleted">
-              <v-list-item-title class="font-weight-bold">{{ reply.authorNickname }}</v-list-item-title>
-              <v-list-item-subtitle class="text-grey">삭제된 댓글입니다.</v-list-item-subtitle>
-            </div>
             <div v-else>
-              <v-list-item-title class="font-weight-bold">{{ reply.authorNickname }}</v-list-item-title>
-              <v-list-item-subtitle style="white-space: pre-wrap">{{ reply.content }}</v-list-item-subtitle>
-              <div>
-                <span class="text-caption text-grey">{{ formatDateTime(reply.createdAt) }}</span>
-                <span v-if="reply.updatedAt && reply.updatedAt !== reply.createdAt" class="text-caption text-grey">(수정됨)</span>
+              <div v-if="comment.isDeleted">
+                <v-list-item-title class="font-weight-bold">{{ comment.authorNickname }}</v-list-item-title>
+                <v-list-item-subtitle class="text-grey">삭제된 댓글입니다.</v-list-item-subtitle>
+              </div>
+              <div v-else>
+                <v-list-item-title class="font-weight-bold">{{ comment.authorNickname }}</v-list-item-title>
+                <v-list-item-subtitle style="white-space: pre-wrap">{{ comment.content }}</v-list-item-subtitle>
+                <div>
+                  <span class="text-caption text-grey">{{ formatDateTime(comment.createdAt) }}</span>
+                  <span v-if="comment.updatedAt && comment.updatedAt !== comment.createdAt" class="text-caption text-grey">(수정됨)</span>
+                </div>
               </div>
             </div>
             <template v-slot:append>
-              <div v-if="!reply.isDeleted && editingCommentId !== reply.id" class="d-flex align-center">
-                <div v-if="authStore.isLoggedIn && (authStore.isAdmin || authStore.username === reply.authorUsername)">
-                  <v-btn v-if="!reply.isGuest" icon="mdi-pencil" variant="text" size="small" @click="startEdit(reply)"></v-btn>
-                  <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(reply)"></v-btn>
+              <div v-if="!comment.isDeleted && editingCommentId !== comment.id" class="d-flex align-center">
+                <v-btn icon="mdi-comment-outline" variant="text" size="small" @click="openReplyForm(comment.id)"></v-btn>
+                <div v-if="authStore.isLoggedIn && (authStore.isAdmin || authStore.username === comment.authorUsername)">
+                  <v-btn v-if="!comment.isGuest" icon="mdi-pencil" variant="text" size="small" @click="startEdit(comment)"></v-btn>
+                  <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(comment)"></v-btn>
                 </div>
-                <div v-if="!authStore.isLoggedIn && reply.isGuest">
-                  <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(reply)"></v-btn>
+                <div v-if="!authStore.isLoggedIn && comment.isGuest">
+                  <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(comment)"></v-btn>
                 </div>
               </div>
             </template>
           </v-list-item>
-        </div>
 
-        <v-card v-if="replyingToCommentId === comment.id && !editingCommentId" class="pl-10 mb-4" flat>
-          <v-card-text>
-            <div v-if="authStore.isLoggedIn">
-              <v-textarea
-                v-model="newReplyContent"
-                label="대댓글을 입력하세요"
-                rows="3"
-                no-resize
-                auto-grow
-                hide-details
-              ></v-textarea>
-              <div class="text-right mt-2">
-                <v-btn size="small" @click="replyingToCommentId = null" class="mr-2">닫기</v-btn>
-                <v-btn size="small" color="primary" @click="submitReply(comment.id)">등록</v-btn>
+          <div class="pl-10">
+            <v-list-item v-for="reply in comment.children" :key="reply.id" class="mb-2">
+              <template v-slot:prepend>
+                <v-icon>mdi-subdirectory-arrow-right</v-icon>
+              </template>
+              <div v-if="editingCommentId === reply.id">
+                <v-textarea v-model="editedContent" rows="2" no-resize hide-details></v-textarea>
+                <div class="mt-2 text-right">
+                  <v-btn size="small" @click="exitEdit">닫기</v-btn>
+                  <v-btn size="small" color="primary" @click="submitUpdate(reply.id)">등록</v-btn>
+                </div>
               </div>
-            </div>
+              <div v-else-if="reply.isDeleted">
+                <v-list-item-title class="font-weight-bold">{{ reply.authorNickname }}</v-list-item-title>
+                <v-list-item-subtitle class="text-grey">삭제된 댓글입니다.</v-list-item-subtitle>
+              </div>
+              <div v-else>
+                <v-list-item-title class="font-weight-bold">{{ reply.authorNickname }}</v-list-item-title>
+                <v-list-item-subtitle style="white-space: pre-wrap">{{ reply.content }}</v-list-item-subtitle>
+                <div>
+                  <span class="text-caption text-grey">{{ formatDateTime(reply.createdAt) }}</span>
+                  <span v-if="reply.updatedAt && reply.updatedAt !== reply.createdAt" class="text-caption text-grey">(수정됨)</span>
+                </div>
+              </div>
+              <template v-slot:append>
+                <div v-if="!reply.isDeleted && editingCommentId !== reply.id" class="d-flex align-center">
+                  <div v-if="authStore.isLoggedIn && (authStore.isAdmin || authStore.username === reply.authorUsername)">
+                    <v-btn v-if="!reply.isGuest" icon="mdi-pencil" variant="text" size="small" @click="startEdit(reply)"></v-btn>
+                    <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(reply)"></v-btn>
+                  </div>
+                  <div v-if="!authStore.isLoggedIn && reply.isGuest">
+                    <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(reply)"></v-btn>
+                  </div>
+                </div>
+              </template>
+            </v-list-item>
+          </div>
 
-            <div v-else>
-              <div style="max-width: 500px;" class="mt-2">
-                <v-row no-gutters>
-                  <v-col cols="12" sm="6" class="pr-sm-2">
-                    <v-text-field
-                      v-model="replyingGuestName"
-                      label="닉네임"
-                      density="compact"
-                      hide-details
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="6" class="mt-2 mt-sm-0">
-                    <v-text-field
-                      v-model="replyingGuestPassword"
-                      label="비밀번호"
-                      type="password"
-                      density="compact"
-                      hide-details
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
+          <v-card v-if="replyingToCommentId === comment.id && !editingCommentId" class="pl-10 mb-4" flat>
+            <v-card-text>
+              <div v-if="authStore.isLoggedIn">
+                <v-textarea
+                  v-model="newReplyContent"
+                  label="대댓글을 입력하세요"
+                  rows="3"
+                  no-resize
+                  auto-grow
+                  hide-details
+                ></v-textarea>
+                <div class="text-right mt-2">
+                  <v-btn size="small" @click="replyingToCommentId = null" class="mr-2">닫기</v-btn>
+                  <v-btn size="small" color="primary" @click="submitReply(comment.id)">등록</v-btn>
+                </div>
               </div>
 
-              <v-textarea
-                v-model="newReplyContent"
-                label="대댓글을 입력하세요"
-                rows="3"
-                no-resize
-                auto-grow
-                hide-details
-                class="mt-2"
-              ></v-textarea>
-              <div class="text-right mt-2">
-                <v-btn size="small" @click="replyingToCommentId = null" class="mr-2">닫기</v-btn>
-                <v-btn size="small" color="primary" @click="submitReply(comment.id)">등록</v-btn>
+              <div v-else>
+                <div style="max-width: 500px;" class="mt-2">
+                  <v-row no-gutters>
+                    <v-col cols="12" sm="6" class="pr-sm-2">
+                      <v-text-field
+                        v-model="replyingGuestName"
+                        label="닉네임"
+                        density="compact"
+                        hide-details
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="6" class="mt-2 mt-sm-0">
+                      <v-text-field
+                        v-model="replyingGuestPassword"
+                        label="비밀번호"
+                        type="password"
+                        density="compact"
+                        hide-details
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+                </div>
+
+                <v-textarea
+                  v-model="newReplyContent"
+                  label="대댓글을 입력하세요"
+                  rows="3"
+                  no-resize
+                  auto-grow
+                  hide-details
+                  class="mt-2"
+                ></v-textarea>
+                <div class="text-right mt-2">
+                  <v-btn size="small" @click="replyingToCommentId = null" class="mr-2">닫기</v-btn>
+                  <v-btn size="small" color="primary" @click="submitReply(comment.id)">등록</v-btn>
+                </div>
               </div>
-            </div>
-          </v-card-text>
-        </v-card>
-        <v-divider v-if="index < commentsStore.comments.length - 1" class="my-2"></v-divider>
-      </template>
-    </v-list>
+            </v-card-text>
+          </v-card>
+          <v-divider v-if="index < commentsStore.comments.length - 1" class="my-2"></v-divider>
+        </template>
+      </v-list>
+    </div>
+    <div v-else class="text-center text-grey my-8">
+      등록된 댓글이 없습니다.
+    </div>
 
     <v-card v-if="!authStore.isLoggedIn && !editingCommentId && !replyingToCommentId" class="mt-6">
       <v-card-text>
