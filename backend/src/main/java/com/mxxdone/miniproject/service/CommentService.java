@@ -11,6 +11,7 @@ import com.mxxdone.miniproject.repository.CommentRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
 import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisTemplate<String, String> redisTemplate;
 
     // 댓글 생성
     public Long save(CommentSaveRequestDto requestDto, String username) {
@@ -57,7 +59,10 @@ public class CommentService {
             comment.setParent(parent);
         }
 
-        return commentRepository.save(comment).getId();
+        Comment savedComment = commentRepository.save(comment);
+        redisTemplate.delete("posts::page_1");
+
+        return savedComment.getId();
     }
 
     // 특정 게시글 댓글 조회
@@ -110,5 +115,7 @@ public class CommentService {
         }
 
         comment.softDelete();
+
+        redisTemplate.delete("posts::page_1");
     }
 }
