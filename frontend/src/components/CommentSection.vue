@@ -181,8 +181,8 @@ function submitUpdate(commentId) {
     </v-dialog>
 
     <v-divider class="my-8"></v-divider>
-    <h3 class="text-h6 mb-4">
-      Comments <span class="text-black">({{ commentCount }})</span>
+    <h3 class="text-h6 mb-4 text-primary">
+      Comments <span>({{ commentCount }})</span>
     </h3>
 
     <div v-if="commentCount > 0">
@@ -212,13 +212,13 @@ function submitUpdate(commentId) {
             </div>
             <template v-slot:append>
               <div v-if="!comment.isDeleted && editingCommentId !== comment.id" class="d-flex align-center">
-                <v-btn icon="mdi-comment-outline" variant="text" size="small" @click="openReplyForm(comment.id)"></v-btn>
+                <v-btn icon="mdi-comment-outline" variant="text" size="small" color="on-primary" @click="openReplyForm(comment.id)"></v-btn>
                 <div v-if="authStore.isLoggedIn && (authStore.isAdmin || authStore.username === comment.authorUsername)">
-                  <v-btn v-if="!comment.isGuest" icon="mdi-pencil" variant="text" size="small" @click="startEdit(comment)"></v-btn>
-                  <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(comment)"></v-btn>
+                  <v-btn v-if="!comment.isGuest" icon="mdi-pencil" variant="text" size="small" color="on-primary" @click="startEdit(comment)"></v-btn>
+                  <v-btn icon="mdi-delete" variant="text" size="small" color="on-primary" @click="removeComment(comment)"></v-btn>
                 </div>
                 <div v-if="!authStore.isLoggedIn && comment.isGuest">
-                  <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(comment)"></v-btn>
+                  <v-btn icon="mdi-delete" variant="text" size="small" color="on-primary" @click="removeComment(comment)"></v-btn>
                 </div>
               </div>
             </template>
@@ -251,11 +251,11 @@ function submitUpdate(commentId) {
               <template v-slot:append>
                 <div v-if="!reply.isDeleted && editingCommentId !== reply.id" class="d-flex align-center">
                   <div v-if="authStore.isLoggedIn && (authStore.isAdmin || authStore.username === reply.authorUsername)">
-                    <v-btn v-if="!reply.isGuest" icon="mdi-pencil" variant="text" size="small" @click="startEdit(reply)"></v-btn>
-                    <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(reply)"></v-btn>
+                    <v-btn v-if="!reply.isGuest" icon="mdi-pencil" variant="text" size="small" color="on-primary" @click="startEdit(reply)"></v-btn>
+                    <v-btn icon="mdi-delete" variant="text" size="small" color="on-primary" @click="removeComment(reply)"></v-btn>
                   </div>
                   <div v-if="!authStore.isLoggedIn && reply.isGuest">
-                    <v-btn icon="mdi-delete" variant="text" size="small" @click="removeComment(reply)"></v-btn>
+                    <v-btn icon="mdi-delete" variant="text" size="small" color="on-primary" @click="removeComment(reply)"></v-btn>
                   </div>
                 </div>
               </template>
