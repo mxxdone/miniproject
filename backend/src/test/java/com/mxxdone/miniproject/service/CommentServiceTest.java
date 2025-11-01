@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,24 +29,21 @@ class CommentServiceTest {
 
     @Autowired
     private CommentService commentService;
-
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private PostRepository postRepository;
-
     @Autowired
     private CommentRepository commentRepository;
-
     @Autowired
     private CategoryRepository categoryRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @MockitoBean
     private S3Uploader s3Uploader;
+    @MockitoBean
+    RedisTemplate<String, String> redisTemplate;
 
     private User testUser;
     private User testAdmin;
