@@ -32,14 +32,21 @@ export const useCommentsStore = defineStore('comments', () => {
 
   async function deleteComment(postId, commentId, password) {
     try {
-      await apiClient.delete(`/api/v1/comments/${commentId}`, {
-        data: { password: password } // 요청 본문에 비밀번호 추가
-      })
+      // 게스트 댓글 삭제(비밀번호 필요)
+      if (password) {
+        await apiClient.delete(`/api/v1/comments/${commentId}/guest`, {
+          data: { password: password } // 요청 본문에 비밀번호 추가
+        })
+      } else {
+        // 회원/관리자 댓글 삭제
+        await apiClient.delete(`/api/v1/comments/${commentId}`)
+      }
+
       await fetchComments(postId)
       uiStore.showSnackbar({ text: '댓글이 삭제되었습니다.', color: 'success' })
     } catch (error) {
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-        uiStore.showSnackbar({ text: '댓글을 삭제할 권한이 없습니다.', color: 'error' })
+        uiStore.showSnackbar({ text: '댓글 삭제 권한이 없습니다.', color: 'error' })
       } else {
         uiStore.showSnackbar({ text: '댓글 삭제 중 오류가 발생했습니다.', color: 'error' })
       }
@@ -53,7 +60,7 @@ export const useCommentsStore = defineStore('comments', () => {
       uiStore.showSnackbar({ text: '댓글이 수정되었습니다.', color: 'success' })
     } catch (error) {
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-        uiStore.showSnackbar({ text: '댓글을 수정할 권한이 없습니다.', color: 'error' })
+        uiStore.showSnackbar({ text: '댓글 수정 권한이 없습니다.', color: 'error' })
       } else {
         uiStore.showSnackbar({ text: '댓글 수정 중 오류가 발생했습니다.', color: 'error' })
       }

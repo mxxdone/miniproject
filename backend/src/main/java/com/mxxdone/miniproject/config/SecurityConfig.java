@@ -69,7 +69,7 @@ public class SecurityConfig {
                         // 게스트 댓글 허용
                         .requestMatchers(HttpMethod.POST, "/api/v1/comments/**").permitAll()
                         // 게스트 댓글 삭제 허용
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/comments/**/guest").permitAll() // 게스트 댓글 삭제만 허용
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/comments/*/guest").permitAll() // 게스트 댓글 삭제만 허용
                         // OAS(Open API Specification) 관련 접근 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         //그 외 모든 요청은 인증 사용자만 접근 가능
