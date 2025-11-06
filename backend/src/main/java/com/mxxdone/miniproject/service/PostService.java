@@ -11,6 +11,7 @@ import com.mxxdone.miniproject.dto.post.*;
 import com.mxxdone.miniproject.repository.CategoryRepository;
 import com.mxxdone.miniproject.repository.PostRepository;
 import com.mxxdone.miniproject.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,6 +22,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 
 @Slf4j
@@ -113,6 +115,24 @@ public class PostService {
         log.info("캐시 정리: posts::page_1");
     }
 
+    // 게시글 조회수 증가 (ip 기준 중복 방지)
+    @Transactional(readOnly = false)
+    public void incrementViewCount(Long id, HttpServletRequest request) {
+        String ip = request.getRemoteAddr();
+        String redisKey = "post:view:" + id + ":" + ip;
+
+        // Redis에 해당 ip로 조회한 기록이 있는지 확인
+        if (!redisTemplate.hasKey(redisKey)) {
+            // 기록이 없으면 24시간 동안 유효한 키를 redis에 저장
+            redisTemplate.opsForValue().set(redisKey, "1", Duration.ofHours(24));
+
+            // DB의 조회수 1 증가 (JPA dirty checkig 활용)
+            Post post = postRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+            post.incrementViewCount();
+        }
+    }
+
     //게시글 단건 조회
     //밖으로 나가는 데이터는 DTO로 변환하여 엔티티를 보호
     @Transactional(readOnly = true) //조회 기능은 readOnly = true 옵션으로 성능 최적화
@@ -122,6 +142,8 @@ public class PostService {
 
         return PostDetailResponseDto.from(entity);
     }
+
+
 
     // 게시글 목록 조회
     @Transactional(readOnly = true)

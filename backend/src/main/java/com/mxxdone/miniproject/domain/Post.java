@@ -53,6 +53,9 @@ public class Post {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
+    @Column(nullable = false)
+    private int viewCount = 0;
+
     // DTO를 위한 생성자 추가
     public Post(String title, String content) {
         this.title = title;
@@ -67,6 +70,10 @@ public class Post {
         if (category != null) {
             this.category = category;
         }
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
     }
 
     @Builder

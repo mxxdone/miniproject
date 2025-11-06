@@ -3,6 +3,7 @@ package com.mxxdone.miniproject.controller;
 import com.mxxdone.miniproject.dto.PageDto;
 import com.mxxdone.miniproject.dto.post.*;
 import com.mxxdone.miniproject.service.PostService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -58,8 +59,12 @@ public class PostController {
 
     // 게시글 단건 조회 API
     @GetMapping("/{id}")
-    public ResponseEntity<PostDetailResponseDto> getPost(@PathVariable Long id) {
-        return ResponseEntity.ok(postService.findById(id));
+    public ResponseEntity<PostDetailResponseDto> getPost(@PathVariable Long id, HttpServletRequest request) {
+        // 조회수 증가
+        postService.incrementViewCount(id, request);
+        // 게시글 정보 조회
+        PostDetailResponseDto responseDto = postService.findById(id);
+        return ResponseEntity.ok(responseDto);
     }
 
     // 게시글 목록 조회 API

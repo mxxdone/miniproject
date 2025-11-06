@@ -123,10 +123,20 @@ async function removePost() {
       </v-breadcrumbs>
 
       <v-card-title class="text-h4">{{ postsStore.currentPost.title }}</v-card-title>
-      <v-card-subtitle>
-        <span class="author">작성자: {{ postsStore.currentPost.authorNickname }}</span>
-        <span class="separator">|</span>
-        <span class="date">작성일: {{ formatDateTime(postsStore.currentPost.createdAt) }}</span>
+      <v-card-subtitle class="d-flex align-center pt-2 px-4">
+        <div>
+          <span class="author">작성자: {{ postsStore.currentPost.authorNickname }}</span>
+          <span class="separator">|</span>
+          <span class="date">작성일: {{ formatDateTime(postsStore.currentPost.createdAt) }}</span>
+        </div>
+
+        <v-spacer></v-spacer>
+
+        <div class="text-caption">
+          <span class="mr-3">조회 {{ postsStore.currentPost.viewCount }}</span>
+          <span class="mr-3">좋아요 {{ postsStore.currentPost.likeCount }}</span>
+          <span>댓글 {{ postsStore.currentPost.commentCount }}</span>
+        </div>
       </v-card-subtitle>
       <v-divider class="my-4"></v-divider>
       <!-- tiptap 적용후 v-html로 변경 -->

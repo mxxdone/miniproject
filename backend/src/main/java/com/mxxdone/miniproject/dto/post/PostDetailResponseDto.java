@@ -21,6 +21,7 @@ public record PostDetailResponseDto(
         Long categoryId,
         String authorUsername,
         String authorNickname,
+        int viewCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -45,6 +46,7 @@ public record PostDetailResponseDto(
                 post.getCategory() != null ? post.getCategory().getId() : null,
                 post.getAuthor() != null ? post.getAuthor().getUsername() : null,
                 post.getAuthor() != null ? post.getAuthor().getNickname() : null,
+                post.getViewCount(),
                 post.getCreatedAt(),
                 post.getUpdatedAt()
         );
