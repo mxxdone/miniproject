@@ -65,7 +65,7 @@ export default createVuetify({
   },
   defaults: {
     VAppBar: { color: 'primary', flat: true, height: 64, class: 'text-white' },
-    VBtn: { color: 'primary', rounded: 'md', class: 'text-none', height: 40 },
+    VBtn: { color: 'primary', rounded: 'md', class: 'text-none' },
     VCard: { rounded: 'lg', elevation: 0, class: 'bordered' },
     VTextField: { variant: 'solo', density: 'comfortable'},
     VTextarea: { variant: 'solo', density: 'comfortable'},
