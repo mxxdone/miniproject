@@ -180,6 +180,8 @@ function handleSearch() {
               <div style="height: 10px"></div>
             </div>
             <v-card-actions class="px-4">
+              <v-icon size="small">mdi-heart-outline</v-icon>
+              <span class="mr-3">{{ post.likeCount }}</span>
               <v-icon size="small">mdi-comment-text-outline</v-icon>
               <span class="text-caption ml-1">{{ post.commentCount }}</span>
             </v-card-actions>

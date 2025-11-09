@@ -11,6 +11,7 @@ public record PostSummaryResponseDto(
         String categoryName,
         String authorUsername,
         String authorNickname,
+        int likeCount,
         Long commentCount,
         LocalDateTime createdAt,
         String parentSlug,

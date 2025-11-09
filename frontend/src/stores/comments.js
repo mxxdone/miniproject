@@ -2,9 +2,11 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import apiClient from '@/api'
 import { useUiStore } from './ui'
+import { usePostsStore } from './posts'
 
 export const useCommentsStore = defineStore('comments', () => {
   const uiStore = useUiStore()
+  const postsStore = usePostsStore()
   const comments = ref([])
 
   // 특정 게시물의 댓글 목록 불러오기
@@ -22,7 +24,9 @@ export const useCommentsStore = defineStore('comments', () => {
   async function createComment(payload) {
     try {
       await apiClient.post('/api/v1/comments', payload)
-      // 작성 후 댓글 목록을 새로고침
+      // 작성 후 게시글 목록 새로고침
+      await postsStore.fetchPost(payload.postId)
+      // 댓글 목록을 새로고침
       await fetchComments(payload.postId)
     } catch (error) {
       uiStore.showSnackbar({ text: '댓글 작성에 실패했습니다.', color: 'error' })
@@ -41,7 +45,7 @@ export const useCommentsStore = defineStore('comments', () => {
         // 회원/관리자 댓글 삭제
         await apiClient.delete(`/api/v1/comments/${commentId}`)
       }
-
+      await postsStore.fetchPost(postId)
       await fetchComments(postId)
       uiStore.showSnackbar({ text: '댓글이 삭제되었습니다.', color: 'success' })
     } catch (error) {

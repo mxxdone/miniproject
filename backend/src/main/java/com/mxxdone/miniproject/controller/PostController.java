@@ -76,4 +76,15 @@ public class PostController {
             @PageableDefault(size = 6, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(postService.findPosts(categoryId, type, keyword, pageable));
     }
+
+    // 게시글 좋아요 API
+    @PostMapping("/{id}/like")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> toggleLike(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        postService.toggleLike(id, userDetails.getUsername());
+        return ResponseEntity.ok().build();
+    }
 }

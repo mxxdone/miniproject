@@ -53,8 +53,11 @@ public class Post {
     @Column(nullable = false)
     private boolean isDeleted = false;
 
-    @Column(nullable = false)
+    @Column(name = "view_count", nullable = false)
     private int viewCount = 0;
+
+    @Column(name = "like_count", nullable = false)
+    private int likeCount = 0;
 
     // DTO를 위한 생성자 추가
     public Post(String title, String content) {
@@ -74,6 +77,16 @@ public class Post {
 
     public void incrementViewCount() {
         this.viewCount++;
+    }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
     }
 
     @Builder

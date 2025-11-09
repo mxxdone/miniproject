@@ -143,6 +143,18 @@ async function removePost() {
       <v-card-text class="text-body-1">
         <div class="prose-content" v-html="postsStore.currentPost.content"></div>
       </v-card-text>
+      <v-card-text class="text-center">
+        <v-btn
+          :icon="postsStore.currentPost.isLiked ? 'mdi-heart' : 'mdi-heart-outline'"
+          :color="postsStore.currentPost.isLiked ? 'red' : 'grey'"
+          variant="tonal"
+          size="large"
+          rounded="circle"
+          @click="postsStore.toggleLike(postId)"
+        >
+        </v-btn>
+        <div class="text-caption mt-2">{{ postsStore.currentPost.likeCount }}</div>
+      </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="on-primary" @click="goBack">뒤로가기</v-btn>
@@ -155,6 +167,7 @@ async function removePost() {
     <CommentSection
       v-if="postsStore.currentPost"
       :post-id="postsStore.currentPost.id"
+      :total-comments="postsStore.currentPost.commentCount"
       :key="`comment-${postId}`"
     />
     <!-- 로딩 스피너 추가 -->

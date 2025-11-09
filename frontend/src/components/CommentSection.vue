@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { defineProps, onMounted, ref } from 'vue'
 import { useCommentsStore } from '@/stores/comments'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/formatDate'
@@ -12,6 +12,11 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  totalComments: {
+    type: Number,
+    required: true,
+    default: 0
+  }
 })
 
 const commentsStore = useCommentsStore()
@@ -31,14 +36,14 @@ const passwordToDelete = ref('')      // 다이얼로그에 입력된 비밀번�
 const commentIdToDelete = ref(null)   // 삭제할 댓글의 ID
 
 
-const commentCount = computed(() => {
+/*const commentCount = computed(() => {
   let count = 0
   for (const c of commentsStore.comments) {
     count += 1 // 자기 자신
     count += c.children ? c.children.length : 0 // 대댓글
   }
   return count
-})
+})*/
 
 onMounted(() => {
   commentsStore.fetchComments(props.postId)
@@ -182,10 +187,10 @@ function submitUpdate(commentId) {
 
     <v-divider class="my-8"></v-divider>
     <h3 class="text-h6 mb-4 text-primary">
-      Comments <span>({{ commentCount }})</span>
+      Comments <span>({{ props.totalComments }})</span>
     </h3>
 
-    <div v-if="commentCount > 0">
+    <div v-if="props.totalComments > 0">
       <v-list lines="two" class="bg-transparent">
         <template v-for="(comment, index) in commentsStore.comments" :key="comment.id">
           <v-list-item class="mb-2">

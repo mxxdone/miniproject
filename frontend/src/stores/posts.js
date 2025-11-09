@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import apiClient from '@/api'
 import { useUiStore } from './ui'
 import { useCategoriesStore } from './categories'
+import { useAuthStore } from './auth'
 
 // 'posts'라는 이름의 스토어를 정의
 export const usePostsStore = defineStore('posts', () => {
@@ -20,6 +21,7 @@ export const usePostsStore = defineStore('posts', () => {
   const currentSearch = ref({ type: 'all', keyword: '' }) // 기본은 전체 검색
   const uiStore = useUiStore()
   const categoriesStore = useCategoriesStore()
+  const authStore = useAuthStore()
 
   // 게시글 생성
   async function createPost(newPost) {
@@ -78,6 +80,27 @@ export const usePostsStore = defineStore('posts', () => {
     }
   }
 
+  // 낙관적 업데이트로 좋아요 화면에 즉시 반영
+  async function toggleLike(id) {
+    if (!authStore.isLoggedIn) {
+      uiStore.showSnackbar({ text: '로그인이 필요합니다.', color: 'error' })
+      return false
+    }
+    try {
+      await apiClient.post(`/api/v1/posts/${id}/like`)
+      // 좋아요 상태 로컬에서 즉시 반영
+      if (currentPost.value && currentPost.value.id === id) {
+        currentPost.value.isLiked = !currentPost.value.isLiked
+        currentPost.value.likeCount += currentPost.value.isLiked ? 1: -1
+      }
+      return true
+    } catch (error) {
+      console.error('좋아요 처리 중 오류 발생:', error);
+      uiStore.showSnackbar({ text: '로그인이 필요합니다.', color: 'error' })
+      return false
+    }
+  }
+
   // 게시글 삭제
   async function deletePost(id) {
     try {
@@ -114,5 +137,5 @@ export const usePostsStore = defineStore('posts', () => {
   }
 
   // 외부 컴포넌트에서 사용할 수 있도록 정의
-  return { posts, currentPost, page, currentCategoryId, fetchPosts, fetchPost, createPost, deletePost, updatePost}
+  return { posts, currentPost, page, currentCategoryId, fetchPosts, fetchPost, createPost, deletePost, updatePost, toggleLike }
 })

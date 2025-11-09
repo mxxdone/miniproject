@@ -2,15 +2,11 @@ package com.mxxdone.miniproject.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mxxdone.miniproject.domain.Category;
-import com.mxxdone.miniproject.domain.Post;
-import com.mxxdone.miniproject.domain.Role;
-import com.mxxdone.miniproject.domain.User;
+import com.mxxdone.miniproject.domain.*;
 import com.mxxdone.miniproject.dto.PageDto;
+import com.mxxdone.miniproject.dto.category.CategoryDto;
 import com.mxxdone.miniproject.dto.post.*;
-import com.mxxdone.miniproject.repository.CategoryRepository;
-import com.mxxdone.miniproject.repository.PostRepository;
-import com.mxxdone.miniproject.repository.UserRepository;
+import com.mxxdone.miniproject.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +15,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -34,6 +35,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final PostLikeRepository postLikeRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
 
@@ -137,10 +140,69 @@ public class PostService {
     //밖으로 나가는 데이터는 DTO로 변환하여 엔티티를 보호
     @Transactional(readOnly = true) //조회 기능은 readOnly = true 옵션으로 성능 최적화
     public PostDetailResponseDto findById(Long id) {
+        // Post 엔티티 조회
         Post entity = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
 
-        return PostDetailResponseDto.from(entity);
+        // 카테고리 경로 계산
+        List<CategoryDto> categoryPath = calculateCategoryPath(entity);
+
+        // 현재 사용자의 게시글 좋아요 여부 계산
+        boolean isLiked = checkLikedByCurrnetUser(entity);
+
+        // 댓글 수 계산
+        long commentCount = commentRepository.countByPostAndIsDeletedFalse(entity);
+
+        // DTO 생성 및 반환
+        return new PostDetailResponseDto(
+                entity.getId(),
+                entity.getTitle(),
+                entity.getContent(),
+                categoryPath,
+                entity.getCategory() != null ? entity.getCategory().getId() : null,
+                entity.getAuthor() != null ? entity.getAuthor().getUsername() : null,
+                entity.getAuthor() != null ? entity.getAuthor().getNickname() : null,
+                entity.getViewCount(),
+                entity.getLikeCount(),
+                isLiked,
+                commentCount,
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
+    }
+
+    // 현재 로그인 사용자가 해당 게시글에 좋아요 눌렀는지 확인
+    private boolean checkLikedByCurrnetUser(Post post) {
+        // SecurityContext에서 현재 인증 정보 확인
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        // principal이 UserDetails의 인스턴스인지 확인 (로그인 상태)
+        if (principal instanceof UserDetails userDetails) {
+            String username = userDetails.getUsername();
+            // DB에서 사용자 조회
+            User user = userRepository.findByUsername(username).orElse(null);
+
+            if (user != null) {
+                // 사용자, 게시글을 가지고 좋아요 여부 체크
+                return postLikeRepository.existsByUserAndPost(user, post);
+            }
+        }
+        // 로그인X, 사용자를 찾을 수 없으면 false
+        return false;
+    }
+
+    // Post 엔티티의 카테고리 정보를 바탕으로 상위 카테고리까지의 경로를 계산
+    private List<CategoryDto> calculateCategoryPath(Post post) {
+        List<CategoryDto> categoryPath = new ArrayList<>();
+        if (post.getCategory() != null) {
+            Category currentCategory = post.getCategory();
+            while (currentCategory != null) {
+                categoryPath.add(CategoryDto.from(currentCategory));
+                currentCategory = currentCategory.getParent();
+            }
+            Collections.reverse(categoryPath); // 상위 -> 하위 카테고리 순서 변경
+        }
+        return categoryPath;
     }
 
 
@@ -194,5 +256,26 @@ public class PostService {
         }
 
         return resultDto;
+    }
+
+    // 좋아요 토글
+    @Transactional
+    public void toggleLike(Long postId, String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+        Optional<PostLike> existingLike = postLikeRepository.findByUserAndPost(user, post);
+
+        if (existingLike.isPresent()) {
+            // 이미 좋아요 누름 -> 취소
+            postLikeRepository.delete(existingLike.get());
+            post.decrementLikeCount();
+        } else {
+            // 좋아요 누르지 않음 -> 좋아요
+            postLikeRepository.save(new PostLike(user, post));
+            post.incrementLikeCount();
+        }
+        redisTemplate.delete("posts::page_1");
     }
 }

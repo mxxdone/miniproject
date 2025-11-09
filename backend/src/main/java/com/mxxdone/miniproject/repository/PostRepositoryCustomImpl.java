@@ -42,6 +42,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         category.name,
                         user.username,
                         user.nickname,
+                        post.likeCount,
                         // 스칼라 서브쿼리(Scalar Subquery)를 이용한 댓글 수 계산
                         JPAExpressions
                                 .select(comment.count())
