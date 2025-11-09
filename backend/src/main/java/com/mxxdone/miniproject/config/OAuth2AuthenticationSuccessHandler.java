@@ -32,7 +32,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         User user = principalDetails.getUser();
 
         // User 객체를 기반으로 JWT 생성
-        String token = jwtUtil.createAccessToken(user.getUsername(), user.getRole());
+        String token = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
 
         // 프론트 특정 경로로 JWT 담아 리디렉션
         response.sendRedirect(redirectUri + "?token=" + token);

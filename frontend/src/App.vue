@@ -72,7 +72,7 @@ onMounted(() => {
         <v-spacer />
 
         <!-- 토글: 아이콘 버튼 권장 -->
-        <v-btn variant="text" icon color="on-primary" @click="toggleTheme">
+        <v-btn variant="text" icon color="on-primary" @click="toggleTheme" class="mr-2">
           <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
         </v-btn>
 
@@ -82,6 +82,13 @@ onMounted(() => {
           <v-btn variant="text" color="on-primary" to="/login">로그인</v-btn>
         </template>
         <template v-else>
+          <v-chip
+            color="on-primary"
+            variant="text"
+            class="mr-2"
+          >
+            {{ authStore.nickname }} 님
+          </v-chip>
           <v-btn variant="text" color="on-primary" @click="authStore.logout()">로그아웃</v-btn>
         </template>
       </v-app-bar>
@@ -89,7 +96,11 @@ onMounted(() => {
       <!-- Drawer: 컴포넌트 이름 수정 -->
       <v-navigation-drawer v-model="drawer">
         <CategoryNav />
-        <!-- 또는 <category-nav /> -->
+        <template v-slot:append>
+          <div class="pa-2 text-caption text-center text-medium-emphasis">
+            © 2025. mxxdone. All rights reserved.
+          </div>
+        </template>
       </v-navigation-drawer>
 
       <v-main>

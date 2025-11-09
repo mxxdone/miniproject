@@ -77,7 +77,7 @@ public class AuthService {
         // 검증 종료
 
         // 새로운 액세스 토큰과 리프레시 토큰 발급
-        String newAccessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole());
+        String newAccessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
         String newRefreshToken = jwtUtil.createRefreshToken(user.getUsername());
 
         // 새로운 리프레시 토큰을 Redis에 저장 (기존 토큰을 덮어쓰기)

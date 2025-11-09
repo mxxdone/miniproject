@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('accessToken'))
   const username = ref(null)
   const userRole = ref(null)
+  const nickname = ref(null)
   const isAdmin = computed(() => userRole.value === 'ROLE_ADMIN')
   const isLoggedIn = computed(() => !!token.value)
 
@@ -23,8 +24,9 @@ export const useAuthStore = defineStore('auth', () => {
           console.warn('초기화 과정에서 액세스 토큰이 이미 만료되었습니다.');
           setToken(null); // 만료되었으면 토큰 제거
         } else {
-          username.value = decoded.sub;
-          userRole.value = decoded.auth;
+          username.value = decoded.sub
+          userRole.value = decoded.auth
+          nickname.value = decoded.nickname
         }
       } catch {
         // 토큰 파싱 실패 -> 토큰 삭제
@@ -33,6 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
     } else {
       username.value = null
       userRole.value = null
+      nickname.value = null
     }
   }
 
@@ -95,5 +98,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { token, username, userRole, isLoggedIn, isAdmin, setToken, signup, login, logout }
+  return { token, username, userRole, nickname, isLoggedIn, isAdmin, setToken, signup, login, logout }
 })

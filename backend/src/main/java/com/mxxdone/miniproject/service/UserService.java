@@ -66,7 +66,7 @@ public class UserService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole());
+        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
         String refreshToken = jwtUtil.createRefreshToken(user.getUsername());
 
         // Redis에 저장
