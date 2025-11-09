@@ -84,7 +84,7 @@ watch(
         :to="`/${category.slug}`"
         :active="isAboutMeActive()"
       >
-        <v-list-item-title> About Me </v-list-item-title>
+        <v-list-item-title> ABOUT ME </v-list-item-title>
       </v-list-item>
 
       <v-list-group

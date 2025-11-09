@@ -2,7 +2,7 @@
   <v-container>
     <v-card>
       <v-card-title class="text-h4">
-        About Me
+        ABOUT ME
       </v-card-title>
       <v-card-text class="text-body-1">
         <p>이곳에 본인의 경력과 관련된 내용을 작성합니다.</p>
