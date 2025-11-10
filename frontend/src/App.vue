@@ -65,7 +65,7 @@ onMounted(() => {
 
         <v-toolbar-title class="text-white">
           <RouterLink to="/" class="text-decoration-none text-white">
-            My Blog
+            MOODONE.DEV
           </RouterLink>
         </v-toolbar-title>
 
