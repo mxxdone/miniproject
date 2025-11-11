@@ -25,3 +25,4 @@ admin:
 logging:
   level:
     com.mxxdone.miniproject: DEBUG
+    org.hibernate.orm.jdbc.bind: trace

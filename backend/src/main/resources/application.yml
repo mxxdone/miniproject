@@ -10,12 +10,7 @@
       aws:
         region:
           static: ap-northeast-2
-        stack:
-          auto: false
         s3:
           bucket: mxxdone-miniproject-bucket
         cloudfront:
           domain: d1turob604d0fy.cloudfront.net
-    logging:
-      level:
-        org.hibernate.orm.jdbc.bind: trace

@@ -5,16 +5,16 @@ spring:
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: update # 운영 환경에서는 create, create-drop 사용 금지
+      ddl-auto: validate
   data:
     redis:
       host: localhost
       port: 6379
 app:
   oauth2:
-    redirect-uri: https://13.209.122.52/oauth2/redirect
+    redirect-uri: https://d1turob604d0fy.cloudfront.net/oauth2/redirect
   cors:
-    allowed-origins: http://13.209.122.52
+    allowed-origins: https://d1turob604d0fy.cloudfront.net
 admin:
   password: ${ADMIN_PASSWORD}
 springdoc:
@@ -24,5 +24,5 @@ springdoc:
     enabled: false
 logging:
   level:
-    com.mxxdone.miniproject: INFO
+    com.mxxdone.miniproject: debug
     org.springframework.security: WARN
