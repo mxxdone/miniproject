@@ -1,0 +1,55 @@
+name: Deploy Frontend to S3/CloudFront
+
+on:
+  push:
+    branches: [ main ] # main 브랜치에 Push될 때 실행
+    paths:
+      - 'frontend/**' # frontend/ 디렉터리 내부 파일 변경 시에만 실행
+      - '.github/workflows/frontend-deploy.yml' # 이 워크플로우 파일 변경 시에도 실행
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. GitHub 레포지토리의 코드를 가상 환경으로 가져옵니다.
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Node.js 20 버전을 설치합니다.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm' # npm 캐시 설정
+          cache-dependency-path: frontend/package-lock.json # package-lock.json 기준 캐시
+
+      # 3. frontend/ 디렉터리에서 npm 의존성을 설치합니다.
+      - name: Install Dependencies
+        run: npm install
+        working-directory: ./frontend
+
+      # 4. Vue.js 프로젝트를 빌드합니다. (npm run build)
+      - name: Build Vue Project
+        run: npm run build
+        working-directory: ./frontend
+        env:
+          # GitHub Secret의 VITE_API_BASE_URL_PROD 값을 빌드 시 주입합니다.
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL_PROD }}
+
+      # 5. AWS CLI가 S3/CloudFront에 접근할 수 있도록 자격 증명을 설정합니다.
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2 # (RDS 리전 기반으로 추정)
+
+      # 6. S3 버킷으로 빌드 결과물(dist)을 동기화(업로드)합니다. (--delete 옵션 포함)
+      - name: Sync dist folder to S3
+        run: aws s3 sync ./dist s3://${{ secrets.S3_BUCKET_NAME }} --delete
+        working-directory: ./frontend # ./dist 경로를 올바르게 찾기 위해
+
+      # 7. CloudFront 캐시를 무효화하여 사용자가 즉시 새 버전을 볼 수 있도록 합니다.
+      - name: Invalidate CloudFront Cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
