@@ -15,7 +15,7 @@
         s3:
           bucket: mxxdone-miniproject-bucket
         cloudfront:
-          domain: dkp5ibty51lgj.cloudfront.net
+          domain: d1turob604d0fy.cloudfront.net
     logging:
       level:
         org.hibernate.orm.jdbc.bind: trace
