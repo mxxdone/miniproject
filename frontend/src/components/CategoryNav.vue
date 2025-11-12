@@ -91,8 +91,11 @@ watch(
         v-else-if="category.children && category.children.length > 0"
         :value="category.id"
       >
-        <template v-slot:activator="{ props }">
-          <v-list-item v-bind="props" :prepend-icon="'mdi-folder-open-outline'">
+        <template v-slot:activator="{ props, isOpen }">
+          <v-list-item
+            v-bind="props"
+            :prepend-icon="isOpen ? 'mdi-folder-open-outline' : 'mdi-folder-outline'"
+          >
             <v-list-item-title class="text-subtitle-1 font-weight-medium">
               {{ category.name }}
             </v-list-item-title>
