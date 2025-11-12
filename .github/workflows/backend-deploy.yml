@@ -56,19 +56,19 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             echo "Creating /home/ec2-user/miniproject.env file..."
-          # GitHub Secrets에 등록한 모든 런타임 비밀 값을 .env 파일로 덮어씁니다.
+            # GitHub Secrets에 등록한 모든 런타임 비밀 값을 .env 파일로 덮어씁니다.
             cat <<EOF > /home/ec2-user/miniproject.env
-          # RDS
+            # RDS
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          # App
+            # App
             ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
-          # JWT
+            # JWT
             JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-          # AWS S3 (for Image Upload)
+            # AWS S3 (for Image Upload)
             SPRING_CLOUD_AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.SPRING_CLOUD_AWS_CREDENTIALS_ACCESS_KEY }}
             SPRING_CLOUD_AWS_CREDENTIALS_SECRET_KEY=${{ secrets.SPRING_CLOUD_AWS_CREDENTIALS_SECRET_KEY }}
-          # OAuth2
+            # OAuth2
             SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID }}
             SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET }}
             SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE }}
@@ -83,7 +83,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             sudo systemctl restart miniproject.service
-          # 서비스가 시작될 시간을 잠시 대기
+            # 서비스가 시작될 시간을 잠시 대기
             sleep 5
-          # 상태 로그를 Actions 로그에 출력
+            # 상태 로그를 Actions 로그에 출력
             sudo systemctl status miniproject.service
