@@ -26,20 +26,11 @@ jobs:
       # 3. Gradle 빌드 캐시를 설정하여 빌드 속도를 향상시킵니다.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-        with:
-          # 캐시 기능을 임시 비활성화합니다.
-          cache-disabled: true
 
       # 4. backend/gradlew 파일에 실행 권한을 부여합니다.
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
         working-directory: ./backend # 작업 디렉터리를 backend/로 지정
-
-      # 빌드 전 체크아웃된 도메인 파일 목록을 강제로 출력합니다.
-      - name: List domain files
-        run: |
-          echo "Listing files in domain directory:"
-          ls -l backend/src/main/java/com/mxxdone/miniproject/domain
 
       # 5. Gradle을 사용해 Spring Boot 애플리케이션을 빌드합니다. (bootJar)
       - name: Build with Gradle
@@ -55,6 +46,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           source: "backend/build/libs/miniproject-0.0.1-SNAPSHOT.jar" # 빌드된 .jar 파일 경로
           target: "/home/ec2-user/" # EC2 서버의 홈 디렉터리
+          strip_components: 3
 
       # 7. EC2에 접속하여 Spring Boot 실행에 필요한 환경 변수(.env) 파일을 생성합니다.
       - name: Create environment file on EC2
