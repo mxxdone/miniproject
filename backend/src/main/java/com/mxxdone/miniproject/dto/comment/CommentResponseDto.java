@@ -2,7 +2,7 @@ package com.mxxdone.miniproject.dto.comment;
 
 import com.mxxdone.miniproject.domain.Comment;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 public record CommentResponseDto(Long id,
@@ -12,8 +12,8 @@ public record CommentResponseDto(Long id,
                                  boolean isGuest,
                                  boolean isDeleted,
                                  List<CommentResponseDto> children,
-                                 LocalDateTime createdAt,
-                                 LocalDateTime updatedAt
+                                 Instant createdAt,
+                                 Instant updatedAt
 ) {
     public static CommentResponseDto from(Comment comment) {
         String authorName;

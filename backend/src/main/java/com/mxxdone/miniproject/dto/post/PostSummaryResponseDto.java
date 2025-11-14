@@ -2,7 +2,7 @@ package com.mxxdone.miniproject.dto.post;
 
 import com.querydsl.core.annotations.QueryProjection;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record PostSummaryResponseDto(
         Long id,
@@ -13,7 +13,7 @@ public record PostSummaryResponseDto(
         String authorNickname,
         int likeCount,
         Long commentCount,
-        LocalDateTime createdAt,
+        Instant createdAt,
         String parentSlug,
         String childSlug
 ) {

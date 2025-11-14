@@ -2,7 +2,7 @@ package com.mxxdone.miniproject.dto.post;
 
 import com.mxxdone.miniproject.dto.category.CategoryDto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 //게시글 정보 불러올 때 사용하는 DTO
@@ -21,6 +21,6 @@ public record PostDetailResponseDto(
         int likeCount,
         boolean isLiked,
         long commentCount,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        Instant createdAt,
+        Instant updatedAt
 ) {}
