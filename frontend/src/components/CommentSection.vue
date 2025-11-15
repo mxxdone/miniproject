@@ -292,6 +292,7 @@ function submitUpdate(commentId) {
                         v-model="replyingGuestName"
                         label="닉네임"
                         density="compact"
+                        autocomplete="off"
                         hide-details
                       ></v-text-field>
                     </v-col>
@@ -301,6 +302,7 @@ function submitUpdate(commentId) {
                         label="비밀번호"
                         type="password"
                         density="compact"
+                        browser-autocomplete="new-password"
                         hide-details
                       ></v-text-field>
                     </v-col>
@@ -336,10 +338,10 @@ function submitUpdate(commentId) {
         <div style="max-width: 500px;">
           <v-row>
             <v-col cols="12" sm="6">
-              <v-text-field v-model="guestName" label="닉네임" density="compact" hide-details></v-text-field>
+              <v-text-field v-model="guestName" label="닉네임" density="compact" autocomplete="off" hide-details></v-text-field>
             </v-col>
             <v-col cols="12" sm="6">
-              <v-text-field v-model="guestPassword" label="비밀번호" type="password" density="compact" hide-details></v-text-field>
+              <v-text-field v-model="guestPassword" label="비밀번호" type="password" density="compact" browser-autocomplete="new-password" hide-details></v-text-field>
             </v-col>
           </v-row>
         </div>
