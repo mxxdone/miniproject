@@ -42,6 +42,10 @@ a,
 .prose pre {
   background: #0b0f14; color: #e6edf3; padding: 16px; border-radius: 12px; overflow: auto;
 }
+.prose ul, .prose ol,
+.prose-content ul, .prose-content ol {
+  padding-left: 2em;
+}
 
 /* 다크 모드에서 경계선 색 재정의 */
 .v-theme--anyangDark .bordered { border-color: #3c2757; }

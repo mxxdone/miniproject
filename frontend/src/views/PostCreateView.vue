@@ -95,8 +95,8 @@ async function submitPost() {
   <v-container>
     <v-card>
       <v-card-title class="text-h5">새 게시글 작성</v-card-title>
-      <v-card-text>
-        <v-form ref="form" @submit.prevent="submitPost">
+      <v-form ref="form" @submit.prevent="submitPost">
+        <v-card-text>
           <v-select
             v-model="selectedCategoryId"
             :items="flatCategories"
@@ -114,12 +114,13 @@ async function submitPost() {
             required
           ></v-text-field>
           <div class="text-subtitle-1 font-weight-medium mb-2">내용</div>
-          <!-- Tiptap 에디터 추가 -->
           <TiptapEditor v-model:content="content" />
-          <v-btn color="primary" @click="goBack" class="mt-4 mr-2">뒤로가기</v-btn>
-          <v-btn type="submit" color="primary" class="mt-4">등록</v-btn>
-        </v-form>
-      </v-card-text>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer> <v-btn @click="goBack" class="mr-1" variant="elevated">뒤로가기</v-btn>
+          <v-btn type="submit" class="mr-3" variant="elevated">등록</v-btn>
+        </v-card-actions>
+      </v-form>
     </v-card>
   </v-container>
 </template>

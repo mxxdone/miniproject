@@ -112,30 +112,32 @@ async function submitUpdate() {
   <v-container>
     <v-card v-if="postsStore.currentPost">
       <v-card-title class="text-h5">게시글 수정</v-card-title>
-      <v-card-text>
-        <v-form ref="form" @submit.prevent="submitUpdate">
-          <v-select
-            v-model="selectedCategoryId"
-            :items="flatCategories"
-            item-title="name"
-            item-value="id"
-            :item-props="(item) => ({ disabled: item.disabled })"
-            label="카테고리"
-            :rules="[rules.required]"
-            required
-          ></v-select>
-          <v-text-field
-            v-model="title"
-            label="제목"
-            :rules="[rules.required, rules.minLength]"
-            required
-          ></v-text-field>
-          <div class="text-subtitle-1 font-weight-medium mb-2">내용</div>
-          <TiptapEditor v-model:content="content" />
-          <v-btn color="primary" to="/" class="mt-4 mr-2">뒤로가기</v-btn>
-          <v-btn type="submit" color="primary" class="mt-4">수정</v-btn>
-        </v-form>
-      </v-card-text>
+      <v-form ref="form" @submit.prevent="submitUpdate">
+        <v-card-text>
+            <v-select
+              v-model="selectedCategoryId"
+              :items="flatCategories"
+              item-title="name"
+              item-value="id"
+              :item-props="(item) => ({ disabled: item.disabled })"
+              label="카테고리"
+              :rules="[rules.required]"
+              required
+            ></v-select>
+            <v-text-field
+              v-model="title"
+              label="제목"
+              :rules="[rules.required, rules.minLength]"
+              required
+            ></v-text-field>
+            <div class="text-subtitle-1 font-weight-medium mb-2">내용</div>
+            <TiptapEditor v-model:content="content" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer> <v-btn color="primary" to="/" class="mr-1" variant="elevated">뒤로가기</v-btn>
+          <v-btn type="submit" color="primary" class="mr-3" variant="elevated">수정</v-btn>
+        </v-card-actions>
+      </v-form>
     </v-card>
     <v-row v-else align="center" justify="center" class="my-12">
       <v-progress-circular indeterminate color="primary" size="48" />

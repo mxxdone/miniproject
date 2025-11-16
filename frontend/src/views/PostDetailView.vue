@@ -157,10 +157,10 @@ async function removePost() {
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="on-primary" @click="goBack">뒤로가기</v-btn>
+        <v-btn color="on-primary" @click="goBack" variant="elevated">뒤로가기</v-btn>
         <template v-if="isAuthorOrAdmin">
-          <v-btn color="red" @click="removePost">삭제</v-btn>
-          <v-btn color="blue" :to="`${route.path}/edit`">수정</v-btn>
+          <v-btn color="red" @click="removePost" variant="elevated">삭제</v-btn>
+          <v-btn color="blue" :to="`${route.path}/edit`" variant="elevated">수정</v-btn>
         </template>
       </v-card-actions>
     </v-card>
