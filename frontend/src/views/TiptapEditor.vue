@@ -3,6 +3,7 @@ import { EditorContent, useEditor } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import { ref, watch } from 'vue'
 import Image from '@tiptap/extension-image'
+import Youtube from '@tiptap/extension-youtube'
 import apiClient from '@/api'
 import { useUiStore } from '@/stores/ui'
 
@@ -38,6 +39,12 @@ const uiStore = useUiStore()
 
 // 이미지 파일인지 확인
 const isImageFile = (file) => file && file.type.startsWith('image/')
+
+// 유튜브 URL 판별
+const isYoutubeUrl = (text) => {
+  if (!text) return false
+  return text.includes('youtube.com/watch') || text.includes('youtu.be/')
+}
 
 async function handleImageUpload(file) {
   // 파일 업로드 전 이미지 형식 확인
@@ -81,6 +88,25 @@ function onFileChange(event) {
   }
 }
 
+function insertYoutubeByPrompt() {
+  if (!editor.value) return
+  const url = window.prompt('YouTube 링크를 입력하세요:')
+  if (!url) return
+
+  if (!isYoutubeUrl(url)) {
+    uiStore.showSnackbar({ text: '유효한 YouTube 링크가 아닙니다.', color: 'error' })
+    return
+  }
+
+  editor.value
+    .chain()
+    .focus()
+    .setYoutubeVideo({
+      src: url,
+    })
+    .run()
+}
+
 const editor = useEditor({
   content: content.value,
   extensions: [
@@ -94,6 +120,11 @@ const editor = useEditor({
       languageClassPrefix: 'language-', // 클래스 접두사를 추가
     }),
     Image, // 이미지 확장팩 추가
+    Youtube.configure({
+      controls: true,
+      nocookie: false,
+      modestBranding: true,
+    }),
   ],
   editorProps: {
     // 에디터 속성 추가 (이미지 처리)
@@ -102,18 +133,33 @@ const editor = useEditor({
     },
     handlePaste(view, event) {
       const items = event.clipboardData?.items
-      if (!items) return
-
-      for (const item of items) {
-        // 붙여넣기도 이미지 파일인지 확인
-        if (item.type.startsWith('image/')) {
-          event.preventDefault()
-          const file = item.getAsFile()
-          if (file) {
-            handleImageUpload(file).then(insertImage)
+      if (items) {
+        for (const item of items) {
+          // 붙여넣기도 이미지 파일인지 확인
+          if (item.type.startsWith('image/')) {
+            event.preventDefault()
+            const file = item.getAsFile()
+            if (file) {
+              handleImageUpload(file).then(insertImage)
+            }
+            return true
           }
         }
       }
+      // YouTube URL 텍스트 붙여넣기 처리
+      const text = event.clipboardData?.getData('text/plain')?.trim()
+      if (text && isYoutubeUrl(text) && editor.value) {
+        event.preventDefault()
+        editor.value
+          .chain()
+          .focus()
+          .setYoutubeVideo({
+            src: text,
+          })
+          .run()
+        return true
+      }
+      return false
     },
     handleDrop(view, event) {
       event.preventDefault()
@@ -181,6 +227,12 @@ watch(content, (newContent) => {
         accept=".png, .jpg, .jpeg, .gif, .webp"
         hidden
       />
+      <v-btn
+        icon="mdi-youtube"
+        size="small"
+        variant="text"
+        @click="insertYoutubeByPrompt"
+      />
     </div>
 
     <EditorContent :editor="editor" class="editor-content" />
@@ -210,5 +262,14 @@ watch(content, (newContent) => {
 
 .is-active {
   background-color: rgba(0, 0, 0, 0.1);
+}
+
+.editor-content :deep(iframe[src*="youtube.com"]) {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9; /* 16:9 비율 강제 */
+  height: auto;
+  border-radius: 8px;
+  border: 0;
 }
 </style>

@@ -14,6 +14,8 @@
     "@mdi/font": "^7.4.47",
     "@tiptap/extension-code-block-lowlight": "^3.3.0",
     "@tiptap/extension-image": "^3.3.0",
+    "@tiptap/extension-youtube": "^3.10.7",
+    "@tiptap/markdown": "^3.10.7",
     "@tiptap/starter-kit": "^3.2.2",
     "@tiptap/vue-3": "^3.2.2",
     "axios": "^1.10.0",

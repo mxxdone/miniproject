@@ -204,4 +204,13 @@ async function removePost() {
 .separator {
   margin-right: 12px;
 }
+
+.prose-content iframe[src*="youtube.com"] {
+  position: relative;
+  width: 50%;
+  aspect-ratio: 16 / 9; /* 16:9 비율 강제 */
+  height: auto;
+  border-radius: 8px;
+  border: 0;
+}
 </style>

@@ -46,6 +46,17 @@ public class HtmlSanitizer {
             .matching(Pattern.compile("^hljs-[a-zA-Z0-9\\-]+$"))
             .onElements("span")
 
+            // 6. Tiptap 유튜브 래퍼(div)의 속성 허용
+            .allowAttributes("data-youtube-video")
+            .onElements("div")
+
+            // 7. 유튜브 <iframe> 허용
+            .allowElements("iframe")
+            .allowAttributes("src", "width", "height", "frameborder", "allowfullscreen", "allow")
+            // https URL 허용 정규식 수정
+            .matching(Pattern.compile("^https://www\\.youtube\\.com/embed/[a-zA-Z0-9_-]+(\\?.*)?$"))
+            .onElements("iframe")
+
             .toFactory();
 
     public static String sanitize(String rawHtml) {
