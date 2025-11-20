@@ -31,7 +31,7 @@ jobs:
             rm -rf $DEPLOY_DIR
             mkdir -p $DEPLOY_DIR
 
-      # 3. (변경) Docker Compose 빌드에 필요한 모든 파일을 EC2로 전송합니다.
+      # 3. Docker Compose 빌드에 필요한 모든 파일을 EC2로 전송합니다.
       - name: Copy All Project Files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -41,6 +41,18 @@ jobs:
           # Docker Compose 빌드에 필요한 모든 파일 (루트 포함)을 EC2의 새 디렉토리로 전송합니다.
           source: "./*"
           target: "/home/ec2-user/miniproject"
+
+      - name: Debug files on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ec2-user/miniproject
+            pwd
+            ls -al
+            ls -al backend
 
       # 7. EC2에 접속하여 Spring Boot 실행에 필요한 환경 변수(.env) 파일을 생성합니다.
       - name: Create environment file on EC2
