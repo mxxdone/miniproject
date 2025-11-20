@@ -23,8 +23,8 @@ RUN ./gradlew :backend:bootJar -x test --no-daemon
 
 # ----------------------------------------------------
 
-# 2. 실행 스테이지 (Run Stage): 경량화 및 보안
-FROM openjdk:21-jre-slim
+# 2. 실행 스테이지 (Run Stage)
+FROM eclipse-temurin:21-jre-jammy
 
 # 작업 디렉토리 설정
 WORKDIR /app
