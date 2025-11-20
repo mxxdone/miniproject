@@ -1,0 +1,30 @@
+services:
+  # 1. 백엔드 Spring Boot 애플리케이션 서비스
+  backend-app:
+    # 빌드 컨텍스트를 backend 디렉토리로 설정하고, 해당 디렉토리의 Dockerfile을 사용
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: miniproject-backend-app
+    ports:
+      - "8080:8080"
+    # EC2 환경 변수 파일 주입 (RDS, JWT 키 등)
+    env_file:
+      - /home/ec2-user/miniproject.env
+    depends_on:
+      - redis
+    restart: always
+
+  # 2. Redis 캐시 서버 서비스
+  redis:
+    image: redis:7.0-alpine
+    container_name: miniproject-redis
+    ports:
+      - "6379:6379"
+    # Redis 데이터의 영속성을 위한 볼륨 설정
+    volumes:
+      - redis-data:/data
+    restart: always
+
+volumes:
+  redis-data:

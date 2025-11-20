@@ -5,6 +5,7 @@ on:
     branches: [ main ] # main 브랜치에 Push될 때 실행
     paths:
       - 'backend/**'  # backend/ 디렉터리 내부 파일 변경 시에만 실행
+      - 'docker-compose.yml' # Docker Compose 파일 변경 시에도 실행
       - '.github/workflows/backend-deploy.yml' # 이 워크플로우 파일 변경 시에도 실행
 
 jobs:
@@ -16,37 +17,30 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. JDK 21 버전을 설치합니다. (build.gradle 기반)
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      # 2. EC2에 배포할 디렉토리 준비
+      - name: Prepare Deployment Directory on EC2
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            DEPLOY_DIR="/home/ec2-user/miniproject"
+            
+            # 기존 작업 디렉토리 삭제 및 재생성
+            rm -rf $DEPLOY_DIR
+            mkdir -p $DEPLOY_DIR
 
-      # 3. Gradle 빌드 캐시를 설정하여 빌드 속도를 향상시킵니다.
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      # 4. backend/gradlew 파일에 실행 권한을 부여합니다.
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-        working-directory: ./backend # 작업 디렉터리를 backend/로 지정
-
-      # 5. Gradle을 사용해 Spring Boot 애플리케이션을 빌드합니다. (bootJar)
-      - name: Build with Gradle
-        run: ./gradlew clean bootJar
-        working-directory: ./backend
-
-      # 6. 빌드된 .jar 파일을 EC2 서버로 전송합니다. (scp 사용)
-      - name: Copy JAR to EC2
+      # 3. (변경) Docker Compose 빌드에 필요한 모든 파일을 EC2로 전송합니다.
+      - name: Copy All Project Files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          source: "backend/build/libs/miniproject-0.0.1-SNAPSHOT.jar" # 빌드된 .jar 파일 경로
-          target: "/home/ec2-user/" # EC2 서버의 홈 디렉터리
-          strip_components: 3
+          # Docker Compose 빌드에 필요한 모든 파일 (루트 포함)을 EC2의 새 디렉토리로 전송합니다.
+          source: "./*"
+          target: "/home/ec2-user/miniproject"
 
       # 7. EC2에 접속하여 Spring Boot 실행에 필요한 환경 변수(.env) 파일을 생성합니다.
       - name: Create environment file on EC2
@@ -77,16 +71,23 @@ jobs:
             SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE=${{ secrets.SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE }}
             EOF
 
-      # 8. EC2에 접속하여 systemd 서비스를 재시작합니다.
-      - name: Restart service on EC2
+      # 5. EC2에 접속하여 Docker Compose로 애플리케이션을 빌드 및 배포합니다.
+      - name: Deploy with Docker Compose on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
-            sudo systemctl restart miniproject.service
-            # 서비스가 시작될 시간을 잠시 대기
-            sleep 5
-            # 상태 로그를 Actions 로그에 출력
-            sudo systemctl status miniproject.service
+            DEPLOY_DIR="/home/ec2-user/miniproject"
+            
+            # 1. 작업 디렉토리로 이동
+            cd $DEPLOY_DIR
+            
+            # 2. gradlew 실행 권한 부여 (컨테이너 빌드 시 필요)
+            chmod +x gradlew
+            
+            # 3. Docker Compose 빌드 및 실행
+            docker compose up -d --build --force-recreate
+            
+            echo "--- Docker Compose Deployment Complete ---"
