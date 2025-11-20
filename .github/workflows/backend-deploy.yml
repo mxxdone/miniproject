@@ -79,12 +79,9 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
-            DEPLOY_DIR="/home/ec2-user/miniproject"
+            cd /home/ec2-user/miniproject
             
-            # 1. 작업 디렉토리로 이동
-            cd $DEPLOY_DIR
-            
-            # 3. Docker Compose 빌드 및 실행
+            # Docker Compose 빌드 및 실행
             docker compose up -d --build --force-recreate
             
             echo "--- Docker Compose Deployment Complete ---"

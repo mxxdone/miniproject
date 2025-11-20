@@ -4,8 +4,10 @@ FROM gradle:8.14.0-jdk21-jammy AS builder
 # 1.1. Gradle Wrapper 파일 복사 (변경 빈도가 가장 낮음)
 # 복사 경로는 빌드 컨텍스트인 프로젝트 루트(.) 기준
 WORKDIR /app
-COPY gradlew settings.gradle build.gradle /app/
-COPY gradle /app/gradle
+COPY gradlew build.gradle settings.gradle ./
+COPY gradle ./gradle
+
+# 실행권한 부여
 RUN chmod +x ./gradlew
 
 # 1.2. 의존성 파일 복사 및 다운로드 (변경 빈도가 낮음)
