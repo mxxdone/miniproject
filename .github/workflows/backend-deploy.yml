@@ -53,6 +53,8 @@ jobs:
             echo "Creating /home/ec2-user/miniproject.env file..."
             # GitHub Secrets에 등록한 모든 런타임 비밀 값을 .env 파일로 덮어씁니다.
             cat <<EOF > /home/ec2-user/miniproject.env
+            # 프로파일을 'prod'로 강제 지정
+            SPRING_PROFILES_ACTIVE=prod
             # RDS 접속 URL
             SPRING_DATASOURCE_URL=jdbc:postgresql://my-project-db.cv0468m20ioy.ap-northeast-2.rds.amazonaws.com:5432/miniproject
             # RDS
