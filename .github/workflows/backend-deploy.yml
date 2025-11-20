@@ -85,9 +85,9 @@ jobs:
             cd $DEPLOY_DIR
             
             # 2. gradlew 실행 권한 부여 (컨테이너 빌드 시 필요)
-            chmod +x gradlew
+            chmod +x gradlew || true
             
             # 3. Docker Compose 빌드 및 실행
-            docker-compose up -d --build --force-recreate
+            docker compose up -d --build --force-recreate
             
             echo "--- Docker Compose Deployment Complete ---"
