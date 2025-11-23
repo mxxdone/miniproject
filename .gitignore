@@ -22,7 +22,12 @@ frontend/.vite/
 
 # Secrets
 application-secret-*.yml
+miniproject.env
+.env
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Docker Compose override for local env
+docker-compose.override.yml
