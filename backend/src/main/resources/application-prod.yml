@@ -28,5 +28,5 @@ springdoc:
     enabled: false
 logging:
   level:
-    com.mxxdone.miniproject: debug
+    com.mxxdone.miniproject: info
     org.springframework.security: WARN
