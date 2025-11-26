@@ -64,12 +64,13 @@ public class Comment {
     private Instant updatedAt;
 
     @Builder
-    public Comment(String content, Post post, User author, String guestName, String guestPassword) {
+    public Comment(String content, Post post, User author, String guestName, String guestPassword, Comment parent) {
         this.content = content;
         this.post = post;
         this.author = author;
         this.guestName = guestName;
         this.guestPassword = guestPassword; // 암호화 필요
+        this.parent = parent;
     }
 
     // 수정 편의 메서드
