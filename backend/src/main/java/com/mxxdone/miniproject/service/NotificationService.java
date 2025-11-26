@@ -23,7 +23,7 @@ public class NotificationService {
     // 내 알림 목록 조회
     public List<NotificationResponseDto> findAllByUsername(String username) {
         User user = getUser(username);
-        return notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(user.getId())
+        return notificationRepository.findAllByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(user.getId())
                 .stream()
                 .map(NotificationResponseDto::from)
                 .toList();
@@ -53,7 +53,7 @@ public class NotificationService {
     @Transactional
     public void markAllAsRead(String username) {
         User user = getUser(username);
-        List<Notification> notifications = notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(user.getId());
+        List<Notification> notifications = notificationRepository.findAllByReceiverIdAndIsReadFalseOrderByCreatedAtDesc(user.getId());
         notifications.forEach(Notification::read);
     }
 
