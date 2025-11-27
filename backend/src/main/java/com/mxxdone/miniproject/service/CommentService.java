@@ -94,8 +94,12 @@ public class CommentService {
             // 수신자가 존재하고, 본인이 아닌 경우에 알림 발송
             if (targetUser != null && !isSelf) {
                 // 해당 댓글 바로가기 기능을을 위한 앵커 추가
-                String url = "/posts/" + post.getId() + "#comment-" + savedComment.getId();
-                eventPublisher.publishEvent(new NotificationEvent(
+                Category childCategory = post.getCategory();
+                Category parentCategory = childCategory.getParent();
+                String parentSlug = (parentCategory != null) ? parentCategory.getSlug() : "category";
+                String childSlug = childCategory.getSlug();
+
+                String url = "/" + parentSlug + "/" + childSlug + "/posts/" + post.getId() + "#comment-" + savedComment.getId();                eventPublisher.publishEvent(new NotificationEvent(
                         targetUser.getId(),
                         message,
                         url,
