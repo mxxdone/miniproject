@@ -5,6 +5,7 @@ import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import CategoryNav from '@/components/CategoryNav.vue'
 import { jwtDecode } from 'jwt-decode'
+import NotificationMenu from '@/components/NotificationMenu.vue'
 
 const uiStore = useUiStore()
 const authStore = useAuthStore()
@@ -70,6 +71,8 @@ onMounted(() => {
         </v-toolbar-title>
 
         <v-spacer />
+
+        <NotificationMenu v-if="authStore.isLoggedIn" />
 
         <!-- 토글: 아이콘 버튼 권장 -->
         <v-btn variant="text" icon color="on-primary" @click="toggleTheme" class="mr-2">

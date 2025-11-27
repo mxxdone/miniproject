@@ -1,8 +1,9 @@
 <script setup>
-import { defineProps, onMounted, ref } from 'vue'
+import { defineProps, onMounted, ref, nextTick } from 'vue'
 import { useCommentsStore } from '@/stores/comments'
 import { useAuthStore } from '@/stores/auth'
 import { formatDateTime } from '@/utils/formatDate'
+import { useRoute } from  'vue-router'
 
 // defineProps: 컴포넌트가 부모로부터 전달받는 props를 선언
 // postId라는 prop을 반드시 받아야 함
@@ -21,7 +22,7 @@ const props = defineProps({
 
 const commentsStore = useCommentsStore()
 const authStore = useAuthStore()
-
+const route = useRoute()
 const newCommentContent = ref('') // 댓글 작성 폼과 연결될 변수, 상위 댓글
 const editingCommentId = ref(null) // 현재 수정 중인 댓글 id 저장할 변수
 const editedContent = ref('') // 수정 중인 댓글 내용 담을 변수
@@ -45,9 +46,26 @@ const commentIdToDelete = ref(null)   // 삭제할 댓글의 ID
   return count
 })*/
 
-onMounted(() => {
-  commentsStore.fetchComments(props.postId)
-})
+onMounted(async() => {
+  await commentsStore.fetchComments(props.postId)
+
+  // URL에 앵커(#comment-123)가 있는지 확인
+  if (route.hash) {
+    // 화면이 다 그려질 때까지 대기
+    await nextTick()
+
+    // 해당 ID를 가진 요소를 찾아서 스크롤을 이동
+    const element = document.getElementById(route.hash.substring(1)) // # 제거하고 id만 추출
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // 찾은 댓글 배경을 잠깐 깜빡여서 강조 효과 주기
+      element.style.transition = 'background-color 1s'
+      element.style.backgroundColor = '#fff9c4' // 연한 노란색
+      setTimeout(() => {
+        element.style.backgroundColor = 'transparent'
+      }, 2000)
+    }
+  }})
 
 // 최상위 댓글 작성
 function submitComment() {
@@ -193,7 +211,7 @@ function submitUpdate(commentId) {
     <div v-if="props.totalComments > 0">
       <v-list lines="two" class="bg-transparent">
         <template v-for="(comment, index) in commentsStore.comments" :key="comment.id">
-          <v-list-item class="mb-2">
+          <v-list-item class="mb-2" :id="`comment-${comment.id}`">
             <div v-if="editingCommentId === comment.id">
               <v-textarea v-model="editedContent" rows="2" no-resize hide-details></v-textarea>
               <div class="mt-2 text-right">
@@ -230,7 +248,7 @@ function submitUpdate(commentId) {
           </v-list-item>
 
           <div class="pl-10">
-            <v-list-item v-for="reply in comment.children" :key="reply.id" class="mb-2">
+            <v-list-item v-for="reply in comment.children" :key="reply.id" class="mb-2" :id="`comment-${reply.id}`">
               <template v-slot:prepend>
                 <v-icon>mdi-subdirectory-arrow-right</v-icon>
               </template>
