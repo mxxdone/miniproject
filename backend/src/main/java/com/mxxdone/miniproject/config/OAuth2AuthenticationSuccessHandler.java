@@ -3,6 +3,8 @@ package com.mxxdone.miniproject.config;
 import com.mxxdone.miniproject.config.security.PrincipalDetails;
 import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
 import com.mxxdone.miniproject.domain.User;
+import com.mxxdone.miniproject.service.RefreshTokenService;
+import com.mxxdone.miniproject.util.CookieUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +16,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Duration;
 
 @Slf4j
 @Component
@@ -21,6 +24,8 @@ import java.io.IOException;
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
+    private final CookieUtil cookieUtil;
 
     @Value("${app.oauth2.redirect-uri}")
     private String redirectUri;
@@ -28,13 +33,28 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("====OAuth2.0 Login Success====");
+
+        // 인증된 사용자 정보 가져오기
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         User user = principalDetails.getUser();
 
-        // User 객체를 기반으로 JWT 생성
-        String token = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
+        // Access Token 생성
+        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
+
+        // ===== Refresh Token =====
+        // 생성 및 처리
+        String refreshToken = jwtUtil.createRefreshToken(user.getUsername());
+
+        // Redis에 저장
+        Duration refreshTokenDuration = Duration.ofDays(jwtUtil.getRefreshTokenExpirationDays());
+        refreshTokenService.saveRefreshToken(user.getUsername(), refreshToken, refreshTokenDuration);
+
+        // HttpOnly 쿠키에 Refresh Token 설정
+        long refreshTokenMaxAgeSeconds = refreshTokenDuration.toSeconds();
+        cookieUtil.addCookie(response, "refreshToken", refreshToken, refreshTokenMaxAgeSeconds);
 
         // 프론트 특정 경로로 JWT 담아 리디렉션
-        response.sendRedirect(redirectUri + "?token=" + token);
+        // Refresh Token은 쿠키에 담겨 있으므로 URL에 노출X
+        response.sendRedirect(redirectUri + "?token=" + accessToken);
     }
 }
