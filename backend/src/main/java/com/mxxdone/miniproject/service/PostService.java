@@ -42,16 +42,13 @@ public class PostService {
 
     // 게시글 저장
     @CacheEvict(value = "categories", allEntries = true)
-    public PostSaveResponseDto save(PostSaveRequestDto requestDto, String username) {
+    public PostSaveResponseDto save(PostSaveRequestDto requestDto, User author) {
         Category category = categoryRepository.findById(requestDto.categoryId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
 
         if (!category.getChildren().isEmpty()) {
             throw new IllegalArgumentException("하위 카테고리에만 게시글을 작성할 수 있습니다.");
         }
-
-        User author = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 빌더를 이용하여 Post 객체 생성
         Post post = Post.builder()
@@ -71,12 +68,9 @@ public class PostService {
 
     //게시글 수정
     @CacheEvict(value = "categories", allEntries = true)
-    public Long update(Long id, PostUpdateRequestDto requestDto, String username) {
+    public Long update(Long id, PostUpdateRequestDto requestDto, User currentUser) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
-
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("게시글 수정 권한이 없습니다.");
@@ -101,12 +95,9 @@ public class PostService {
 
     //게시글 삭제
     @CacheEvict(value = "categories", allEntries = true)
-    public void delete(Long id, String username) {
+    public void delete(Long id, User currentUser) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
-
-        User currentUser = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("게시글 삭제 권한이 없습니다.");
@@ -260,9 +251,7 @@ public class PostService {
 
     // 좋아요 토글
     @Transactional
-    public void toggleLike(Long postId, String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public void toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
         Optional<PostLike> existingLike = postLikeRepository.findByUserAndPost(user, post);

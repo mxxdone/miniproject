@@ -29,7 +29,7 @@ public class PostController {
             @RequestBody PostSaveRequestDto requestDto,
             @AuthenticationPrincipal PrincipalDetails principalDetails // 현재 로그인한 사용자 정보
     ) {
-        return ResponseEntity.ok(postService.save(requestDto, principalDetails.getUsername()));
+        return ResponseEntity.ok(postService.save(requestDto, principalDetails.getUser()));
     }
 
     // 게시글 수정 API
@@ -39,7 +39,7 @@ public class PostController {
                                            @RequestBody PostUpdateRequestDto requestDto,
                                            @AuthenticationPrincipal PrincipalDetails principalDetails
     ) {
-        return ResponseEntity.ok(postService.update(id, requestDto, principalDetails.getUsername()));
+        return ResponseEntity.ok(postService.update(id, requestDto, principalDetails.getUser()));
     }
 
     // 게시글 삭제 API
@@ -48,7 +48,7 @@ public class PostController {
     public ResponseEntity<Void> deletePost(@PathVariable Long id,
                                            @AuthenticationPrincipal PrincipalDetails principalDetails
     ) {
-        postService.delete(id, principalDetails.getUsername());
+        postService.delete(id, principalDetails.getUser());
         return ResponseEntity.ok().build();
         //.build() 사용 이유
         //응답 본문(body)이 없는 HTTP응답을 만들기 위해서
@@ -82,9 +82,9 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> toggleLike(
             @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal PrincipalDetails principalDetails) {
 
-        postService.toggleLike(id, userDetails.getUsername());
+        postService.toggleLike(id, principalDetails.getUser());
         return ResponseEntity.ok().build();
     }
 }

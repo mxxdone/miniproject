@@ -93,7 +93,7 @@ class PostServiceTest {
         PostSaveRequestDto requestDto = new PostSaveRequestDto("게시글 제목", "게시글 내용", testCategory.getId());
 
         // when
-        PostSaveResponseDto responseDto = postService.save(requestDto, testAdmin.getUsername());
+        PostSaveResponseDto responseDto = postService.save(requestDto, testAdmin);
 
         // then
         assertThat(responseDto).isNotNull();
@@ -113,7 +113,7 @@ class PostServiceTest {
         PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정된 제목", "수정된 내용", testCategory.getId());
 
         // when
-        postService.update(testPost.getId(), requestDto, testUser.getUsername());
+        postService.update(testPost.getId(), requestDto, testUser);
 
         // then
         Post updatedPost = postRepository.findById(testPost.getId()).orElseThrow();
@@ -131,7 +131,7 @@ class PostServiceTest {
         PostUpdateRequestDto requestDto = new PostUpdateRequestDto("관리자가 수정한 제목", "관리자가 수정한 내용", testCategory.getId());
 
         // when
-        postService.update(testPost.getId(), requestDto, testAdmin.getUsername());
+        postService.update(testPost.getId(), requestDto, testAdmin);
 
         // then
         Post updatedPost = postRepository.findById(testPost.getId()).orElseThrow();
@@ -156,7 +156,7 @@ class PostServiceTest {
         PostUpdateRequestDto requestDto = new PostUpdateRequestDto("수정 시도", "수정 시도", testCategory.getId());
 
         // when & then
-        assertThatThrownBy(() -> postService.update(testPost.getId(), requestDto, otherUser.getUsername()))
+        assertThatThrownBy(() -> postService.update(testPost.getId(), requestDto, otherUser))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("게시글 수정 권한이 없습니다.");
     }
@@ -165,7 +165,7 @@ class PostServiceTest {
     @DisplayName("게시글 작성자가 자신의 글을 삭제하면 성공")
     void deletePost_success_by_author() {
         // when
-        postService.delete(testPost.getId(), testUser.getUsername());
+        postService.delete(testPost.getId(), testUser);
 
         // then
         assertThat(postRepository.findById(testPost.getId())).isEmpty();
@@ -178,7 +178,7 @@ class PostServiceTest {
     @DisplayName("관리자는 다른 사람의 글을 삭제 가능")
     void deletePost_success_by_admin() {
         // when
-        postService.delete(testPost.getId(), testAdmin.getUsername());
+        postService.delete(testPost.getId(), testAdmin);
 
         // then
         assertThat(postRepository.findById(testPost.getId())).isEmpty();
@@ -201,7 +201,7 @@ class PostServiceTest {
         );
 
         // when & then
-        assertThatThrownBy(() -> postService.delete(testPost.getId(), otherUser.getUsername()))
+        assertThatThrownBy(() -> postService.delete(testPost.getId(), otherUser))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("게시글 삭제 권한이 없습니다.");
     }
