@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.service;
 
+import com.mxxdone.miniproject.config.security.PrincipalDetails;
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,6 @@ public class PrincipalDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
-        return user;
+        return new PrincipalDetails(user);
     }
 }

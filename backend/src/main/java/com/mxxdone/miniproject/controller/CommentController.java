@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.controller;
 
+import com.mxxdone.miniproject.config.security.PrincipalDetails;
 import com.mxxdone.miniproject.dto.comment.CommentResponseDto;
 import com.mxxdone.miniproject.dto.comment.CommentSaveRequestDto;
 import com.mxxdone.miniproject.dto.comment.CommentUpdateRequestDto;
@@ -22,9 +23,9 @@ public class CommentController {
 
     @PostMapping
     public ResponseEntity<Long> saveComment(@RequestBody CommentSaveRequestDto requestDto,
-                                            @AuthenticationPrincipal UserDetails userDetails) {
+                                            @AuthenticationPrincipal PrincipalDetails principalDetails) {
         // 비로그인 사용자의 경우 username을 null로 고정
-        String username = (userDetails != null) ? userDetails.getUsername() : null;
+        String username = (principalDetails != null) ? principalDetails.getUsername() : null;
         return ResponseEntity.ok(commentService.save(requestDto, username));
     }
 
@@ -37,17 +38,17 @@ public class CommentController {
     public ResponseEntity<Void> updateComment(
             @PathVariable Long commentId,
             @RequestBody CommentUpdateRequestDto requestDto,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal PrincipalDetails principalDetails
     ) {
-        commentService.update(commentId, requestDto, userDetails.getUsername());
+        commentService.update(commentId, requestDto, principalDetails.getUsername());
         return ResponseEntity.ok().build();
     }
 
     // 로그인 사용자 전용 삭제 API
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteCommentForMember(@PathVariable Long commentId,
-                                                       @AuthenticationPrincipal UserDetails userDetails) {
-        commentService.delete(commentId, userDetails.getUsername(), null);
+                                                       @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        commentService.delete(commentId, principalDetails.getUsername(), null);
         return ResponseEntity.ok().build();
     }
 

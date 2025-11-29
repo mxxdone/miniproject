@@ -3,10 +3,12 @@ package com.mxxdone.miniproject.config.security;
 import com.mxxdone.miniproject.domain.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 // User 엔티티를 스프링 시큐리티에 맞는 UserDetails와 OAuth2User 형태로 포장
@@ -28,10 +30,13 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         this.attributes = attributes;
     }
 
-    // --- UserDetails 구현 (user 객체에 위임) ---
+    // UserDetails 구현
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getAuthorities(); // user의 권한을 반환
+        // User 엔티티의 Role 정보를 가져와서 시큐리티 타입으로 변환
+        return Collections.singletonList(
+                new SimpleGrantedAuthority(user.getRole().getKey())
+        );
     }
 
     @Override
@@ -46,22 +51,22 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isAccountNonExpired() {
-        return user.isAccountNonExpired();
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return user.isAccountNonLocked();
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return user.isCredentialsNonExpired();
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return user.isEnabled();
+        return true;
     }
 
     // --- OAuth2User 구현 ---

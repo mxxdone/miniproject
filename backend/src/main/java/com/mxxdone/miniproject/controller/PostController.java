@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.controller;
 
+import com.mxxdone.miniproject.config.security.PrincipalDetails;
 import com.mxxdone.miniproject.dto.PageDto;
 import com.mxxdone.miniproject.dto.post.*;
 import com.mxxdone.miniproject.service.PostService;
@@ -26,10 +27,9 @@ public class PostController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PostSaveResponseDto> savePost(
             @RequestBody PostSaveRequestDto requestDto,
-            @AuthenticationPrincipal UserDetails userDetails // 현재 로그인한 사용자 정보
+            @AuthenticationPrincipal PrincipalDetails principalDetails // 현재 로그인한 사용자 정보
     ) {
-        String username = userDetails.getUsername();
-        return ResponseEntity.ok(postService.save(requestDto, username));
+        return ResponseEntity.ok(postService.save(requestDto, principalDetails.getUsername()));
     }
 
     // 게시글 수정 API
@@ -37,18 +37,18 @@ public class PostController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Long> updatePost(@PathVariable Long id,
                                            @RequestBody PostUpdateRequestDto requestDto,
-                                           @AuthenticationPrincipal UserDetails userDetails
+                                           @AuthenticationPrincipal PrincipalDetails principalDetails
     ) {
-        return ResponseEntity.ok(postService.update(id, requestDto, userDetails.getUsername()));
+        return ResponseEntity.ok(postService.update(id, requestDto, principalDetails.getUsername()));
     }
 
     // 게시글 삭제 API
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deletePost(@PathVariable Long id,
-                                           @AuthenticationPrincipal UserDetails userDetails
+                                           @AuthenticationPrincipal PrincipalDetails principalDetails
     ) {
-        postService.delete(id, userDetails.getUsername());
+        postService.delete(id, principalDetails.getUsername());
         return ResponseEntity.ok().build();
         //.build() 사용 이유
         //응답 본문(body)이 없는 HTTP응답을 만들기 위해서

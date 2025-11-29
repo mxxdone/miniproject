@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.controller;
 
+import com.mxxdone.miniproject.config.security.PrincipalDetails;
 import com.mxxdone.miniproject.dto.notification.NotificationResponseDto;
 import com.mxxdone.miniproject.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -19,26 +20,26 @@ public class NotificationController {
 
     // 알림 목록 조회
     @GetMapping
-    public ResponseEntity<List<NotificationResponseDto>> getNotifications(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(notificationService.findAllByUsername(userDetails.getUsername()));
+    public ResponseEntity<List<NotificationResponseDto>> getNotifications(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        return ResponseEntity.ok(notificationService.findAllByUsername(principalDetails.getUsername()));
     }
 
     // 안 읽은 알림 개수
     @GetMapping("/unread-count")
-    public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(notificationService.countUnreadNotifications(userDetails.getUsername()));
+    public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        return ResponseEntity.ok(notificationService.countUnreadNotifications(principalDetails.getUsername()));
     }
 
     // 알림 읽음 처리
     @PatchMapping("/{id}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
-        notificationService.markAsRead(id, userDetails.getUsername());
+    public ResponseEntity<Void> markAsRead(@PathVariable Long id, @AuthenticationPrincipal PrincipalDetails principalDetails) {
+        notificationService.markAsRead(id, principalDetails.getUsername());
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/read-all")
-    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal UserDetails userDetails) {
-        notificationService.markAllAsRead(userDetails.getUsername());
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        notificationService.markAllAsRead(principalDetails.getUsername());
         return ResponseEntity.ok().build();
     }
 }

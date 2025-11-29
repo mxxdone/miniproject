@@ -18,7 +18,7 @@ import java.util.List;
 @Table(name = "USERS")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User implements UserDetails {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,39 +57,5 @@ public class User implements UserDetails {
         this.email = email;
         this.provider = provider;
         this.nickname = nickname;
-    }
-
-    // UserDetails 구현 메서드 추가
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(
-                new SimpleGrantedAuthority(this.role.getKey())
-        );
-    }
-
-    //계정에 대한 정책은 아직 미확립으로 전부 true로 설정
-
-    // 계정 만료 여부(e.g. 1년이상 미접속 휴면 계정)
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    // 계정 잠금 여부(e.g. 비밀번호 n회 이상 오류)
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    // 비밀번호 만료 여부(e.g. 90일마다 변경 정책 시...)
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    // 계정 활성화 여부(e.g. 관리자가 비활성화)
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 }
