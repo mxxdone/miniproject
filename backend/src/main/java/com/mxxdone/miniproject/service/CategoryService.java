@@ -22,8 +22,11 @@ public class CategoryService {
 
     @CacheEvict(value = "categories", allEntries = true) // 캐시 지우기
     public Long save(CategorySaveRequestDto requestDto) {
-        Category category = requestDto.toEntity();
-
+        Category category = new Category(
+                requestDto.name(),
+                requestDto.slug(),
+                requestDto.displayOrder()
+        );
         // 상위 카테고리 id 값을 가지고 상위 카테고리명 저장
         if (requestDto.parentId() != null) {
             Category parent = categoryRepository.findById(requestDto.parentId())
