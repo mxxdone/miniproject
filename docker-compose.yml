@@ -1,6 +1,7 @@
 services:
   # 1. 백엔드 Spring Boot 애플리케이션 서비스
   backend-app:
+    image: mxxdone/miniproject-backend:latest
     # 빌드 컨텍스트를 backend 디렉토리로 설정하고, 해당 디렉토리의 Dockerfile을 사용
     build:
       context: ./backend
