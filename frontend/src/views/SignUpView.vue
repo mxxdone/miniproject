@@ -20,7 +20,7 @@ const rules = {
     return pattern.test(value) || '영문 소문자와 숫자만 사용할 수 있습니다.'
   },
   password: value => {
-    const pattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%^*#?&])[A-Za-z\d@$!%^*#?&].*$/
+    const pattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%^*#?&])[A-Za-z\d@$!%^*#?&]+$/
     return pattern.test(value) || '영문, 숫자, 특수문자를 포함해야 합니다.'
   },
   nickname: value => {
