@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.config;
 
+import com.mxxdone.miniproject.exception.DuplicateException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요,"));
+    }
+
+    // 서비스에서 중복 에러 처리(409)
+    @ExceptionHandler(DuplicateException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateException(DuplicateException e) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT) // 409 상태 코드
+                .body(Map.of("message", e.getMessage())); // "이미 사용 중인 ~입니다" 메시지 전달
     }
 
     // DB 데이터 충돌 (중복id, 이메일 등) (409)

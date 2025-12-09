@@ -6,6 +6,7 @@ import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
 import com.mxxdone.miniproject.dto.user.TokenResponseDto;
+import com.mxxdone.miniproject.exception.DuplicateException;
 import com.mxxdone.miniproject.repository.UserRepository;
 import com.mxxdone.miniproject.util.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,15 +32,15 @@ public class UserService {
     public Long signup(SignUpRequestDto requestDto) {
         // 아이디 중복 확인
         if (userRepository.findByUsername(requestDto.username()).isPresent()) {
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+            throw new DuplicateException("이미 사용 중인 아이디입니다.");
         }
 
         if (userRepository.existsByEmail(requestDto.email())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new DuplicateException("이미 사용 중인 이메일입니다.");
         }
 
         if (userRepository.existsByNickname(requestDto.nickname())) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new DuplicateException("이미 사용 중인 닉네임입니다.");
         }
 
         // 비밀번호 암호화
