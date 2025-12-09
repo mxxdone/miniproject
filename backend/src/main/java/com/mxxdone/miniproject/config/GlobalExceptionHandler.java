@@ -1,6 +1,7 @@
 package com.mxxdone.miniproject.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -48,9 +49,17 @@ public class GlobalExceptionHandler {
                 .body(Map.of("message", "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요,"));
     }
 
+    // DB 데이터 충돌 (중복id, 이메일 등) (409)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "이미 존재하는 데이터입니다."));
+    }
+
     // DTO 유효성 검사 실패 (400)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException e) {
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException e) {
         Map<String, String> errors = new HashMap<>();
         e.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -59,6 +68,9 @@ public class GlobalExceptionHandler {
         });
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(errors);
+                .body(Map.of(
+                        "message", "입력값이 올바르지 않습니다.",
+                        "details", errors // 상세 필드 에러는 details 안에
+                ));
     }
 }
