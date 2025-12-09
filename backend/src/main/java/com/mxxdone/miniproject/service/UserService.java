@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +60,7 @@ public class UserService {
 
     public TokenResponseDto login(LoginRequestDto requestDto, HttpServletResponse response) {
         User user = userRepository.findByUsername(requestDto.username())
-                .orElseThrow(() -> new IllegalArgumentException("등록된 사용자가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("등록된 사용자가 없습니다."));
 
         // matches: 사용자 입력값과 DB 저장 해시값을 비교해줌
         if (!passwordEncoder.matches(requestDto.password(), user.getPassword())) {

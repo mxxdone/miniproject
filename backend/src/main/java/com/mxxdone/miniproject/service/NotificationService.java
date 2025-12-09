@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +40,7 @@ public class NotificationService {
     @Transactional
     public void markAsRead(Long notificationId, String username) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 알림입니다."));
 
         // 본인 알림인지 확인
         if (!notification.getReceiver().getUsername().equals(username)) {
@@ -60,6 +61,6 @@ public class NotificationService {
     // 사용자 조회
     private User getUser(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
     }
 }

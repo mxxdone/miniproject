@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,7 +31,7 @@ public class CategoryService {
         // 상위 카테고리 id 값을 가지고 상위 카테고리명 저장
         if (requestDto.parentId() != null) {
             Category parent = categoryRepository.findById(requestDto.parentId())
-                    .orElseThrow(() -> new IllegalArgumentException("상위 카테고리를 찾을 수 없습니다. id=" + requestDto.parentId()));
+                    .orElseThrow(() -> new NoSuchElementException("상위 카테고리를 찾을 수 없습니다. id=" + requestDto.parentId()));
             category.setParent(parent);
         }
         return categoryRepository.save(category).getId();

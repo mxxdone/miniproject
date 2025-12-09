@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -44,7 +41,7 @@ public class PostService {
     @CacheEvict(value = "categories", allEntries = true)
     public PostSaveResponseDto save(PostSaveRequestDto requestDto, User author) {
         Category category = categoryRepository.findById(requestDto.categoryId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
+                .orElseThrow(() -> new NoSuchElementException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
 
         if (!category.getChildren().isEmpty()) {
             throw new IllegalArgumentException("하위 카테고리에만 게시글을 작성할 수 있습니다.");
@@ -70,7 +67,7 @@ public class PostService {
     @CacheEvict(value = "categories", allEntries = true)
     public Long update(Long id, PostUpdateRequestDto requestDto, User currentUser) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다. id= " + id));
 
         if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("게시글 수정 권한이 없습니다.");
@@ -79,7 +76,7 @@ public class PostService {
         Category category = null;
         if (requestDto.categoryId() != null) {
             category = categoryRepository.findById(requestDto.categoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
+                    .orElseThrow(() -> new NoSuchElementException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
             // 하위 카테고리만 글 작성 가능
             if (!category.getChildren().isEmpty()) {
                 throw new IllegalArgumentException("하위 카테고리에만 게시글을 작성할 수 있습니다.");
@@ -97,7 +94,7 @@ public class PostService {
     @CacheEvict(value = "categories", allEntries = true)
     public void delete(Long id, User currentUser) {
         Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다. id= " + id));
 
         if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
             throw new AccessDeniedException("게시글 삭제 권한이 없습니다.");
@@ -122,7 +119,7 @@ public class PostService {
 
             // DB의 조회수 1 증가 (JPA dirty checkig 활용)
             Post post = postRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+                    .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
             post.incrementViewCount();
         }
     }
@@ -133,7 +130,7 @@ public class PostService {
     public PostDetailResponseDto findById(Long id) {
         // Post 엔티티 조회
         Post entity = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id= " + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다. id= " + id));
 
         // 카테고리 경로 계산
         List<CategoryDto> categoryPath = calculateCategoryPath(entity);
@@ -228,7 +225,7 @@ public class PostService {
         List<Long> categoryIds = null;
         if (categoryId != null) {
             Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() ->new IllegalArgumentException("해당 카테고리를 찾을 수 없습니다."));
+                    .orElseThrow(() ->new NoSuchElementException("해당 카테고리를 찾을 수 없습니다."));
             categoryIds = category.getDescendantIdsAndSelf();
         }
         Page<PostSummaryResponseDto> resultFromDb = postRepository.findPostsWithConditions(categoryIds, searchType, keyword, pageable);
@@ -253,7 +250,7 @@ public class PostService {
     @Transactional
     public void toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
         Optional<PostLike> existingLike = postLikeRepository.findByUserAndPost(user, post);
 
         if (existingLike.isPresent()) {

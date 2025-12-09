@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -59,7 +60,7 @@ public class CommentService {
         Comment parent = null;
         if (requestDto.parentId() != null) {
             parent = commentRepository.findById(requestDto.parentId())
-                    .orElseThrow(() -> new IllegalArgumentException("상위 댓글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new NoSuchElementException("상위 댓글을 찾을 수 없습니다."));
             commentBuilder.parent(parent);
         }
 
@@ -124,7 +125,7 @@ public class CommentService {
     // 댓글 수정
     public void update(Long commentId, CommentUpdateRequestDto requestDto, String username) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 댓글이 없습니다."));
         User currentUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -138,7 +139,7 @@ public class CommentService {
     // 댓글 삭제
     public void delete(Long commentId, String username, String password) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 댓글이 없습니다."));
 
         boolean isAuthorized = false;
         // 로그인 사용자
