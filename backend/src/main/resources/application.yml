@@ -11,6 +11,6 @@
         region:
           static: ap-northeast-2
         s3:
-          bucket: mxxdone-miniproject-bucket
+          bucket: miniproject-file-bucket
         cloudfront:
-          domain: d1turob604d0fy.cloudfront.net
+          domain: dyzr5x33xr922.cloudfront.net

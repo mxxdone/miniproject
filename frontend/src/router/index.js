@@ -8,59 +8,64 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
-    },
-    // 상위 카테고리 경로 (e.g., /project)
-    {
-      path: '/:parentSlug',
-      name: 'parentCategory',
-      component: HomeView
-    },
-    // 하위 카테고리 경로 (e.g., /backend/java-spring)
-    {
-      path: '/:parentSlug/:childSlug',
-      name: 'childCategory',
-      component: HomeView
+      component: HomeView,
     },
     {
       path: '/posts/new', // 새 글 작성 경로 추가
       name: 'postCreate',
       // () =>을 사용하여 지연로딩, 필요할 때 import 해준다
       // view 컴포넌트를 연결
-      component: () => import('../views/PostCreateView.vue')
-    },
-    {
-      path: '/:parentSlug/:childSlug/posts/:id', // :id는 동적으로 변하는 값을 의미
-      name: 'postDetail',
-      component: () => import('../views/PostDetailView.vue')
-    },
-    {
-      path: '/:parentSlug/:childSlug/posts/:id/edit',
-      name: 'postEdit',
-      component: () => import('../views/PostEditView.vue')
-      //
+      component: () => import('../views/PostCreateView.vue'),
     },
     {
       path: '/signup',
       name: 'signup',
-      component: () => import('../views/SignUpView.vue')
+      component: () => import('../views/SignUpView.vue'),
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue')
+      component: () => import('../views/LoginView.vue'),
     },
     {
       path: '/about-me',
       name: 'aboutMe',
-      component: () => import('../views/AboutMeView.vue')
+      component: () => import('../views/AboutMeView.vue'),
     },
     {
       path: '/oauth2/redirect',
       name: 'oauth2Redirect',
-      component: () => import('../views/OAuth2RedirectHandler.vue')
-    }
-  ]
+      component: () => import('../views/OAuth2RedirectHandler.vue'),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'notFound',
+      redirect: '/', // 존재하지 않는 경로로 접근 시 홈으로 리다이렉트
+    },
+    // 상위 카테고리 경로 (e.g., /project)
+    {
+      path: '/:parentSlug',
+      name: 'parentCategory',
+      component: HomeView,
+    },
+    // 하위 카테고리 경로 (e.g., /backend/java-spring)
+    {
+      path: '/:parentSlug/:childSlug',
+      name: 'childCategory',
+      component: HomeView,
+    },
+    {
+      path: '/:parentSlug/:childSlug/posts/:id', // :id는 동적으로 변하는 값을 의미
+      name: 'postDetail',
+      component: () => import('../views/PostDetailView.vue'),
+    },
+    {
+      path: '/:parentSlug/:childSlug/posts/:id/edit',
+      name: 'postEdit',
+      component: () => import('../views/PostEditView.vue'),
+      //
+    },
+  ],
 })
 
 // 네비게이션 가드: 권한 없이 주소로 접속시 로그인 페이지로
