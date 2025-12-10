@@ -42,7 +42,7 @@ public class S3Uploader {
         String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
         // 최종 파일 경로에 날짜 경로 추가 (파일명은 UUID + 확장자)
-        String savedFileName = dirName + "/" + datePath + "/" + UUID.randomUUID() + extension;
+        String savedFileName = "images/" + dirName + "/" + datePath + "/" + UUID.randomUUID() + extension;
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
