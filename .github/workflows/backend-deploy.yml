@@ -65,7 +65,7 @@ jobs:
 
             # .env 생성 로직
             echo "Creating .env file..."
-            cat <<EOF > /home/ec2-user/miniproject.env
+            cat <<EOF > /home/ec2-user/miniproject/.env
             SPRING_PROFILES_ACTIVE=prod
             SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
