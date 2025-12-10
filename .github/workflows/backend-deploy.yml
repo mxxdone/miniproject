@@ -67,7 +67,7 @@ jobs:
             echo "Creating .env file..."
             cat <<EOF > /home/ec2-user/miniproject.env
             SPRING_PROFILES_ACTIVE=prod
-            SPRING_DATASOURCE_URL=jdbc:postgresql://my-project-db.cv0468m20ioy.ap-northeast-2.rds.amazonaws.com:5432/miniproject
+            SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}
