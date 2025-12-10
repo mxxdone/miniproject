@@ -11,7 +11,7 @@ services:
       - "8080:8080"
     # EC2 환경 변수 파일 주입 (RDS, JWT 키 등)
     env_file:
-      - /home/ec2-user/miniproject.env
+      - .env
     depends_on:
       - redis
     restart: always
