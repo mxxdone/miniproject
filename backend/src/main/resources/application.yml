@@ -4,6 +4,9 @@
       group:
         "dev": ["secret-dev"]
         "prod": ["prod", "secret-prod"]
+    threads:
+      virtual:
+        enabled: true # 톰캣 가상 스레드 활성화
     application:
       name: miniproject
     cloud:
