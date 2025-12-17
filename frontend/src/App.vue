@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth'
 import CategoryNav from '@/components/CategoryNav.vue'
 import { jwtDecode } from 'jwt-decode'
 import NotificationMenu from '@/components/NotificationMenu.vue'
+import axios from 'axios'
 
 const uiStore = useUiStore()
 const authStore = useAuthStore()
@@ -22,25 +23,39 @@ function toggleTheme() {
   localStorage.setItem('theme', newTheme)
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 토큰 유효성 검사
-  const token = localStorage.getItem('accessToken'); // localStorage에서 직접 확인
+  const token = localStorage.getItem('accessToken') // localStorage에서 직접 확인
   if (token) {
     try {
-      const decoded = jwtDecode(token);
-      const currentTime = Date.now() / 1000; // 현재 시간 (초 단위)
+      const decoded = jwtDecode(token)
+      const currentTime = Date.now() / 1000 // 현재 시간 (초 단위)
 
       // 토큰 만료 시간이 현재 시간보다 이전이면 만료된 것
       if (decoded.exp < currentTime) {
-        console.warn('로드 시 액세스 토큰이 만료되었습니다, 로그아웃 합니다.');
-        authStore.logout(); // 로그아웃 처리
+        console.warn('로드 시 액세스 토큰이 만료되었습니다. 토큰 재발급을 시도합니다.')
+        try {
+          const response = await axios.post(
+            `${import.meta.env.VITE_API_BASE_URL}/api/v1/auth/refresh`,
+            {},
+            { withCredentials: true }, // 쿠키 전송 필수
+          )
+          // 재발급 성공 시: 새로운 토큰으로 스토어 업데이트 (로그인 유지)
+          const { accessToken } = response.data
+          authStore.setToken(accessToken)
+          console.log('토큰 재발급 성공, 로그인 상태를 유지합니다.')
+        } catch (refreshError) {
+          // 재발급 실패 시(리프레시 토큰도 만료 등): 로그아웃 처리
+          console.error('토큰 재발급 실패, 로그아웃 합니다:', refreshError)
+          authStore.logout()
+        }
       } else {
         // 만료되지 않았다면 스토어 상태 초기화
-        authStore.setToken(token, localStorage.getItem('refreshToken'));
+        authStore.setToken(token)
       }
     } catch (e) {
-      console.error('유효하지 않은 토큰입니다:', e);
-      authStore.logout(); // 토큰 해석 실패 시 로그아웃
+      console.error('유효하지 않은 토큰입니다:', e)
+      authStore.logout() // 토큰 해석 실패 시 로그아웃
     }
   }
 
@@ -58,16 +73,10 @@ onMounted(() => {
     <v-layout>
       <!-- 보라색 상단바 + 내부 텍스트/아이콘 on-primary로 통일 -->
       <v-app-bar color="primary" flat>
-        <v-app-bar-nav-icon
-          variant="text"
-          color="on-primary"
-          @click="drawer = !drawer"
-        />
+        <v-app-bar-nav-icon variant="text" color="on-primary" @click="drawer = !drawer" />
 
         <v-toolbar-title class="text-white">
-          <RouterLink to="/" class="text-decoration-none text-white">
-            MOODONE.DEV
-          </RouterLink>
+          <RouterLink to="/" class="text-decoration-none text-white"> MOODONE.DEV </RouterLink>
         </v-toolbar-title>
 
         <v-spacer />
@@ -85,11 +94,7 @@ onMounted(() => {
           <v-btn variant="text" color="on-primary" to="/login">로그인</v-btn>
         </template>
         <template v-else>
-          <v-chip
-            color="on-primary"
-            variant="text"
-            class="mr-2"
-          >
+          <v-chip color="on-primary" variant="text" class="mr-2">
             {{ authStore.nickname }} 님
           </v-chip>
           <v-btn variant="text" color="on-primary" @click="authStore.logout()">로그아웃</v-btn>
