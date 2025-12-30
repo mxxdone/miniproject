@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,11 +20,11 @@ import java.time.Duration;
 
 @Configuration
 @EnableCaching
-public class RedisConfig {
+public class RedisConfig implements CachingConfigurer {
 
     /**
      * 스프링의 캐시 추상화가 사용할 CacheManager 빈을 정의
-     * @Cacheable의 동작 방식을 Redis에 맞게 커스터마이징
+     * '@Cacheable' 의 동작 방식을 Redis에 맞게 커스터마이징
      * @param cf 스프링 부트가 자동 설정한 Redis 연결 팩토리
      * @return 커스텀 RedisCacheManager
      */

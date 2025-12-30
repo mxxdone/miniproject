@@ -57,11 +57,17 @@ public class AuthService {
         String username = info.getSubject();
 
         // Redis에서 해당 username의 Refresh Token 조회
-        String refreshTokenFromRedis = refreshTokenService.findRefreshTokenByUsername(username);
+        String refreshTokenFromRedis;
+        try {
+            refreshTokenFromRedis = refreshTokenService.findRefreshTokenByUsername(username);
+        } catch (Exception e) {
+            // Redis 장애 시 503 에러 유도를 위한 예외 발생
+            throw new IllegalStateException("리프레시 토큰이 일치하지 않거나 만료되었습니다. 다시 로그인해주세요.");
+        }
 
         // Redis에 토큰이 없거나, 쿠키의 토큰과 Redis의 토큰이 일치하지 않으면 예외 처리
         // 로그아웃되거나 다른 곳에서 로그인하여 토큰이 변경된 경우
-        if (refreshTokenFromRedis == null || !refreshTokenFromCookie.equals(refreshTokenFromRedis)) {
+        if (!refreshTokenFromCookie.equals(refreshTokenFromRedis)) {
             log.error("Redis에 리프레시 토큰이 없거나 쿠키와 일치하지 않습니다. Cookie: {}, Redis: {}", refreshTokenFromCookie, refreshTokenFromRedis);
             refreshTokenService.deleteRefreshToken(username);
             throw new IllegalArgumentException("유효하지 않거나 만료된 리프레시 토큰입니다.");
@@ -102,8 +108,12 @@ public class AuthService {
             Claims claims = jwtUtil.getUserInfoFromToken(refreshToken);
             String username = claims.getSubject();
 
-            // Redis에서 토큰 삭제
-            refreshTokenService.deleteRefreshToken(username);
+            try {
+                // Redis에서 토큰 삭제
+                refreshTokenService.deleteRefreshToken(username);
+            } catch (Exception e) {
+                log.error("로그아웃 중 Redis 토큰 삭제 실패 username: {})", username, e);
+            }
 
             // 쿠키 삭제
             cookieUtil.deleteCookie(request, response, "refreshToken");

@@ -47,7 +47,13 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         // Redis에 저장
         Duration refreshTokenDuration = Duration.ofDays(jwtUtil.getRefreshTokenExpirationDays());
-        refreshTokenService.saveRefreshToken(user.getUsername(), refreshToken, refreshTokenDuration);
+
+        try {
+            refreshTokenService.saveRefreshToken(user.getUsername(), refreshToken, refreshTokenDuration);
+        } catch (Exception e) {
+            log.error("로그인 성공 후 Redis에 리프레시 토큰 저장 실패 (username: {})", user.getUsername(), e);
+            throw new IllegalStateException("인증 서버 점검 중입니다. 잠시 후 다시 로그인해주세요.");
+        }
 
         // HttpOnly 쿠키에 Refresh Token 설정
         long refreshTokenMaxAgeSeconds = refreshTokenDuration.toSeconds();

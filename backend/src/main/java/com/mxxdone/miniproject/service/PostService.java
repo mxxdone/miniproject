@@ -55,11 +55,14 @@ public class PostService {
                 .author(author)
                 .build();
 
-        Post savedPost =  postRepository.save(post);
+        Post savedPost = postRepository.save(post);
 
-        // 새로운 글이 작성되었으면 1페이지 캐시 삭제
-        redisTemplate.delete("posts::page_1");
-
+        try {
+            // 새로운 글이 작성되었으면 1페이지 캐시 삭제
+            redisTemplate.delete("posts::page_1");
+        } catch (Exception e) {
+            log.error("캐시 삭제 실패: posts::page_1", e);
+        }
         return PostSaveResponseDto.from(savedPost);
     }
 
@@ -85,8 +88,11 @@ public class PostService {
 
         post.update(requestDto.title(), requestDto.content(), category);
 
-        redisTemplate.delete("posts::page_1");
-        log.info("캐시 정리: posts::page_1");
+        try {
+            redisTemplate.delete("posts::page_1");
+        } catch (Exception e) {
+            log.error("캐시 삭제 실패: posts::page_1", e);
+        }
         return id;
     }
 
@@ -102,8 +108,11 @@ public class PostService {
 
         postRepository.delete(post);
 
-        redisTemplate.delete("posts::page_1");
-        log.info("캐시 정리: posts::page_1");
+        try {
+            redisTemplate.delete("posts::page_1");
+        } catch (Exception e) {
+            log.error("캐시 삭제 실패: posts::page_1", e);
+        }
     }
 
     // 게시글 조회수 증가 (ip 기준 중복 방지)
@@ -112,15 +121,19 @@ public class PostService {
         String ip = request.getRemoteAddr();
         String redisKey = "post:view:" + id + ":" + ip;
 
-        // Redis에 해당 ip로 조회한 기록이 있는지 확인
-        if (!redisTemplate.hasKey(redisKey)) {
-            // 기록이 없으면 24시간 동안 유효한 키를 redis에 저장
-            redisTemplate.opsForValue().set(redisKey, "1", Duration.ofHours(24));
+        try {
+            // Redis에 해당 ip로 조회한 기록이 있는지 확인
+            if (!redisTemplate.hasKey(redisKey)) {
+                // 기록이 없으면 24시간 동안 유효한 키를 redis에 저장
+                redisTemplate.opsForValue().set(redisKey, "1", Duration.ofHours(24));
 
-            // DB의 조회수 1 증가 (JPA dirty checkig 활용)
-            Post post = postRepository.findById(id)
-                    .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
-            post.incrementViewCount();
+                // DB의 조회수 1 증가 (JPA dirty checking 활용)
+                Post post = postRepository.findById(id)
+                        .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
+                post.incrementViewCount();
+            }
+        } catch (Exception e) {
+            log.error("Redis 조회수 중복 방지 로직 실패 (Post ID: {}, IP: {})", id, ip, e);
         }
     }
 
@@ -194,7 +207,6 @@ public class PostService {
     }
 
 
-
     // 게시글 목록 조회
     @Transactional(readOnly = true)
     public PageDto<PostSummaryResponseDto> findPosts(Long categoryId, String searchType, String keyword, Pageable pageable) {
@@ -212,7 +224,8 @@ public class PostService {
                 if (cachedData != null) {
                     log.info("캐시 발견: 레디스로부터 게시물 1페이지 불러오기");
                     // JSON 문자열을 PageDto로 변환
-                    PageDto<PostSummaryResponseDto> cachedPageDto = objectMapper.readValue(cachedData, new TypeReference<>() {});
+                    PageDto<PostSummaryResponseDto> cachedPageDto = objectMapper.readValue(cachedData, new TypeReference<>() {
+                    });
                     // PageDto를 다시 Page 객체로 변환 후 반환
                     return cachedPageDto;
                 }
@@ -225,7 +238,7 @@ public class PostService {
         List<Long> categoryIds = null;
         if (categoryId != null) {
             Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() ->new NoSuchElementException("해당 카테고리를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new NoSuchElementException("해당 카테고리를 찾을 수 없습니다."));
             categoryIds = category.getDescendantIdsAndSelf();
         }
         Page<PostSummaryResponseDto> resultFromDb = postRepository.findPostsWithConditions(categoryIds, searchType, keyword, pageable);
@@ -236,7 +249,8 @@ public class PostService {
         if (isCachable) {
             try {
                 // PageDto를 JSON으로 변환 후 Redis에 저장
-                redisTemplate.opsForValue().set(cacheKey, objectMapper.writeValueAsString(resultDto));
+                String jsonResult = objectMapper.writeValueAsString(resultDto);
+                redisTemplate.opsForValue().set(cacheKey, jsonResult, Duration.ofMinutes(10)); // TTL 10분 설정 추가
                 log.info("캐시 생성: 게시글 1페이지 redis에 저장");
             } catch (Exception e) {
                 log.error("캐시 생성 실패", e);
@@ -262,6 +276,10 @@ public class PostService {
             postLikeRepository.save(new PostLike(user, post));
             post.incrementLikeCount();
         }
-        redisTemplate.delete("posts::page_1");
+        try {
+            redisTemplate.delete("posts::page_1");
+        } catch (Exception e) {
+            log.error("캐시 삭제 실패: posts::page_1", e);
+        }
     }
 }
