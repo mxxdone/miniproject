@@ -24,6 +24,41 @@ a,
   overflow-x: auto;
 }
 
+/* Tiptap 테이블을 위한 CSS */
+
+.tiptap-content table {
+  border-collapse: collapse;
+  width: auto;
+  max-width: 100%;
+  table-layout: auto;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  border: 1px solid #ced4da;
+}
+
+.tiptap-content td,
+.tiptap-content th {
+  min-width: 50px;
+  border: 1px solid #ced4da;
+  padding: 10px 15px;
+  vertical-align: top;
+  box-sizing: border-box;
+}
+
+.tiptap-content th {
+  font-weight: bold;
+  text-align: left;
+  background-color: #f8f9fa;
+}
+
+/* TipTap 인용구 css */
+.tiptap-content blockquote {
+  padding-left: 1rem;
+  border-left: 3px solid rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
+  margin: 1rem 0;
+}
+
 .prose-content pre code {
   font-size: 0.9em;
 }

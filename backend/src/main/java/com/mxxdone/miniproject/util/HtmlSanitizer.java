@@ -15,7 +15,8 @@ public class HtmlSanitizer {
                     "p", "div", "h1", "h2", "h3", "h4", "h5", "h6",
                     "ul", "ol", "li", "blockquote", "br",
                     "b", "i", "u", "strong", "em", "s", "strike",
-                    "pre", "code", "span"
+                    "pre", "code", "span",
+                    "table", "thead", "tbody", "tfoot", "tr", "th", "td", "caption"
             )
 
             // 2. 이미지 src 허용 (http, https, / 로 시작)

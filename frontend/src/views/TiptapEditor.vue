@@ -6,19 +6,24 @@ import Image from '@tiptap/extension-image'
 import Youtube from '@tiptap/extension-youtube'
 import apiClient from '@/api'
 import { useUiStore } from '@/stores/ui'
-
+import { Markdown } from '@tiptap/markdown'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableCell } from '@tiptap/extension-table-cell'
+import { TableHeader } from '@tiptap/extension-table-header'
+import '@/assets/main.css'
 import { createLowlight } from 'lowlight'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 
-import java from 'highlight.js/lib/languages/java.js'
-import javascript from 'highlight.js/lib/languages/javascript.js'
-import css from 'highlight.js/lib/languages/css.js'
-import sql from 'highlight.js/lib/languages/sql.js'
-import xml from 'highlight.js/lib/languages/xml.js'
-import html from 'highlight.js/lib/languages/xml.js' // HTML을 XML로 처리
-import json from 'highlight.js/lib/languages/json.js'
-import yaml from 'highlight.js/lib/languages/yaml.js'
-import typescript from 'highlight.js/lib/languages/typescript.js'
+import java from 'highlight.js/lib/languages/java'
+import javascript from 'highlight.js/lib/languages/javascript'
+import css from 'highlight.js/lib/languages/css'
+import sql from 'highlight.js/lib/languages/sql'
+import xml from 'highlight.js/lib/languages/xml'
+import html from 'highlight.js/lib/languages/xml' // HTML을 XML로 처리
+import json from 'highlight.js/lib/languages/json'
+import yaml from 'highlight.js/lib/languages/yaml'
+import typescript from 'highlight.js/lib/languages/typescript'
 
 const lowlight = createLowlight()
 lowlight.register('java', java)
@@ -125,6 +130,11 @@ const editor = useEditor({
       nocookie: false,
       modestBranding: true,
     }),
+    Markdown,
+    Table.configure({ resizable: true }),
+    TableRow,
+    TableHeader,
+    TableCell,
   ],
   editorProps: {
     // 에디터 속성 추가 (이미지 처리)
@@ -171,7 +181,10 @@ const editor = useEditor({
       if (isImageFile(file)) {
         handleImageUpload(file).then(insertImage)
       } else {
-        uiStore.showSnackbar({ text: '이미지 파일만 드롭하여 업로드할 수 있습니다.', color: 'error' })
+        uiStore.showSnackbar({
+          text: '이미지 파일만 드롭하여 업로드할 수 있습니다.',
+          color: 'error',
+        })
       }
     },
   },
@@ -213,13 +226,52 @@ watch(content, (newContent) => {
         @click="editor.chain().focus().toggleStrike().run()"
         :class="{ 'is-active': editor.isActive('strike') }"
       ></v-btn>
-
       <v-btn
-        icon="mdi-image-plus"
+        icon="mdi-table-plus"
         size="small"
         variant="text"
-        @click="fileInput.click()"
+        @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()"
       ></v-btn>
+
+      <v-menu v-if="editor.isActive('table')" offset="5">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon="mdi-table-edit"
+            size="small"
+            variant="tonal"
+            color="primary"
+            class="ml-2"
+          ></v-btn>
+        </template>
+
+        <v-list density="compact">
+          <v-list-item @click="editor.chain().focus().addColumnAfter().run()">
+            <template v-slot:prepend><v-icon icon="mdi-table-column-plus-after"></v-icon></template>
+            <v-list-item-title>오른쪽에 열 추가</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="editor.chain().focus().addRowAfter().run()">
+            <template v-slot:prepend><v-icon icon="mdi-table-row-plus-after"></v-icon></template>
+            <v-list-item-title>아래에 행 추가</v-list-item-title>
+          </v-list-item>
+          <v-divider></v-divider>
+          <v-list-item @click="editor.chain().focus().deleteColumn().run()" color="error">
+            <template v-slot:prepend><v-icon icon="mdi-table-column-remove"></v-icon></template>
+            <v-list-item-title>현재 열 삭제</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="editor.chain().focus().deleteRow().run()" color="error">
+            <template v-slot:prepend><v-icon icon="mdi-table-row-remove"></v-icon></template>
+            <v-list-item-title>현재 행 삭제</v-list-item-title>
+          </v-list-item>
+          <v-divider></v-divider>
+          <v-list-item @click="editor.chain().focus().deleteTable().run()" color="red">
+            <template v-slot:prepend><v-icon icon="mdi-delete-forever"></v-icon></template>
+            <v-list-item-title>표 전체 삭제</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
+      <v-btn icon="mdi-image-plus" size="small" variant="text" @click="fileInput.click()"></v-btn>
       <input
         type="file"
         ref="fileInput"
@@ -227,15 +279,10 @@ watch(content, (newContent) => {
         accept=".png, .jpg, .jpeg, .gif, .webp"
         hidden
       />
-      <v-btn
-        icon="mdi-youtube"
-        size="small"
-        variant="text"
-        @click="insertYoutubeByPrompt"
-      />
+      <v-btn icon="mdi-youtube" size="small" variant="text" @click="insertYoutubeByPrompt" />
     </div>
 
-    <EditorContent :editor="editor" class="editor-content" />
+    <EditorContent :editor="editor" class="editor-content tiptap-content" />
   </div>
 </template>
 
@@ -264,7 +311,7 @@ watch(content, (newContent) => {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.editor-content :deep(iframe[src*="youtube.com"]) {
+.editor-content :deep(iframe[src*='youtube.com']) {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9; /* 16:9 비율 강제 */

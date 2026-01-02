@@ -8,6 +8,7 @@ import { useCategoriesStore } from '@/stores/categories'
 import { formatDateTime } from '@/utils/formatDate'
 import CommentSection from '@/components/CommentSection.vue'
 import hljs from 'highlight.js' // highlight.js 임포트 추가
+import '@/assets/main.css'
 
 const route = useRoute() // 현재 라우트(주소창) 정보를 가져오기
 const router = useRouter()
@@ -78,11 +79,15 @@ watch(
 )
 
 // 라우트 변경 감지하는
-watch(postId, (newId) => {
-  if (newId && !isNaN(newId)) {
-    postsStore.fetchPost(newId)
-  }
-}, { immediate: true })  // 컴포넌트 마운트 시에도 실행
+watch(
+  postId,
+  (newId) => {
+    if (newId && !isNaN(newId)) {
+      postsStore.fetchPost(newId)
+    }
+  },
+  { immediate: true },
+) // 컴포넌트 마운트 시에도 실행
 
 function goBack() {
   router.back()
@@ -141,7 +146,7 @@ async function removePost() {
       <v-divider class="my-4"></v-divider>
       <!-- tiptap 적용후 v-html로 변경 -->
       <v-card-text class="text-body-1">
-        <div class="prose-content" v-html="postsStore.currentPost.content"></div>
+        <div class="prose-content tiptap-content" v-html="postsStore.currentPost.content"></div>
       </v-card-text>
       <v-card-text class="text-center">
         <v-btn
@@ -205,7 +210,7 @@ async function removePost() {
   margin-right: 12px;
 }
 
-.prose-content iframe[src*="youtube.com"] {
+.prose-content iframe[src*='youtube.com'] {
   position: relative;
   width: 50%;
   aspect-ratio: 16 / 9; /* 16:9 비율 강제 */
