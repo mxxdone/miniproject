@@ -4,6 +4,8 @@
       group:
         "dev": ["secret-dev"]
         "prod": ["prod", "secret-prod"]
+    jpa:
+      open-in-view: false # OSIV(Open Session In View) 비활성화
     threads:
       virtual:
         enabled: true # 톰캣 가상 스레드 활성화
