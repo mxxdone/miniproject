@@ -14,6 +14,10 @@
     "@mdi/font": "^7.4.47",
     "@tiptap/extension-code-block-lowlight": "^3.3.0",
     "@tiptap/extension-image": "^3.3.0",
+    "@tiptap/extension-table": "^3.14.0",
+    "@tiptap/extension-table-cell": "^3.14.0",
+    "@tiptap/extension-table-header": "^3.14.0",
+    "@tiptap/extension-table-row": "^3.14.0",
     "@tiptap/extension-youtube": "^3.10.7",
     "@tiptap/markdown": "^3.10.7",
     "@tiptap/starter-kit": "^3.2.2",
@@ -38,7 +42,7 @@
     "eslint-plugin-vue": "~10.2.0",
     "globals": "^16.2.0",
     "prettier": "3.5.3",
-    "vite": "^7.0.0",
+    "vite": "^7.3.0",
     "vite-plugin-vue-devtools": "^7.7.7"
   }
 }
