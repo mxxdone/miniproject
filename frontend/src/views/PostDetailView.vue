@@ -116,7 +116,7 @@ async function removePost() {
 </script>
 
 <template>
-  <v-container>
+  <v-container class="post-detail-container">
     <v-card v-if="postsStore.currentPost">
       <!-- breadcrumbs -->
       <v-breadcrumbs v-if="breadcrumbItems.length > 0" :items="breadcrumbItems" class="pa-0 mb-4">
@@ -183,6 +183,39 @@ async function removePost() {
 </template>
 
 <style>
+/* 게시글 컨테이너 */
+
+/* 1. 컨테이너 폭 제한 및 중앙 정렬 */
+.post-detail-container {
+  max-width: 800px !important;
+  margin: 0 auto !important; /* 좌우 여백 자동 조정으로 중앙 배치 */
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+/* 2. 본문 텍스트 가독성 최적화 */
+.prose-content {
+  line-height: 1.8; /* 줄 간격을 넓혀 시선 피로도 감소 */
+  word-break: break-word;
+  font-size: 1.05rem;
+}
+/* 3. 이미지 최적화 */
+.prose-content :deep(img) {
+  max-width: 100%; /* 컨테이너 폭을 넘지 않도록 제한 */
+  height: auto;
+  display: block;
+  margin: 24px auto; /* 이미지 상하 여백 및 중앙 배치 */
+}
+/* 4. 미디어 최적화 */
+.prose-content iframe[src*='youtube.com'] {
+  position: relative;
+  width: 100% !important;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border-radius: 8px;
+  border: 0;
+  margin: 24px 0; /* 상하 여백 추가로 가독성 확보 */
+}
+
 .v-card-text .prose-content p {
   margin-top: 1em;
   margin-bottom: 1em;
@@ -208,14 +241,5 @@ async function removePost() {
 }
 .separator {
   margin-right: 12px;
-}
-
-.prose-content iframe[src*='youtube.com'] {
-  position: relative;
-  width: 50%;
-  aspect-ratio: 16 / 9; /* 16:9 비율 강제 */
-  height: auto;
-  border-radius: 8px;
-  border: 0;
 }
 </style>
