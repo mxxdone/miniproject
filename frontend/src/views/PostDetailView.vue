@@ -182,7 +182,7 @@ async function removePost() {
   </v-container>
 </template>
 
-<style>
+<style scoped>
 /* 게시글 컨테이너 */
 
 /* 1. 컨테이너 폭 제한 및 중앙 정렬 */
