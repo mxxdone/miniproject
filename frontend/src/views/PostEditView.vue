@@ -109,7 +109,7 @@ async function submitUpdate() {
 </script>
 
 <template>
-  <v-container>
+  <v-container class="post-content-container">
     <v-card v-if="postsStore.currentPost">
       <v-card-title class="text-h5">게시글 수정</v-card-title>
       <v-form ref="form" @submit.prevent="submitUpdate">

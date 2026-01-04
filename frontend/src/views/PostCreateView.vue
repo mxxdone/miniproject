@@ -92,7 +92,7 @@ async function submitPost() {
 </script>
 
 <template>
-  <v-container>
+  <v-container class="post-content-container">
     <v-card>
       <v-card-title class="text-h5">새 게시글 작성</v-card-title>
       <v-form ref="form" @submit.prevent="submitPost">

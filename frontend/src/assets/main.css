@@ -51,12 +51,54 @@ a,
   background-color: #f8f9fa;
 }
 
+.tiptap-content p { margin: 0; }
+
+.tiptap-content p + p { margin-top: 0.8em; }
+
 /* TipTap 인용구 css */
 .tiptap-content blockquote {
   padding-left: 1rem;
   border-left: 3px solid rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.8);
   margin: 1rem 0;
+}
+
+/* 게시글 */
+/* 컨테이너 폭 제한 및 중앙 정렬 */
+.post-content-container {
+  max-width: 800px !important;
+  margin: 0 auto !important; /* 좌우 여백 자동 조정으로 중앙 배치 */
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+/* 본문 텍스트 가독성 최적화 */
+.prose-content {
+  line-height: 1.8; /* 줄 간격을 넓혀 시선 피로도 감소 */
+  word-break: break-word;
+  font-size: 1.05rem;
+}
+/* 이미지 최적화 */
+.prose-content img {
+  max-width: 100%; /* 컨테이너 폭을 넘지 않도록 제한 */
+  height: auto;
+  display: block;
+  margin: 24px auto; /* 이미지 상하 여백 및 중앙 배치 */
+}
+/* 글 작성, 수정시 이미지 크기 최적화 */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+/* 미디어 최적화 */
+.prose-content iframe[src*='youtube.com'] {
+  position: relative;
+  width: 100% !important;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border-radius: 8px;
+  border: 0;
+  margin: 24px 0; /* 상하 여백 추가로 가독성 확보 */
 }
 
 .prose-content pre code {
