@@ -5,6 +5,7 @@ import { ref, watch } from 'vue'
 import Image from '@tiptap/extension-image'
 import Youtube from '@tiptap/extension-youtube'
 import apiClient from '@/api'
+import TiptapToolbar from '@/components/TiptapToolbar.vue'
 import { useUiStore } from '@/stores/ui'
 import { Markdown } from '@tiptap/markdown'
 import { Table } from '@tiptap/extension-table'
@@ -204,84 +205,18 @@ watch(content, (newContent) => {
 
 <template>
   <div v-if="editor" class="editor-container">
-    <div class="toolbar">
-      <v-btn
-        icon="mdi-format-bold"
-        size="small"
-        variant="text"
-        @click="editor.chain().focus().toggleBold().run()"
-        :class="{ 'is-active': editor.isActive('bold') }"
-      ></v-btn>
-      <v-btn
-        icon="mdi-format-italic"
-        size="small"
-        variant="text"
-        @click="editor.chain().focus().toggleItalic().run()"
-        :class="{ 'is-active': editor.isActive('italic') }"
-      ></v-btn>
-      <v-btn
-        icon="mdi-format-strikethrough"
-        size="small"
-        variant="text"
-        @click="editor.chain().focus().toggleStrike().run()"
-        :class="{ 'is-active': editor.isActive('strike') }"
-      ></v-btn>
-      <v-btn
-        icon="mdi-table-plus"
-        size="small"
-        variant="text"
-        @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()"
-      ></v-btn>
-
-      <v-menu v-if="editor.isActive('table')" offset="5">
-        <template v-slot:activator="{ props }">
-          <v-btn
-            v-bind="props"
-            icon="mdi-table-edit"
-            size="small"
-            variant="tonal"
-            color="primary"
-            class="ml-2"
-          ></v-btn>
-        </template>
-
-        <v-list density="compact">
-          <v-list-item @click="editor.chain().focus().addColumnAfter().run()">
-            <template v-slot:prepend><v-icon icon="mdi-table-column-plus-after"></v-icon></template>
-            <v-list-item-title>오른쪽에 열 추가</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="editor.chain().focus().addRowAfter().run()">
-            <template v-slot:prepend><v-icon icon="mdi-table-row-plus-after"></v-icon></template>
-            <v-list-item-title>아래에 행 추가</v-list-item-title>
-          </v-list-item>
-          <v-divider></v-divider>
-          <v-list-item @click="editor.chain().focus().deleteColumn().run()" color="error">
-            <template v-slot:prepend><v-icon icon="mdi-table-column-remove"></v-icon></template>
-            <v-list-item-title>현재 열 삭제</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="editor.chain().focus().deleteRow().run()" color="error">
-            <template v-slot:prepend><v-icon icon="mdi-table-row-remove"></v-icon></template>
-            <v-list-item-title>현재 행 삭제</v-list-item-title>
-          </v-list-item>
-          <v-divider></v-divider>
-          <v-list-item @click="editor.chain().focus().deleteTable().run()" color="red">
-            <template v-slot:prepend><v-icon icon="mdi-delete-forever"></v-icon></template>
-            <v-list-item-title>표 전체 삭제</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-
-      <v-btn icon="mdi-image-plus" size="small" variant="text" @click="fileInput.click()"></v-btn>
-      <input
-        type="file"
-        ref="fileInput"
-        @change="onFileChange"
-        accept=".png, .jpg, .jpeg, .gif, .webp"
-        hidden
-      />
-      <v-btn icon="mdi-youtube" size="small" variant="text" @click="insertYoutubeByPrompt" />
-    </div>
-
+    <TiptapToolbar
+      :editor="editor"
+      :file-input-ref="fileInput"
+      @insert-youtube="insertYoutubeByPrompt"
+    />
+    <input
+      type="file"
+      ref="fileInput"
+      @change="onFileChange"
+      accept=".png, .jpg, .jpeg, .gif, .webp"
+      hidden
+    />
     <EditorContent :editor="editor" class="editor-content tiptap-content" />
   </div>
 </template>
@@ -292,12 +227,6 @@ watch(content, (newContent) => {
   border-radius: 4px;
 }
 
-.toolbar {
-  padding: 8px;
-  border-bottom: 1px solid #ccc;
-  background-color: #f5f5f5;
-}
-
 .editor-content :deep(.ProseMirror) {
   padding: 16px;
   min-height: 400px;
@@ -305,10 +234,6 @@ watch(content, (newContent) => {
 
 .editor-content :deep(.ProseMirror:focus) {
   outline: none;
-}
-
-.is-active {
-  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .editor-content :deep(iframe[src*='youtube.com']) {
