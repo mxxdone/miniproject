@@ -19,7 +19,7 @@ const searchKeyword = ref('')
 const searchTypes = [
   { title: '전체', value: 'all' },
   { title: '제목', value: 'title' },
-  { title: '내용', value: 'content' }
+  { title: '내용', value: 'content' },
 ]
 
 const currentPage = computed(() => Number(route.query.page) || 1)
@@ -101,7 +101,7 @@ watch(
       fetchPostsWithCategory()
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // 페이지네이션 클릭시 page 쿼리 파라미터 변경
@@ -116,8 +116,8 @@ function handleSearch() {
       ...route.query,
       type: searchType.value,
       keyword: searchKeyword.value,
-      page: 1
-    }
+      page: 1,
+    },
   })
 }
 </script>
@@ -168,18 +168,21 @@ function handleSearch() {
         </v-btn>
       </v-col>
     </v-row>
-    <v-row>
+    <v-row class="posts-grid">
       <v-col v-for="post in processedPosts" :key="post.id" cols="12" sm="6" md="4">
-        <RouterLink :to="`/${post.parentSlug}/${post.childSlug}/posts/${post.id}`" class="text-decoration-none text-black">
-          <v-card class="h-100 d-flex flex-column justify-space-between">
+        <RouterLink
+          :to="`/${post.parentSlug}/${post.childSlug}/posts/${post.id}`"
+          class="text-decoration-none text-black"
+        >
+          <v-card class="post-card h-100 d-flex flex-column">
             <div>
               <v-card-title>{{ post.title }}</v-card-title>
-              <v-card-text class="content-truncate pb-10">
+              <v-card-text class="content-truncate pd-2">
                 <div>{{ post.plainContent }}</div>
               </v-card-text>
-              <div style="height: 10px"></div>
+              <div style="height: 4px"></div>
             </div>
-            <v-card-actions class="px-4">
+            <v-card-actions class="px-4 mt-auto">
               <v-icon size="small">mdi-heart-outline</v-icon>
               <span class="mr-3">{{ post.likeCount }}</span>
               <v-icon size="small">mdi-comment-text-outline</v-icon>
@@ -213,6 +216,19 @@ function handleSearch() {
   white-space: normal;
   word-break: break-word;
   line-height: 1.5;
+  min-height: calc(1.5em * 3);
   max-height: calc(1.5em * 3);
+}
+.posts-grid .post-card {
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.posts-grid .post-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 </style>
