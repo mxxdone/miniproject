@@ -13,7 +13,7 @@ public class HtmlSanitizer {
             // 1. 기본 텍스트/레이아웃 태그
             .allowElements(
                     "p", "div", "h1", "h2", "h3", "h4", "h5", "h6",
-                    "ul", "ol", "li", "blockquote", "br",
+                    "ul", "ol", "li", "blockquote", "br", "hr",
                     "b", "i", "u", "strong", "em", "s", "strike",
                     "pre", "code", "span",
                     "table", "thead", "tbody", "tfoot", "tr", "th", "td", "caption"
