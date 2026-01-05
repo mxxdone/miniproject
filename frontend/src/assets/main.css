@@ -51,9 +51,36 @@ a,
   background-color: #f8f9fa;
 }
 
-.tiptap-content p { margin: 0; }
+/*.tiptap-content p { margin: 0; }
 
-.tiptap-content p + p { margin-top: 0.8em; }
+.tiptap-content p + p { margin-top: 0.8em; }*/
+
+/* 1. 모든 단락에 일관된 상하 마진 부여 */
+.tiptap-content p {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+}
+
+/* 2. 빈 단락(<p></p>)이 높이를 가질 수 있도록 설정 */
+/* 엔터를 여러 번 쳐서 만든 빈 줄이 유지되게 합니다. */
+.tiptap-content p:empty::before {
+  content: '\00a0'; /* 줄바꿈 없는 공백 추가 */
+  display: inline-block;
+}
+
+/* 3. 제목 요소 마진 최적화 */
+.prose-content h1,
+.prose-content h2,
+.prose-content h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* 4. 첫 번째 요소의 상단 마진은 제거하여 정렬 유지 */
+.tiptap-content > *:first-child {
+  margin-top: 0;
+}
 
 /* TipTap 인용구 css */
 .tiptap-content blockquote {
