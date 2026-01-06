@@ -17,6 +17,7 @@ function getFirstQueryParam(param) {
 onMounted(async () => {
   try {
     const token = getFirstQueryParam('token')
+    const redirectPath = getFirstQueryParam('redirect')
 
     if (!token) {
       throw new Error('인증 토큰이 없습니다.')
@@ -24,9 +25,8 @@ onMounted(async () => {
 
     authStore.setToken(token)
 
-    // 처리가 끝나면 URL에서 토큰 제거, 메인페이지로 교체
-    // push 대신 replace로 뒤로가기 기록 남지 않게 조치
-    await router.replace('/')
+    //redirectPath가 있으면 해당 경로로, 없으면 메인('/')으로 이동
+    await router.replace(redirectPath || '/')
   } catch {
     alert('로그인 처리 중 문제가 발생하였습니다. 다시 시도해 주세요.')
     await router.replace('/login')

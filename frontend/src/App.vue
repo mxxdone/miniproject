@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
@@ -8,6 +9,8 @@ import { jwtDecode } from 'jwt-decode'
 import NotificationMenu from '@/components/NotificationMenu.vue'
 import axios from 'axios'
 
+const route = useRoute()
+const router = useRouter()
 const uiStore = useUiStore()
 const authStore = useAuthStore()
 const drawer = ref(true) // 카테고리 서랍 열림 닫힘 제어
@@ -47,7 +50,7 @@ onMounted(async () => {
         } catch (refreshError) {
           // 재발급 실패 시(리프레시 토큰도 만료 등): 로그아웃 처리
           console.error('토큰 재발급 실패, 로그아웃 합니다:', refreshError)
-          authStore.logout()
+          await authStore.logout()
         }
       } else {
         // 만료되지 않았다면 스토어 상태 초기화
@@ -55,7 +58,7 @@ onMounted(async () => {
       }
     } catch (e) {
       console.error('유효하지 않은 토큰입니다:', e)
-      authStore.logout() // 토큰 해석 실패 시 로그아웃
+      await authStore.logout() // 토큰 해석 실패 시 로그아웃
     }
   }
 
@@ -66,6 +69,42 @@ onMounted(async () => {
     theme.change(savedTheme)
   }
 })
+
+const handleLogout = async () => {
+  if (confirm('로그아웃 하시겠습니까?')) {
+    // 로그아웃 버튼을 누른 시점의 라우트 정보를 미리 변수에 고정
+    const currentRouteName = route.name
+    // 안전하게 현재 상태를 캡처
+    const currentRouteParams = { ...route.params }
+
+    await authStore.logout()
+    uiStore.showSnackbar({ text: '로그아웃되었습니다.', color: 'success' })
+
+    // 상황별 리다이렉트 로직 적용
+    if (currentRouteName === 'postEdit') {
+      // 수정 중 로그아웃 시: 원본 게시글 상세 페이지로 이동
+      await router.push({
+        name: 'postDetail',
+        params: {
+          parentSlug: currentRouteParams.parentSlug,
+          childSlug: currentRouteParams.childSlug,
+          id: currentRouteParams.id,
+        },
+      })
+    } else if (currentRouteName === 'postCreate') {
+      // 작성 중 로그아웃 -> 해당 카테고리 게시글 목록으로 이동
+      if (currentRouteParams.parentSlug) {
+        const targetPath = currentRouteParams.childSlug
+          ? `/${currentRouteParams.parentSlug}/${currentRouteParams.childSlug}`
+          : `/${currentRouteParams.parentSlug}`
+        await router.push(targetPath)
+      } else {
+        await router.push('/') // 정보가 없다면 홈으로
+      }
+    }
+    // 그 외 일반 페이지(목록, 상세)에서는 페이지 이동 없기 그대로 머문다.
+  }
+}
 </script>
 
 <template>
@@ -91,13 +130,19 @@ onMounted(async () => {
         <!-- 인증 버튼들 -->
         <template v-if="!authStore.isLoggedIn">
           <v-btn variant="text" color="on-primary" to="/signup">회원가입</v-btn>
-          <v-btn variant="text" color="on-primary" to="/login">로그인</v-btn>
+          <v-btn
+            variant="text"
+            color="on-primary"
+            :to="{ path: '/login', query: { redirect: $route.fullPath } }"
+          >
+            로그인
+          </v-btn>
         </template>
         <template v-else>
           <v-chip color="on-primary" variant="text" class="mr-2">
             {{ authStore.nickname }} 님
           </v-chip>
-          <v-btn variant="text" color="on-primary" @click="authStore.logout()">로그아웃</v-btn>
+          <v-btn variant="text" color="on-primary" @click="handleLogout">로그아웃</v-btn>
         </template>
       </v-app-bar>
 

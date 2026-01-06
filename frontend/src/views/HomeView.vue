@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { usePostsStore } from '@/stores/posts'
 import { useAuthStore } from '@/stores/auth'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { stripHtml } from '@/utils/formatText'
 import { useCategoriesStore } from '@/stores/categories'
 
@@ -160,9 +160,16 @@ function handleSearch() {
       </v-col>
       <v-col class="d-flex justify-end">
         <v-btn
-          v-if="currentCategory && authStore.isAdmin"
+          v-if="currentCategory && authStore.isLoggedIn && authStore.isAdmin"
           color="primary"
-          :to="`/posts/new?category=${currentCategory}`"
+          :to="{
+            name: 'postCreate',
+            params: {
+              parentSlug: route.params.parentSlug,
+              childSlug: route.params.childSlug,
+            },
+            query: { category: currentCategory }
+          }"
         >
           글쓰기
         </v-btn>

@@ -39,12 +39,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // state 초기화: 앱 시작 시
-/*  if (token.value) {
-    initUserFromToken(token.value)
-    refreshToken.value = localStorage.getItem('refreshToken')
-  }*/
-
   // action 내 토큰 설정 로직
   function setToken(newAccessToken) {
     token.value = newAccessToken
@@ -93,8 +87,6 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       // API 호출 성공 여부와 관계없이 프론트엔드 상태 초기화 진행
       setToken(null); // 로컬 스토리지 액세스 토큰 및 상태 초기화
-      alert('로그아웃 되었습니다.');
-      router.push('/'); // 홈으로 이동
     }
   }
 

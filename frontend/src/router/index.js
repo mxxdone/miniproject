@@ -11,7 +11,7 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/posts/new', // 새 글 작성 경로 추가
+      path: '/:parentSlug/:childSlug?/posts/new',
       name: 'postCreate',
       // () =>을 사용하여 지연로딩, 필요할 때 import 해준다
       // view 컴포넌트를 연결
