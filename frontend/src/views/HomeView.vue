@@ -154,7 +154,7 @@ function handleSearch() {
     </v-row>
     <v-row v-if="categoryPathText">
       <v-col cols="8">
-        <div class="text-h6 text-grey-darken-1 mb-4">
+        <div class="text-h8 text-grey-darken-1">
           {{ categoryPathText }}
         </div>
       </v-col>
@@ -183,7 +183,7 @@ function handleSearch() {
         >
           <v-card class="post-card h-100 d-flex flex-column">
             <div>
-              <v-card-title>{{ post.title }}</v-card-title>
+              <v-card-title class="text-h6 pt-4 pb-1">{{ post.title }}</v-card-title>
               <v-card-text class="content-truncate pd-2">
                 <div>{{ post.plainContent }}</div>
               </v-card-text>
@@ -225,6 +225,7 @@ function handleSearch() {
   line-height: 1.5;
   min-height: calc(1.5em * 3);
   max-height: calc(1.5em * 3);
+  color: gray;
 }
 .posts-grid .post-card {
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
