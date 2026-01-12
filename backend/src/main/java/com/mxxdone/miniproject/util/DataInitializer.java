@@ -1,4 +1,4 @@
-package com.mxxdone.miniproject.config;
+package com.mxxdone.miniproject.util;
 
 import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
