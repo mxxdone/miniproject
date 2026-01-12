@@ -22,7 +22,6 @@ frontend/.vite/
 
 # Secrets
 application-secret-*.yml
-miniproject.env
 .env
 
 # OS

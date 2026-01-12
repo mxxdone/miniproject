@@ -7,6 +7,8 @@ WORKDIR /app
 COPY gradlew build.gradle settings.gradle ./
 COPY gradle ./gradle
 
+# 윈도우 줄바꿈(CRLF) 문제를 도커 빌드 시점에 강제로 해결
+RUN sed -i 's/\r$//' gradlew
 # 실행권한 부여
 RUN chmod +x ./gradlew
 
