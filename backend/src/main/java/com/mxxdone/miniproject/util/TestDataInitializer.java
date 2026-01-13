@@ -17,7 +17,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Profile("dev")
+@Profile("local")
 @Slf4j
 public class TestDataInitializer implements CommandLineRunner {
 

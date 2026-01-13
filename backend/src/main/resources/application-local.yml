@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/miniproject
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_DEV_USERNAME} # 환경 변수 사용
+    password: ${DB_DEV_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true # 출력되는 SQL을 정렬
+        jdbc:
+          time_zone: Asia/Seoul # KST(UTC+9)로 타임존 명시적 설정
+        default_batch_fetch_size: 100
+    show-sql: true # SQL 로깅 활성화
+  data:
+    redis:
+      host: localhost
+      port: 6379
+app:
+  oauth2:
+    redirect-uri: http://localhost:5173/oauth2/redirect
+  cors:
+    allowed-origins: http://localhost:5173,http://127.0.0.1:5173
+admin:
+  password: ${ADMIN_PASSWORD}
+logging:
+  level:
+    com.mxxdone.miniproject: DEBUG
+    org.hibernate.orm.jdbc.bind: trace

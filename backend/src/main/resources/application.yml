@@ -4,6 +4,7 @@
       group:
         "dev": ["secret-dev"]
         "prod": ["prod", "secret-prod"]
+        "local": ["local", "secret-local"]
     jpa:
       open-in-view: false # OSIV(Open Session In View) 비활성화
     threads:
