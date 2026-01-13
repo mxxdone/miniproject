@@ -13,9 +13,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // 기본생성자 추가
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE post SET is_deleted = true WHERE id = ?")
@@ -73,6 +75,13 @@ public class Post {
         if (category != null) {
             this.category = category;
         }
+    }
+
+    // updatePost에서 수정 유무 체크
+    public boolean isNotModified(String title, String content, Long categoryId) {
+        return Objects.equals(this.title, title) &&
+                Objects.equals(this.content, content) &&
+                (this.category != null && Objects.equals(this.category.getId(), categoryId));
     }
 
     public void incrementViewCount() {

@@ -67,7 +67,6 @@ public class PostService {
     }
 
     //게시글 수정
-    @CacheEvict(value = "categories", allEntries = true)
     public Long update(Long id, PostUpdateRequestDto requestDto, User currentUser) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다. id= " + id));
@@ -76,6 +75,12 @@ public class PostService {
             throw new AccessDeniedException("게시글 수정 권한이 없습니다.");
         }
 
+        // 수정 여부 체크, 수정X -> 바로 id return
+        if (post.isNotModified(requestDto.title(), requestDto.content(), requestDto.categoryId())) {
+            return id;
+        }
+
+        // 수정 사항 있을 시
         Category category = null;
         if (requestDto.categoryId() != null) {
             category = categoryRepository.findById(requestDto.categoryId())
@@ -88,12 +93,27 @@ public class PostService {
 
         post.update(requestDto.title(), requestDto.content(), category);
 
-        try {
-            redisTemplate.delete("posts::page_1");
-        } catch (Exception e) {
-            log.error("캐시 삭제 실패: posts::page_1", e);
-        }
+        // 실제 변경이 일어난 시점에만 캐시 삭제
+        evictCache();
+
         return id;
+    }
+
+    public void evictCache() {
+        try {
+            // 기존 게시글 목록 캐시 삭제
+            redisTemplate.delete("posts::page_1");
+
+            // @CacheEvict 제거 후 대체 로직 추가
+            // categories와 관련된 모든 키 삭제 OR 특정 키만 골라서 삭제
+            Set<String> keys = redisTemplate.keys("categories*");
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+            }
+            log.info("변경 사항이 없어 수정을 중단합니다.");
+        } catch (Exception e) {
+            log.error("캐시 삭제 중 오류 발생", e);
+        }
     }
 
     //게시글 삭제
@@ -116,7 +136,6 @@ public class PostService {
     }
 
     // 게시글 조회수 증가 (ip 기준 중복 방지)
-    @Transactional(readOnly = false)
     public void incrementViewCount(Long id, HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         String redisKey = "post:view:" + id + ":" + ip;
@@ -261,7 +280,6 @@ public class PostService {
     }
 
     // 좋아요 토글
-    @Transactional
     public void toggleLike(Long postId, User user) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
