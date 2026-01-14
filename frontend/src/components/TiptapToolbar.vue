@@ -2,12 +2,12 @@
 <script setup>
 const props = defineProps({
   editor: { type: Object, required: true },
-  fileInputRef: { type: Object, required: true },
+  fileInputRef: { type: [Object, null], required: true },
 })
 
 function openFilePicker() {
   // ref는 템플릿 ref 객체이므로 .value로 접근
-  props.fileInputRef.value?.click()
+  props.fileInputRef?.value?.click()
 }
 </script>
 
