@@ -24,9 +24,9 @@ admin:
   password: ${ADMIN_PASSWORD}
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
   swagger-ui:
-    enabled: false
+    enabled: true
 logging:
   level:
     com.mxxdone.miniproject: info

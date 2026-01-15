@@ -30,3 +30,5 @@ Thumbs.db
 
 # Docker Compose override for local env
 docker-compose.override.yml
+
+backend/src/main/generated/
