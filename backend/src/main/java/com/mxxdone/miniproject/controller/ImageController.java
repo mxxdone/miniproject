@@ -21,7 +21,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/images")
-@Tag(name = "Image API", description = "이미지 업로드 API (AWS S3)")
+@Tag(name = "이미지 API", description = "이미지 업로드 API (AWS S3)")
 public class ImageController {
 
     private final S3Uploader s3uploader;
