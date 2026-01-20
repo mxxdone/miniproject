@@ -6,13 +6,12 @@ import com.mxxdone.miniproject.config.SecurityConfig;
 import com.mxxdone.miniproject.config.security.PrincipalOAuth2UserService;
 import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
+import com.mxxdone.miniproject.dto.user.LoginResponseDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
-import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.service.PrincipalDetailService;
 import com.mxxdone.miniproject.service.RefreshTokenService;
 import com.mxxdone.miniproject.service.UserService;
 import com.mxxdone.miniproject.util.CookieUtil;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,17 +72,22 @@ class UserControllerTest {
         // given: UserService의 login 메서드는 TokenResponseDto를 반환하도록 설정
         LoginRequestDto requestDto = new LoginRequestDto("testuser", "password123!");
 
-        TokenResponseDto tokenDto = new TokenResponseDto(
-                "mock-access-token"
+        LoginResponseDto responseDto = new LoginResponseDto(
+                "mock-access-token",
+                "mock-refresh-token",
+                3600L
         );
 
-        given(userService.login(any(LoginRequestDto.class), any(HttpServletResponse.class))).willReturn(tokenDto);
+        given(userService.login(any(LoginRequestDto.class))).willReturn(responseDto);
 
         // when & then
         mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("mock-access-token"));
+                // JSON 응답에 accessToken, refreshToken이 포함되어 있는지 확인
+                .andExpect(jsonPath("$.accessToken").value("mock-access-token"))
+                .andExpect(cookie().exists("refreshToken"))
+                .andExpect(cookie().value("refreshToken", "mock-refresh-tokne"));
     }
 }

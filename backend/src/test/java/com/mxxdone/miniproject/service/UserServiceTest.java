@@ -2,17 +2,14 @@ package com.mxxdone.miniproject.service;
 
 import com.mxxdone.miniproject.domain.User;
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
+import com.mxxdone.miniproject.dto.user.LoginResponseDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
-import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.repository.UserRepository;
-import com.mxxdone.miniproject.util.CookieUtil;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,7 +19,6 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest
@@ -40,8 +36,6 @@ public class UserServiceTest {
     private S3Uploader s3Uploader;
     @MockitoBean
     private RefreshTokenService refreshTokenService;
-    @MockitoBean
-    private CookieUtil cookieUtil;
 
     @Test
     @DisplayName("정상적인 정보로 회원가입에 성공")
@@ -163,13 +157,16 @@ public class UserServiceTest {
                 "password1234!"
         );
 
-        // HttpServletResponse 모의 객체 생성
-        HttpServletResponse mockResponse = new MockHttpServletResponse();
-
         // when
-        TokenResponseDto tokenDto = userService.login(loginRequestDto, mockResponse);
+        LoginResponseDto result = userService.login(loginRequestDto);
 
-        // refreshTokenService.saveRefreshToken 호출 검증
+        // 반환된 데이터 값 검증
+        assertThat(result).isNotNull();
+        assertThat(result.accessToken()).isNotNull().isNotEmpty();
+        assertThat(result.refreshToken()).isNotNull().isNotEmpty();
+        assertThat(result.maxAge()).isGreaterThan(0);
+
+        // Redis에 Refresh Token이 정상적으로 저장되었는지 검증
         ArgumentCaptor<String> usernameCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> refreshTokenCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Duration> durationCaptor = ArgumentCaptor.forClass(Duration.class);
@@ -177,18 +174,8 @@ public class UserServiceTest {
         verify(refreshTokenService).saveRefreshToken(usernameCaptor.capture(), refreshTokenCaptor.capture(), durationCaptor.capture());
 
         assertThat(usernameCaptor.getValue()).isEqualTo("testuser001");
-        assertThat(refreshTokenCaptor.getValue()).isNotNull().isNotEmpty(); // 실제 생성된 리프레시 토큰 값 검증
+        assertThat(refreshTokenCaptor.getValue()).isEqualTo(result.refreshToken());
         assertThat(durationCaptor.getValue()).isNotNull(); // Duration 값 검증
-
-        // cookieUtil.addCookie 호출 검증
-        ArgumentCaptor<Long> maxAgeCaptor = ArgumentCaptor.forClass(Long.class);
-        verify(cookieUtil).addCookie(eq(mockResponse), eq("refreshToken"), eq(refreshTokenCaptor.getValue()), maxAgeCaptor.capture());
-        assertThat(maxAgeCaptor.getValue()).isGreaterThan(0); // MaxAge 값 검증
-
-        // then
-        assertThat(tokenDto).isNotNull();
-        assertThat(tokenDto.accessToken()).isNotNull().isNotEmpty();
-
     }
 
     @Test
@@ -206,10 +193,9 @@ public class UserServiceTest {
                 "testuser001",
                 "wrongpw1234!"
         );
-        HttpServletResponse mockResponse = new MockHttpServletResponse(); // 추가
 
         // then
-        assertThatThrownBy(() -> userService.login(loginRequestDto, mockResponse))
+        assertThatThrownBy(() -> userService.login(loginRequestDto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("비밀번호가 일치하지 않습니다.");
     }

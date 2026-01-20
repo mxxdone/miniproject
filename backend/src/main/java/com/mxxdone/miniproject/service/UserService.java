@@ -3,14 +3,11 @@ package com.mxxdone.miniproject.service;
 import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
 import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
-import com.mxxdone.miniproject.dto.user.LoginRequestDto;
-import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
-import com.mxxdone.miniproject.dto.user.TokenResponseDto;
+import com.mxxdone.miniproject.dto.user.*;
 import com.mxxdone.miniproject.exception.DuplicateException;
 import com.mxxdone.miniproject.repository.UserRepository;
-import com.mxxdone.miniproject.util.CookieUtil;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.util.NoSuchElementException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,7 +25,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder; // SecurityConfig에 등록한 인코더
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
-    private final CookieUtil cookieUtil;
 
     public Long signup(SignUpRequestDto requestDto) {
         // 아이디 중복 확인
@@ -59,7 +56,7 @@ public class UserService {
         return userRepository.save(user).getId();
     }
 
-    public TokenResponseDto login(LoginRequestDto requestDto, HttpServletResponse response) {
+    public LoginResponseDto login(LoginRequestDto requestDto) {
         User user = userRepository.findByUsername(requestDto.username())
                 .orElseThrow(() -> new NoSuchElementException("등록된 사용자가 없습니다."));
 
@@ -75,9 +72,35 @@ public class UserService {
         Duration refreshTokenDuration = Duration.ofDays(jwtUtil.getRefreshTokenExpirationDays()); // 만료 기간 Duration 객체로 생성
         refreshTokenService.saveRefreshToken(user.getUsername(), refreshToken, refreshTokenDuration);
 
-        long refreshTokenMaxAgeSeconds = refreshTokenDuration.toSeconds();
-        cookieUtil.addCookie(response, "refreshToken", refreshToken, refreshTokenMaxAgeSeconds); // response 객체 전달
+        return new LoginResponseDto(accessToken, refreshToken, refreshTokenDuration.toSeconds());
+    }
 
-        return new TokenResponseDto(accessToken);
+    public void withdraw(String username, WithdrawRequestDto requestDto) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+
+        // 소셜 로그인 사용자가 아닌 경우 -> 비밀번호 검증
+        if (user.getProvider() == null) {
+            if (!passwordEncoder.matches(requestDto.password(), user.getPassword())) {
+                throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            }
+        }
+        // Redis에서 Refresh Token 삭제
+        try {
+            refreshTokenService.deleteRefreshToken(username);
+        } catch (Exception e) {
+            log.error("회원 탈퇴 중 Redis 토큰 삭제 실패 (username: {}", username, e);
+        }
+
+        userRepository.delete(user); // soft delete (@SQLDelete)
+        log.info("회원 탈퇴 완료: username={}", username);
+    }
+
+    @Transactional(readOnly = true)
+    public UserInfoResponseDto getMyInfo(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
+
+        return UserInfoResponseDto.from(user);
     }
 }
