@@ -142,6 +142,14 @@ const handleLogout = async () => {
           <v-chip color="on-primary" variant="text" class="mr-2">
             {{ authStore.nickname }} 님
           </v-chip>
+          <v-btn
+            variant="text"
+            color="on-primary"
+            to="/mypage"
+            class="mr-2"
+          >
+            마이페이지
+          </v-btn>
           <v-btn variant="text" color="on-primary" @click="handleLogout">로그아웃</v-btn>
         </template>
       </v-app-bar>

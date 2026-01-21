@@ -51,7 +51,7 @@ public class UserController {
         return ResponseEntity.ok(new TokenResponseDto(result.accessToken()));
     }
 
-    @DeleteMapping("/me")
+    @DeleteMapping("/info")
     @Operation(summary = "회원 탈퇴", description = "본인 계정을 탈퇴합니다. 소셜 로그인 사용자는 비밀번호 검증을 건너뜁니다.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "탈퇴 성공"),
@@ -72,10 +72,29 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/me")
+    @GetMapping("/info")
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 정보를 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
     public ResponseEntity<UserInfoResponseDto> getMyInfo(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-        return ResponseEntity.ok(userService.getMyInfo(principalDetails.getUsername()));
+        return ResponseEntity.ok(UserInfoResponseDto.from(principalDetails.getUser()));
+    }
+
+    @PatchMapping("/nickname")
+    @Operation(summary = "닉네임 수정", description = "현재 로그인한 사용자의 닉네임을 수정합니다.")
+    public ResponseEntity<Void> updateNickname(
+            @AuthenticationPrincipal PrincipalDetails details,
+            @Valid @RequestBody NicknameUpdateRequestDto dto) { // 나눈 DTO 사용
+        userService.updateNickname(details.getUser().getId(), dto);
+        return ResponseEntity.ok().build();
+    }
+
+    // 비밀번호 수정 API (일반 유저 전용)
+    @PatchMapping("/password")
+    @Operation(summary = "비밀번호 수정", description = "현재 로그인한 사용자의 비밀번호를 수정합니다.")
+    public ResponseEntity<Void> updatePassword(
+            @AuthenticationPrincipal PrincipalDetails details,
+            @Valid @RequestBody PasswordUpdateRequestDto dto) { // 나눈 DTO 사용
+        userService.updatePassword(details.getUser().getId(), dto);
+        return ResponseEntity.ok().build();
     }
 }

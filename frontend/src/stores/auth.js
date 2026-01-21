@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import {defineStore} from 'pinia'
+import {computed, ref} from 'vue'
 import apiClient from '@/api'
 import router from '@/router'
-import { jwtDecode } from 'jwt-decode'
+import {jwtDecode} from 'jwt-decode'
 
 export const useAuthStore = defineStore('auth', () => {
   // state
@@ -10,6 +10,8 @@ export const useAuthStore = defineStore('auth', () => {
   const username = ref(null)
   const userRole = ref(null)
   const nickname = ref(null)
+  const email = ref(null)
+  const isSocialUser = ref(false)
   const isAdmin = computed(() => userRole.value === 'ROLE_ADMIN')
   const isLoggedIn = computed(() => !!token.value)
 
@@ -22,7 +24,7 @@ export const useAuthStore = defineStore('auth', () => {
         const currentTime = Date.now() / 1000; // 밀리초를 초로 변환
         if (decoded.exp < currentTime) {
           console.warn('초기화 과정에서 액세스 토큰이 이미 만료되었습니다.');
-          setToken(null); // 만료되었으면 토큰 제거
+          setToken(null) // 만료되었으면 토큰 제거
         } else {
           username.value = decoded.sub
           userRole.value = decoded.auth
@@ -53,7 +55,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 앱 시작 시 초기화 로직
   if (token.value) {
-    initUserFromToken(token.value);
+    initUserFromToken(token.value)
+  }
+
+  function clearAuth() {
+    token.value = null
+    username.value = null
+    nickname.value = null
+    userRole.value = null
+    email.value = null
+    isSocialUser.value = false
+    localStorage.removeItem('accessToken')
+    // axios 헤더에서도 삭제
+    apiClient.defaults.headers.common['Authorization'] = null
   }
 
   async function signup(payload) {
@@ -81,14 +95,85 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout() {
     try {
-      await apiClient.post('/api/v1/auth/logout');
+      await apiClient.post('/api/v1/auth/logout')
     } catch (error) {
-      console.error('백엔드 로그아웃 에러:', error);
+      console.error('백엔드 로그아웃 에러:', error)
     } finally {
-      // API 호출 성공 여부와 관계없이 프론트엔드 상태 초기화 진행
-      setToken(null); // 로컬 스토리지 액세스 토큰 및 상태 초기화
+      clearAuth()
     }
   }
 
-  return { token, username, userRole, nickname, isLoggedIn, isAdmin, setToken, signup, login, logout }
+  async function fetchProfile() {
+    try {
+      const response = await apiClient.get('/api/v1/users/info')
+      const data = response.data // UserInfoResponseDto 구조
+
+      // DB의 최신 정보로 스토어 상태 동기화
+      username.value = data.username
+      nickname.value = data.nickname
+      userRole.value = data.role
+      email.value = data.email
+      isSocialUser.value = data.isSocialUser
+
+      return { success: true, data }
+    } catch (error) {
+      console.error('프로필 조회 실패:', error)
+      return {
+        success: false,
+        message: error.response?.data?.message || '정보를 불러오지 못했습니다.',
+      }
+    }
+  }
+
+  async function updateNickname(newNickname) {
+    try {
+      await apiClient.patch('/api/v1/users/nickname', { nickname: newNickname })
+      this.nickname = newNickname // 스토어 상태 동기화
+      return { success: true }
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || '닉네임 수정 실패' }
+    }
+  }
+
+  async function updatePassword(currentPassword, newPassword) {
+    try {
+      await apiClient.patch('/api/v1/users/password', { currentPassword, newPassword })
+      return { success: true }
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || '비밀번호 수정 실패' }
+    }
+  }
+
+  async function withdraw(password) {
+    try {
+      await apiClient.delete('/api/v1/users/info', { data: { password } })
+      clearAuth()
+
+      return { success: true }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || '회원 탈퇴 처리 중 서버 오류가 발생했습니다.'
+      }
+    }
+  }
+
+  return {
+    token,
+    username,
+    userRole,
+    nickname,
+    isLoggedIn,
+    isAdmin,
+    email,
+    isSocialUser,
+    setToken,
+    signup,
+    login,
+    logout,
+    fetchProfile,
+    updateNickname,
+    updatePassword,
+    withdraw,
+  }
 })

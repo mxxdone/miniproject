@@ -28,6 +28,11 @@ const router = createRouter({
       component: () => import('../views/LoginView.vue'),
     },
     {
+      path: '/mypage',
+      name: 'myPage',
+      component: () => import('../views/MyPageView.vue'),
+    },
+    {
       path: '/about-me',
       name: 'aboutMe',
       component: () => import('../views/AboutMeView.vue'),
@@ -74,12 +79,11 @@ router.beforeEach((to) => {
   const authStore = useAuthStore()
 
   // 로그인이 필요한 페이지 목록
-  const protectedRoutes = ['postCreate', 'postEdit']
+  const protectedRoutes = ['postCreate', 'postEdit', 'myPage']
   // 로그인하지 않은 사용자만 접근해야 하는 페이지 목록
   const publicOnlyRoutes = ['login', 'signup']
 
   const isLoggedIn = authStore.isLoggedIn
-
 
   // 이동하려는 페이지가 보호된 페이지 & 비로그인 상태라면
   if (protectedRoutes.includes(to.name) && !isLoggedIn) {

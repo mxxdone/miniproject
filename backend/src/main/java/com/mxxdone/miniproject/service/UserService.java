@@ -79,8 +79,11 @@ public class UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
-        // 소셜 로그인 사용자가 아닌 경우 -> 비밀번호 검증
+        // 소셜 로그인 사용자가 아닌 경우(일반회원) -> 비밀번호 검증
         if (user.getProvider() == null) {
+            if (requestDto.password() == null || requestDto.password().isBlank()) {
+                throw new IllegalArgumentException("비밀번호를 입력해주세요.");
+            }
             if (!passwordEncoder.matches(requestDto.password(), user.getPassword())) {
                 throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
             }
@@ -96,11 +99,38 @@ public class UserService {
         log.info("회원 탈퇴 완료: username={}", username);
     }
 
-    @Transactional(readOnly = true)
-    public UserInfoResponseDto getMyInfo(String username) {
-        User user = userRepository.findByUsername(username)
+    // 닉네임 수정: 소셜/일반 공통
+    public void updateNickname(Long userId, NicknameUpdateRequestDto requestDto) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
-        return UserInfoResponseDto.from(user);
+        // 현재와 동일하면 스킵
+        if (user.getNickname().equals(requestDto.nickname())) {
+            return;
+        }
+
+        // 중복 확인
+        if (userRepository.existsByNickname(requestDto.nickname())) {
+            throw new DuplicateException("이미 사용 중인 닉네임입니다.");
+        }
+
+        user.updateNickname(requestDto.nickname());
+    }
+
+    // 비밀번호 수정: 일반 유저 전용
+    public void updatePassword(Long userId, PasswordUpdateRequestDto requestDto) {
+        User user = userRepository.findById(userId).orElseThrow();
+
+        // 현재 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(requestDto.currentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호가 기존 비밀번호와 동일한지 확인
+        if (passwordEncoder.matches(requestDto.newPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("새 비밀번호는 기존 비밀번호와 다르게 설정해야 합니다.");
+        }
+
+        user.updatePassword(passwordEncoder.encode(requestDto.newPassword()));
     }
 }
