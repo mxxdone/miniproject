@@ -205,7 +205,7 @@ async function submitSignup() {
 </script>
 <template>
   <v-container class="fill-height" fluid>
-    <v-row align="center" justify="center">ㅊ
+    <v-row align="center" justify="center">
       <v-col cols="12" sm="8" md="6" lg="5">
         <v-card class="elevation-12 rounded-xl" border>
           <v-toolbar color="primary" flat>
