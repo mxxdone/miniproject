@@ -82,7 +82,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(payload) {
     try {
-      const response = await apiClient.post('/api/v1/users/login', payload)
+      const response = await apiClient.post('/api/v1/auth/login', payload)
       setToken(response.data.accessToken) // 로그인 성공시 토큰 저장
 
       const currentRoute = router.currentRoute.value
@@ -158,6 +158,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function checkDuplicateId(username) {
+    try {
+      const response = await apiClient.get(`/api/v1/users/check-username`, {
+        params: { username }
+      });
+      // response.data가 true면 중복, false면 사용 가능이라고 가정
+      return { success: true, isDuplicate: response.data };
+    } catch {
+      return { success: false, message: '중복 확인 중 오류가 발생했습니다.' };
+    }
+  }
+
+  async function checkDuplicateNickname(nickname) {
+    try {
+      const response = await apiClient.get('/api/v1/users/check-nickname', {
+        params: { nickname },
+      })
+      return { success: true, isDuplicate: response.data }
+    } catch {
+      return { success: false, message: '닉네임 확인 중 에러 발생' }
+    }
+  }
+
   return {
     token,
     username,
@@ -175,5 +198,7 @@ export const useAuthStore = defineStore('auth', () => {
     updateNickname,
     updatePassword,
     withdraw,
+    checkDuplicateId,
+    checkDuplicateNickname,
   }
 })

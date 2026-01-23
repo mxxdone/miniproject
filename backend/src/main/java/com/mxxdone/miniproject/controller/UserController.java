@@ -36,21 +36,6 @@ public class UserController {
         return ResponseEntity.ok(userService.signup(requestDto));
     }
 
-    @PostMapping("/login")
-    @Operation(summary = "로그인", description = "아이디와 비밀번호로 로그인하여 JWT 토큰을 발급받습니다.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "로그인 성공 (AccessToken 반환)"),
-            @ApiResponse(responseCode = "400", description = "아이디 또는 비밀번호 불일치")
-    })
-    public ResponseEntity<TokenResponseDto> login(@RequestBody LoginRequestDto requestDto, HttpServletResponse response) {
-
-        LoginResponseDto result = userService.login(requestDto);
-
-        cookieUtil.addCookie(response, "refreshToken", result.refreshToken(), result.maxAge());
-
-        return ResponseEntity.ok(new TokenResponseDto(result.accessToken()));
-    }
-
     @DeleteMapping("/info")
     @Operation(summary = "회원 탈퇴", description = "본인 계정을 탈퇴합니다. 소셜 로그인 사용자는 비밀번호 검증을 건너뜁니다.")
     @ApiResponses({
@@ -96,5 +81,18 @@ public class UserController {
             @Valid @RequestBody PasswordUpdateRequestDto dto) { // 나눈 DTO 사용
         userService.updatePassword(details.getUser().getId(), dto);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "사용자명 중복확인", description = "회원가입에 필요한 사용자 ID의 중복 여부를 확인합니다.")
+    @GetMapping("/check-username")
+    public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
+        // existsByUsername이 true면 중복, false면 사용 가능
+        return ResponseEntity.ok(userService.isUsernameDuplicate(username));
+    }
+
+    @Operation(summary = "사용자 닉네임 중복확인", description = "회원가입에 필요한 사용자 닉네임의 중복 여부를 확인합니다.")
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Boolean> checkNickname(@RequestParam String nickname) {
+        return ResponseEntity.ok(userService.isNicknameDuplicate(nickname));
     }
 }

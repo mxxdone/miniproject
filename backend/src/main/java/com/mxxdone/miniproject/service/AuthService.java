@@ -2,6 +2,8 @@ package com.mxxdone.miniproject.service;
 
 import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
 import com.mxxdone.miniproject.domain.User;
+import com.mxxdone.miniproject.dto.user.LoginRequestDto;
+import com.mxxdone.miniproject.dto.user.LoginResponseDto;
 import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.repository.UserRepository;
 import com.mxxdone.miniproject.util.CookieUtil;
@@ -11,10 +13,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -26,6 +30,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
     private final RefreshTokenService refreshTokenService;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Refresh Token을 사용하여 새로운 Access Token과 Refresh Token을 발급
@@ -96,6 +101,25 @@ public class AuthService {
 
         // 새로운 액세스 토큰만 리턴
         return new TokenResponseDto(newAccessToken);
+    }
+
+    public LoginResponseDto login(LoginRequestDto requestDto) {
+        User user = userRepository.findByUsername(requestDto.username())
+                .orElseThrow(() -> new NoSuchElementException("등록된 사용자가 없습니다."));
+
+        // matches: 사용자 입력값과 DB 저장 해시값을 비교해줌
+        if (!passwordEncoder.matches(requestDto.password(), user.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
+        String refreshToken = jwtUtil.createRefreshToken(user.getUsername());
+
+        // Redis에 저장
+        Duration refreshTokenDuration = Duration.ofDays(jwtUtil.getRefreshTokenExpirationDays()); // 만료 기간 Duration 객체로 생성
+        refreshTokenService.saveRefreshToken(user.getUsername(), refreshToken, refreshTokenDuration);
+
+        return new LoginResponseDto(accessToken, refreshToken, refreshTokenDuration.toSeconds());
     }
 
     // 로그아웃 시 Redis 토큰 삭제

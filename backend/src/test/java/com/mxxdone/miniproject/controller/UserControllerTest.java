@@ -8,6 +8,7 @@ import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
 import com.mxxdone.miniproject.dto.user.LoginRequestDto;
 import com.mxxdone.miniproject.dto.user.LoginResponseDto;
 import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
+import com.mxxdone.miniproject.service.AuthService;
 import com.mxxdone.miniproject.service.PrincipalDetailService;
 import com.mxxdone.miniproject.service.RefreshTokenService;
 import com.mxxdone.miniproject.service.UserService;
@@ -36,6 +37,8 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
     @MockitoBean
     private UserService userService;
+    @MockitoBean
+    private AuthService authService;
 
     // @Import(SecurityConfig.class)
     @MockitoBean
@@ -78,10 +81,10 @@ class UserControllerTest {
                 3600L
         );
 
-        given(userService.login(any(LoginRequestDto.class))).willReturn(responseDto);
+        given(authService.login(any(LoginRequestDto.class))).willReturn(responseDto);
 
         // when & then
-        mockMvc.perform(post("/api/v1/users/login")
+        mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())

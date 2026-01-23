@@ -236,14 +236,14 @@ onMounted(async () => {
       </v-col>
     </v-row>
   </v-container>
+  <v-overlay
+    :model-value="isSubmitting"
+    class="align-center justify-center"
+    persistent
+  >
+    <v-progress-circular indeterminate color="white" size="64"></v-progress-circular>
+  </v-overlay>
 </template>
-<v-overlay
-  :model-value="isSubmitting"
-  class="align-center justify-center"
-  persistent
->
-<v-progress-circular indeterminate color="white" size="64"></v-progress-circular>
-</v-overlay>
 <style scoped>
 .v-card {
   border-radius: 12px;

@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useUiStore} from '@/stores/ui.js'
+import { useUiStore } from '@/stores/ui.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -48,11 +48,16 @@ const submitLogin = async () => {
           <v-text-field v-model="password" label="비밀번호" type="password" required></v-text-field>
           <v-btn type="submit" color="primary" block class="mt-4">로그인</v-btn>
         </v-form>
-        <v-divider class="my-4"></v-divider>
         <a :href="googleLoginUrl" class="text-decoration-none">
-          <v-btn color="red-lighten-1" block>
+          <v-btn
+            color="red-lighten-1"
+            block
+            size="large"
+            variant="elevated"
+            class="text-none font-weight-bold"
+          >
             <v-icon start>mdi-google</v-icon>
-            Google로 로그인
+            Google 계정으로 시작하기
           </v-btn>
         </a>
       </v-card-text>
