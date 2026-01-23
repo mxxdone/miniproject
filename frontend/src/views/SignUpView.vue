@@ -97,7 +97,7 @@ const checkId = async () => {
       isUsernameUnique.value = false
       usernameErrorMsg.value = result?.message || '아이디 중복 확인에 실패했습니다.'
     }
-  } catch () {
+  } catch {
     isUsernameUnique.value = false
     usernameErrorMsg.value = '네트워크 오류가 발생했습니다.'
   } finally {
@@ -137,7 +137,7 @@ const checkNickname = async () => {
       isNicknameUnique.value = false
       nicknameErrorMsg.value = result?.message || '닉네임 중복 확인에 실패했습니다.'
     }
-  } catch () {
+  } catch {
     isNicknameUnique.value = false
     nicknameErrorMsg.value = '네트워크 오류가 발생했습니다.'
   } finally {
@@ -196,7 +196,7 @@ async function submitSignup() {
     } else {
       uiStore.showSnackbar({ text: result?.message || '가입에 실패했습니다.', color: 'error' })
     }
-  } catch () {
+  } catch {
     uiStore.showSnackbar({ text: '가입 처리 중 오류가 발생했습니다.', color: 'error' })
   } finally {
     isSubmitting.value = false
@@ -205,7 +205,7 @@ async function submitSignup() {
 </script>
 <template>
   <v-container class="fill-height" fluid>
-    <v-row align="center" justify="center">
+    <v-row align="center" justify="center">ㅊ
       <v-col cols="12" sm="8" md="6" lg="5">
         <v-card class="elevation-12 rounded-xl" border>
           <v-toolbar color="primary" flat>
