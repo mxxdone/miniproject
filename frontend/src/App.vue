@@ -155,7 +155,7 @@ const handleLogout = async () => {
       </v-app-bar>
 
       <!-- Drawer: 컴포넌트 이름 수정 -->
-      <v-navigation-drawer v-model="drawer">
+      <v-navigation-drawer v-model="drawer" width="300" permanent>
         <CategoryNav />
         <template v-slot:append>
           <div class="pa-2 text-caption text-center text-medium-emphasis">
