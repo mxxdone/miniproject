@@ -128,15 +128,16 @@ function handleSearch() {
       <v-col cols="12">
         <v-card class="pa-4">
           <v-row align="center" no-gutters>
-            <v-col cols="3" class="pr-2">
+            <v-col cols="12" sm="3" class="pr-sm-2 pb-2 pb-sm-0">
               <v-select
                 v-model="searchType"
                 :items="searchTypes"
                 density="compact"
                 hide-details
-              ></v-select>
-            </v-col>
-            <v-col cols="7">
+                label="검색 조건"
+              ></v-select> </v-col>
+
+            <v-col cols="12" sm="7" class="pb-2 pb-sm-0">
               <v-text-field
                 v-model="searchKeyword"
                 placeholder="검색어를 입력하세요"
@@ -145,7 +146,8 @@ function handleSearch() {
                 @keyup.enter="handleSearch"
               ></v-text-field>
             </v-col>
-            <v-col cols="2" class="pl-2">
+
+            <v-col cols="12" sm="2" class="pl-sm-2">
               <v-btn color="primary" block @click="handleSearch">검색</v-btn>
             </v-col>
           </v-row>

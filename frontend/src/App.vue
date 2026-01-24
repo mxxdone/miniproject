@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTheme } from 'vuetify'
+import { useDisplay, useTheme } from 'vuetify'
 import { useUiStore } from '@/stores/ui'
 import { useAuthStore } from '@/stores/auth'
 import CategoryNav from '@/components/CategoryNav.vue'
@@ -16,6 +16,7 @@ const authStore = useAuthStore()
 const drawer = ref(true) // 카테고리 서랍 열림 닫힘 제어
 const theme = useTheme()
 const isDark = computed(() => theme.global.current.value.dark)
+const { mobile } = useDisplay()
 
 function toggleTheme() {
   // 현재 테마가 다크 모드인지 확인하고, 아니면 anyangDark로, 맞으면 anyangLight
@@ -114,48 +115,87 @@ const handleLogout = async () => {
       <v-app-bar color="primary" flat>
         <v-app-bar-nav-icon variant="text" color="on-primary" @click="drawer = !drawer" />
 
-        <v-toolbar-title class="text-white">
-          <RouterLink to="/" class="text-decoration-none text-white"> MOODONE.DEV </RouterLink>
+        <v-toolbar-title class="text-white flex-grow-1 text-subtitle-1 text-sm-h6 font-weight-bold ml-n2 ml-sm-0">
+          <RouterLink
+            to="/"
+            class="text-decoration-none text-white d-flex align-center h-100"
+          >
+            MOODONE.DEV
+          </RouterLink>
         </v-toolbar-title>
 
-        <v-spacer />
+        <div class="d-flex align-center ga-0 ga-sm-2">
+          <NotificationMenu v-if="authStore.isLoggedIn" />
 
-        <NotificationMenu v-if="authStore.isLoggedIn" />
-
-        <!-- 토글: 아이콘 버튼 권장 -->
-        <v-btn variant="text" icon color="on-primary" @click="toggleTheme" class="mr-2">
-          <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
-        </v-btn>
-
-        <!-- 인증 버튼들 -->
-        <template v-if="!authStore.isLoggedIn">
-          <v-btn variant="text" color="on-primary" to="/signup">회원가입</v-btn>
           <v-btn
             variant="text"
             color="on-primary"
-            :to="{ path: '/login', query: { redirect: $route.fullPath } }"
+            @click="toggleTheme"
+            min-width="0"
+            density="comfortable"
           >
-            로그인
+            <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
           </v-btn>
-        </template>
-        <template v-else>
-          <v-chip color="on-primary" variant="text" class="mr-2">
-            {{ authStore.nickname }} 님
-          </v-chip>
-          <v-btn
-            variant="text"
-            color="on-primary"
-            to="/mypage"
-            class="mr-2"
-          >
-            마이페이지
-          </v-btn>
-          <v-btn variant="text" color="on-primary" @click="handleLogout">로그아웃</v-btn>
-        </template>
+
+          <template v-if="!authStore.isLoggedIn">
+            <v-btn
+              variant="text"
+              color="on-primary"
+              to="/signup"
+              min-width="0"
+              density="comfortable"
+            >
+              <v-icon class="d-sm-none">mdi-account-plus</v-icon>
+              <span class="d-none d-sm-block">회원가입</span>
+            </v-btn>
+            <v-btn
+              variant="text"
+              color="on-primary"
+              :to="{ path: '/login', query: { redirect: $route.fullPath } }"
+              min-width="0"
+              density="comfortable"
+            >
+              <v-icon class="d-sm-none">mdi-login</v-icon>
+              <span class="d-none d-sm-block">로그인</span>
+            </v-btn>
+          </template>
+          <template v-else>
+            <v-chip color="on-primary" variant="text" class="d-none d-sm-flex">
+              {{ authStore.nickname }} 님
+            </v-chip>
+
+            <v-btn
+              variant="text"
+              color="on-primary"
+              to="/mypage"
+              min-width="0"
+              density="comfortable"
+            >
+              <v-icon class="d-sm-none">mdi-account</v-icon>
+              <span class="d-none d-sm-block">마이페이지</span>
+            </v-btn>
+
+            <v-btn
+              variant="text"
+              color="on-primary"
+              @click="handleLogout"
+              min-width="0"
+              density="comfortable"
+            >
+              <v-icon class="d-sm-none">mdi-logout</v-icon>
+              <span class="d-none d-sm-block">로그아웃</span>
+            </v-btn>
+          </template>
+        </div>
       </v-app-bar>
 
       <!-- Drawer: 컴포넌트 이름 수정 -->
-      <v-navigation-drawer v-model="drawer" width="300" permanent>
+      <v-navigation-drawer
+        v-model="drawer"
+        :width="mobile ? undefined : 300"
+        :temporary="mobile"
+        :permanent="!mobile"
+      >
         <CategoryNav />
         <template v-slot:append>
           <div class="pa-2 text-caption text-center text-medium-emphasis">
