@@ -65,6 +65,17 @@ const rules = {
   },
 }
 
+// 한글 입력 방지
+const handlePasswordInput = (event) => {
+  const originalValue = event.target.value
+  // 한글(자음, 모음, 완성형) 제거 정규식
+  const filteredValue = originalValue.replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, '')
+  // 값이 변경되었을 때만 업데이트 (불필요한 렌더링 방지)
+  if (originalValue !== filteredValue) {
+    formData.password = filteredValue
+  }
+}
+
 const checkId = async () => {
   // 중복확인 버튼 누를 때마다 메시지 초기화
   usernameErrorMsg.value = ''
@@ -224,7 +235,8 @@ async function submitSignup() {
                 :error-messages="usernameErrorMsg"
                 :messages="usernameSuccessMsg"
                 persistent-hint
-                class="mb-3"
+                density="compact"
+                class="mb-1"
               >
                 <template #append-inner>
                   <v-btn
@@ -247,7 +259,10 @@ async function submitSignup() {
                 @click:append-inner="showPassword = !showPassword"
                 :rules="[rules.required, rules.password, rules.minLength(8), rules.maxLength(20)]"
                 variant="outlined"
-                class="mb-2"
+                density="compact"
+                class="mb-1"
+                autocomplete="new-password"
+                @input="handlePasswordInput"
               ></v-text-field>
 
               <v-text-field
@@ -259,7 +274,10 @@ async function submitSignup() {
                 @click:append-inner="showConfirmPassword = !showConfirmPassword"
                 :rules="[rules.required, rules.confirmPassword]"
                 variant="outlined"
-                class="mb-2"
+                density="compact"
+                class="mb-1"
+                autocomplete="new-password"
+                @input="handlePasswordInput"
               ></v-text-field>
 
               <v-text-field
@@ -271,7 +289,8 @@ async function submitSignup() {
                 :error-messages="nicknameErrorMsg"
                 :messages="nicknameSuccessMsg"
                 persistent-hint
-                class="mb-3"
+                density="compact"
+                class="mb-1"
               >
                 <template #append-inner>
                   <v-btn
@@ -292,6 +311,7 @@ async function submitSignup() {
                 prepend-icon="mdi-email"
                 :rules="[rules.required, rules.email]"
                 variant="outlined"
+                density="compact"
               ></v-text-field>
 
               <v-btn
@@ -299,7 +319,7 @@ async function submitSignup() {
                 color="primary"
                 block
                 size="large"
-                class="mt-6 font-weight-bold"
+                class="mt-2 font-weight-bold"
                 :loading="isSubmitting"
                 :disabled="!isFormValid"
               >

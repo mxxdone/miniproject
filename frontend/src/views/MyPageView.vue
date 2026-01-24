@@ -41,6 +41,17 @@ const rules = {
   ],
 }
 
+// 한글 입력 방지
+const handlePasswordInput = (event) => {
+  const originalValue = event.target.value
+  // 한글(자음, 모음, 완성형) 제거 정규식
+  const filteredValue = originalValue.replace(/[ㄱ-ㅎㅏ-ㅣ가-힣]/g, '')
+  // 값이 변경되었을 때만 업데이트 (불필요한 렌더링 방지)
+  if (originalValue !== filteredValue) {
+    formData.password = filteredValue
+  }
+}
+
 const handleSave = async () => {
   const { valid } = await myPageForm.value.validate()
   if (!valid) return
@@ -48,14 +59,14 @@ const handleSave = async () => {
   isSubmitting.value = true
 
   try {
-    // [1] 닉네임 변경 체크
+    // 닉네임 변경 체크
     // 입력한 닉네임이 기존 스토어에 저장된 닉네임과 다를 때만 호출
     if (formData.nickname !== authStore.nickname) {
       const res = await authStore.updateNickname(formData.nickname)
       if (!res.success) throw new Error(res.message)
     }
 
-    // [2] 비밀번호 변경 체크
+    // 비밀번호 변경 체크
     // 새 비밀번호 필드에 값이 있을 때만 호출 (소셜 유저는 이 필드가 없어서 자동 패스)
     if (formData.newPassword) {
       const res = await authStore.updatePassword(formData.currentPassword, formData.newPassword)
@@ -105,7 +116,7 @@ const handleWithdraw = async () => {
       uiStore.showSnackbar({ text: result.message, color: 'error' })
     }
   } catch (error) {
-    console.log(error);
+    console.log(error)
     uiStore.showSnackbar({ text: '통신 중 오류가 발생했습니다.', color: 'error' })
   } finally {
     isSubmitting.value = false
@@ -184,6 +195,8 @@ onMounted(async () => {
                   :rules="rules.required"
                   variant="outlined"
                   class="mb-2"
+                  autocomplete="new-password"
+                  @input="handlePasswordInput"
                 ></v-text-field>
 
                 <v-text-field
@@ -198,6 +211,8 @@ onMounted(async () => {
                   hint="영문, 숫자, 특수문자 포함 8~20자"
                   persistent-hint
                   class="mb-4"
+                  autocomplete="new-password"
+                  @input="handlePasswordInput"
                 ></v-text-field>
 
                 <v-text-field
@@ -207,6 +222,8 @@ onMounted(async () => {
                   type="password"
                   :rules="formData.newPassword ? rules.confirmPassword : []"
                   variant="outlined"
+                  autocomplete="new-password"
+                  @input="handlePasswordInput"
                 ></v-text-field>
               </template>
               <v-alert v-else type="info" variant="tonal" class="mt-4" icon="mdi-information">
@@ -236,11 +253,7 @@ onMounted(async () => {
       </v-col>
     </v-row>
   </v-container>
-  <v-overlay
-    :model-value="isSubmitting"
-    class="align-center justify-center"
-    persistent
-  >
+  <v-overlay :model-value="isSubmitting" class="align-center justify-center" persistent>
     <v-progress-circular indeterminate color="white" size="64"></v-progress-circular>
   </v-overlay>
 </template>
