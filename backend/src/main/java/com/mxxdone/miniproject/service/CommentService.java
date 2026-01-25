@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -38,6 +39,7 @@ public class CommentService {
         Post post = postRepository.findById(requestDto.postId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
 
+        // 엔티티의 빌더에서 사용자명, 닉네임 스냅샷 저장
         Comment.CommentBuilder commentBuilder = Comment.builder()
                 .content(requestDto.content())
                 .post(post);
@@ -90,7 +92,7 @@ public class CommentService {
             // 본인 글에 쓴 댓글 알림 제외
             // 비로그인 사용자가 쓴 댓글은 무조건 알림 발송
             boolean isSelf = (currentUser != null && targetUser != null &&
-                                currentUser.getId().equals(targetUser.getId()));
+                    currentUser.getId().equals(targetUser.getId()));
 
             // 수신자가 존재하고, 본인이 아닌 경우에 알림 발송
             if (targetUser != null && !isSelf) {
@@ -100,7 +102,8 @@ public class CommentService {
                 String parentSlug = (parentCategory != null) ? parentCategory.getSlug() : "category";
                 String childSlug = childCategory.getSlug();
 
-                String url = "/" + parentSlug + "/" + childSlug + "/posts/" + post.getId() + "#comment-" + savedComment.getId();                eventPublisher.publishEvent(new NotificationEvent(
+                String url = "/" + parentSlug + "/" + childSlug + "/posts/" + post.getId() + "#comment-" + savedComment.getId();
+                eventPublisher.publishEvent(new NotificationEvent(
                         targetUser.getId(),
                         message,
                         url,
@@ -129,8 +132,9 @@ public class CommentService {
         User currentUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        String authorUsername = comment.getAuthorUsername();
         // 권한 확인
-        if (currentUser.getRole() != Role.ADMIN && !comment.getAuthor().getUsername().equals(username)) {
+        if (currentUser.getRole() != Role.ADMIN && !Objects.equals(authorUsername, username)) {
             throw new AccessDeniedException("댓글을 수정할 권한이 없습니다.");
         }
         comment.update(requestDto.content());
@@ -145,8 +149,9 @@ public class CommentService {
         // 로그인 사용자
         if (username != null) {
             User currentUser = userRepository.findByUsername(username).orElse(null);
+            String authorUsername = comment.getAuthorUsername();
             // admin이거나 본인 댓글일 경우 권한 있음
-            if (currentUser != null && (currentUser.getRole() == Role.ADMIN || comment.getAuthor().equals(currentUser))) {
+            if (currentUser != null && (currentUser.getRole() == Role.ADMIN || Objects.equals(authorUsername, username))) {
                 isAuthorized = true;
             }
             //비로그인 사용자의 경우

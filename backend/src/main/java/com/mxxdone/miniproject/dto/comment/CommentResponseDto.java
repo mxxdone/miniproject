@@ -36,20 +36,24 @@ public record CommentResponseDto(
         Instant updatedAt
 ) {
     public static CommentResponseDto from(Comment comment) {
-        String authorName;
-        if (comment.getAuthor() != null) {
-            authorName = comment.getAuthor().getNickname();
-        } else if (comment.getGuestName() != null) {
-            authorName = comment.getGuestName();
-        } else {
-            authorName = "탈퇴한 회원";
+        // 댓글 로직: 작성자 닉네임 결정 (스냅샷 우선 -> 비회원 이름 -> 알수없음)
+        String displayNickname = comment.getAuthorNickname();
+        String displayUsername = comment.getAuthorUsername();
+
+        if (displayNickname == null) {
+            displayNickname = comment.getGuestName();
         }
+
+        if (displayNickname == null) {
+            displayNickname = "(알수없음)";
+        }
+
         return new CommentResponseDto(
                 comment.getId(),
                 comment.isDeleted() ? "삭제된 댓글입니다." : comment.getContent(),
-                comment.getAuthor() != null ? comment.getAuthor().getUsername() : null,
-                authorName,
-                comment.getAuthor() == null, // 작성자가 없으면 true
+                displayUsername, // 스냅샷 아이디 (비회원은 null)
+                displayNickname,
+                comment.getAuthorUsername() == null, // 작성자가 없으면 true
                 comment.isDeleted(),
                 comment.getChildren().stream()
                         .map(CommentResponseDto::from)

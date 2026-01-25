@@ -161,34 +161,19 @@ public class PostService {
     @Transactional(readOnly = true) //조회 기능은 readOnly = true 옵션으로 성능 최적화
     public PostDetailResponseDto findById(Long id) {
         // Post 엔티티 조회
-        Post entity = postRepository.findById(id)
+        Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다. id= " + id));
 
         // 카테고리 경로 계산
-        List<CategoryDto> categoryPath = calculateCategoryPath(entity);
+        List<CategoryDto> categoryPath = calculateCategoryPath(post);
 
         // 현재 사용자의 게시글 좋아요 여부 계산
-        boolean isLiked = checkLikedByCurrnetUser(entity);
+        boolean isLiked = checkLikedByCurrnetUser(post);
 
         // 댓글 수 계산
-        long commentCount = commentRepository.countByPostAndIsDeletedFalse(entity);
+        long commentCount = commentRepository.countByPostAndIsDeletedFalse(post);
 
-        // DTO 생성 및 반환
-        return new PostDetailResponseDto(
-                entity.getId(),
-                entity.getTitle(),
-                entity.getContent(),
-                categoryPath,
-                entity.getCategory() != null ? entity.getCategory().getId() : null,
-                entity.getAuthor() != null ? entity.getAuthor().getUsername() : null,
-                entity.getAuthor() != null ? entity.getAuthor().getNickname() : null,
-                entity.getViewCount(),
-                entity.getLikeCount(),
-                isLiked,
-                commentCount,
-                entity.getCreatedAt(),
-                entity.getUpdatedAt()
-        );
+        return PostDetailResponseDto.from(post, categoryPath, isLiked, commentCount);
     }
 
     // 현재 로그인 사용자가 해당 게시글에 좋아요 눌렀는지 확인

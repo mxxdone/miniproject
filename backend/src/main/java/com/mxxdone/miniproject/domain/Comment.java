@@ -38,6 +38,12 @@ public class Comment {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User author;
 
+    @Column
+    private String authorUsername;
+
+    @Column
+    private String authorNickname;
+
     // 비로그인 사용자명
     @Column
     private String guestName;
@@ -58,6 +64,7 @@ public class Comment {
     private List<Comment> children = new ArrayList<>();
 
     @CreatedDate
+    @Column(updatable = false)
     private Instant createdAt;
 
     @LastModifiedDate
@@ -69,8 +76,14 @@ public class Comment {
         this.post = post;
         this.author = author;
         this.guestName = guestName;
-        this.guestPassword = guestPassword; // 암호화 필요
+        this.guestPassword = guestPassword;
         this.parent = parent;
+        // 스냅샷 로직 추가
+        if (author != null) {
+            this.authorNickname = author.getNickname();
+            this.authorUsername = author.getUsername();
+        }
+        // author = null -> 게스트 회원
     }
 
     // 수정 편의 메서드

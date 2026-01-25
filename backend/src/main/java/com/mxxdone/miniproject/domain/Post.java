@@ -43,7 +43,14 @@ public class Post {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User author; // 작성자
 
+    @Column
+    private String authorUsername;
+
+    @Column
+    private String authorNickname;
+
     @CreatedDate
+    @Column(updatable = false)
     private Instant createdAt;
 
     @LastModifiedDate
@@ -61,10 +68,22 @@ public class Post {
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;
 
-    // DTO를 위한 생성자 추가
-    public Post(String title, String content) {
+    @Builder
+    public Post(String title, String content, Category category, User author) {
         this.title = title;
         this.content = content;
+        this.category = category;
+        this.author = author;
+
+        // 여기에 사용자님이 원하시는 스냅샷 로직을 넣습니다.
+        // 이렇게 하면 builder().build()를 호출할 때도 이 로직이 무조건 실행됩니다.
+        if (author != null) {
+            this.authorNickname = author.getNickname();
+            this.authorUsername = author.getUsername();
+        } else {
+            this.authorNickname = "(알수없음)";
+            this.authorUsername = null;
+        }
     }
 
     // 수정 편의 메서드 추가
@@ -96,13 +115,5 @@ public class Post {
         if (this.likeCount > 0) {
             this.likeCount--;
         }
-    }
-
-    @Builder
-    public Post(String title, String content, Category category, User author) {
-        this.title = title;
-        this.content = content;
-        this.category = category;
-        this.author = author;
     }
 }

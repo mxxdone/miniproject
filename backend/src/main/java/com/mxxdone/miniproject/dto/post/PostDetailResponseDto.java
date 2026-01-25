@@ -1,5 +1,6 @@
 package com.mxxdone.miniproject.dto.post;
 
+import com.mxxdone.miniproject.domain.Post;
 import com.mxxdone.miniproject.dto.category.CategoryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -51,4 +52,32 @@ public record PostDetailResponseDto(
 
         @Schema(description = "수정일시")
         Instant updatedAt
-) {}
+) {
+    // 엔티티 -> DTO 변환메서드
+    public static PostDetailResponseDto from(Post post, List<CategoryDto> categoryPath, boolean isLiked, long commentCount) {
+
+        // 스냅샷 데이터 우선 사용
+        String displayNickname = post.getAuthorNickname();
+        String displayUsername = post.getAuthorUsername();
+
+        if (displayNickname == null) {
+            displayNickname = "(알수없음)";
+        }
+
+        return new PostDetailResponseDto(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                categoryPath,
+                post.getCategory() != null ? post.getCategory().getId() : null,
+                displayUsername,
+                displayNickname,
+                post.getViewCount(),
+                post.getLikeCount(),
+                isLiked,
+                commentCount,
+                post.getCreatedAt(),
+                post.getUpdatedAt()
+        );
+    }
+}
