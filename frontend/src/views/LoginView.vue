@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui.js'
@@ -39,28 +39,57 @@ const submitLogin = async () => {
 </script>
 
 <template>
-  <v-container>
-    <v-card max-width="500" class="mx-auto">
-      <v-card-title class="text-h5">로그인</v-card-title>
-      <v-card-text>
-        <v-form @submit.prevent="submitLogin">
-          <v-text-field v-model="username" label="아이디" required></v-text-field>
-          <v-text-field v-model="password" label="비밀번호" type="password" required></v-text-field>
-          <v-btn type="submit" color="primary" block class="mt-4">로그인</v-btn>
-        </v-form>
-        <a :href="googleLoginUrl" class="text-decoration-none">
-          <v-btn
-            color="red-lighten-1"
-            block
-            size="large"
-            variant="elevated"
-            class="text-none font-weight-bold"
-          >
-            <v-icon start>mdi-google</v-icon>
-            Google 계정으로 시작하기
-          </v-btn>
-        </a>
-      </v-card-text>
-    </v-card>
+  <v-container class="fill-height" fluid>
+    <v-row align="center" justify="center">
+      <v-col cols="12" sm="8" md="6" lg="5">
+        <v-card class="elevation-12 rounded-xl" border>
+          <v-toolbar color="primary" flat>
+            <v-toolbar-title class="text-white">로그인</v-toolbar-title>
+          </v-toolbar>
+          <v-card-text class="pa-6">
+            <v-form @submit.prevent="submitLogin">
+              <v-text-field
+                v-model="username"
+                label="아이디"
+                prepend-icon="mdi-account"
+                variant="outlined"
+                density="compact"
+                class="mb-1"
+                required
+              />
+
+              <v-text-field
+                v-model="password"
+                label="비밀번호"
+                prepend-icon="mdi-lock"
+                type="password"
+                variant="outlined"
+                density="compact"
+                class="mb-1"
+                required
+                autocomplete="current-password"
+              />
+
+              <v-btn type="submit" color="primary" block size="large" class="mt-2 font-weight-bold">
+                로그인
+              </v-btn>
+            </v-form>
+
+            <a :href="googleLoginUrl" class="text-decoration-none">
+              <v-btn
+                color="red-lighten-1"
+                block
+                size="large"
+                variant="elevated"
+                class="text-none font-weight-bold mt-2"
+              >
+                <v-icon start icon="mdi-google"></v-icon>
+                Google 계정으로 시작하기
+              </v-btn>
+            </a>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>

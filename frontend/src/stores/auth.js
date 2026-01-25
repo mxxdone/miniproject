@@ -72,11 +72,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function signup(payload) {
     try {
-      await apiClient.post('/api/v1/users/signup', payload)
-      alert('회원가입에 성공했습니다. 로그인해주세요.')
-      await router.push('/login')
+      const res = await apiClient.post('/api/v1/users/signup', payload)
+      return { success: true, data: res.data }
     } catch (error) {
-      alert('회원가입에 실패했습니다: ' + (error.response?.data?.message || error.message))
+      return {
+        success: false,
+        message: error.response?.data?.message || error.message,
+      }
     }
   }
 

@@ -205,7 +205,7 @@ async function submitSignup() {
       uiStore.showSnackbar({ text: '회원가입이 완료되었습니다!', color: 'success' })
       router.push('/login')
     } else {
-      uiStore.showSnackbar({ text: result?.message || '가입에 실패했습니다.', color: 'error' })
+      uiStore.showSnackbar({ text: result.message || '가입에 실패했습니다.', color: 'error' })
     }
   } catch {
     uiStore.showSnackbar({ text: '가입 처리 중 오류가 발생했습니다.', color: 'error' })
