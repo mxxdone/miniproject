@@ -5,11 +5,8 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.SQLDelete;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE comment SET is_deleted = true WHERE id = ?") // delete 쿼리 대신 실행될 SQL
-public class Comment {
+public class Comment extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,13 +59,6 @@ public class Comment {
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
     @OrderBy("createdAt ASC")
     private List<Comment> children = new ArrayList<>();
-
-    @CreatedDate
-    @Column(updatable = false)
-    private Instant createdAt;
-
-    @LastModifiedDate
-    private Instant updatedAt;
 
     @Builder
     public Comment(String content, Post post, User author, String guestName, String guestPassword, Comment parent) {
