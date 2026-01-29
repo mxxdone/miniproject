@@ -126,6 +126,8 @@ public class PostService {
             throw new AccessDeniedException("게시글 삭제 권한이 없습니다.");
         }
 
+        commentRepository.softDeleteByPostId(id);
+
         postRepository.delete(post);
 
         try {

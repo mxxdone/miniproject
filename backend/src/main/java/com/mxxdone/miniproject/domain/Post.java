@@ -46,7 +46,7 @@ public class Post extends BaseTimeEntity {
     @Column
     private String authorNickname;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 
     @Column(nullable = false)
