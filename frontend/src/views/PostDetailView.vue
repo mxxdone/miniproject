@@ -80,13 +80,18 @@ watch(
 // 라우트 변경 감지하는
 watch(
   postId,
-  (newId) => {
+  async (newId) => {
     if (newId && !isNaN(newId)) {
-      postsStore.fetchPost(newId)
+      const result = await postsStore.fetchPost(newId)
+
+      if (!result.success && result.notFound) {
+        alert('해당 게시물을 찾을 수 없습니다.')
+        router.back()
+      }
     }
   },
   { immediate: true },
-) // 컴포넌트 마운트 시에도 실행
+)
 
 function goBack() {
   router.back()

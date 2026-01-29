@@ -74,9 +74,15 @@ export const usePostsStore = defineStore('posts', () => {
     try {
       const response = await apiClient.get(`/api/v1/posts/${id}`)
       currentPost.value = response.data
+      return { success: true }
     } catch (error) {
       console.error(`${id}번 게시글을 불러오는 중 오류가 발생했습니다:`, error)
       currentPost.value = null
+
+      if (error.response?.status === 404) {
+        return { success: false, notFound: true }
+      }
+      return { success: false, notFound: false }
     }
   }
 
