@@ -78,40 +78,51 @@ public class CommentService {
 
     // 알림 발행 로직
     private void publishNotification(Post post, Comment savedComment, Comment parent, User currentUser) {
+        Category childCategory = post.getCategory();
+        Category parentCategory = childCategory.getParent();
+        String parentSlug = (parentCategory != null) ? parentCategory.getSlug() : "category";
+        String childSlug = childCategory.getSlug();
+
+        // 앵커(#comment-id)를 통해 해당 댓글로 바로 이동
+        String url = "/" + parentSlug + "/" + childSlug + "/posts/" + post.getId() + "#comment-" + savedComment.getId();
+
+        // 게시글 작성자에게 알림
+        User postAuthor = post.getAuthor();
+        boolean isPostOwnerSelf = (currentUser != null && postAuthor.equals(currentUser));
+
+        // 부모 댓글 작성자 - 게시글 작성자 동일 여부
+        boolean isParentAuthorSameAsPostAuthor = (parent != null && parent.getAuthor().equals(postAuthor));
+
+        // 본인이 쓴 글이 아니거나, 부모 댓글 작성자가 해당 글 작성자가 아닌 경우
+        // -> 작성자가 아닌 회원이 댓글을 쓴 경우
+        if (!isPostOwnerSelf && !isParentAuthorSameAsPostAuthor) {
+            sendNotification(postAuthor, "회원님의 게시글에 새로운 댓글이 달렸습니다.", url, NotificationType.COMMENT);
+        }
+
+        // 부모 댓글 작성자에게 알림 - 대댓글일 경우만
+        if (parent != null) {
+            User parentAuthor = parent.getAuthor();
+            // 부모 - 자식 댓글 작성자 동일인 여부
+            boolean isParentOwnerSelf = (currentUser != null && parentAuthor.equals(currentUser));
+
+            // 서로 다르면 부모 댓글 작성자에게 알림
+            if (parentAuthor != null && !isParentOwnerSelf) {
+                sendNotification(parentAuthor, "회원님의 댓글에 답글이 달렸습니다.", url, NotificationType.COMMENT);
+            }
+        }
+    }
+
+    // 이벤트 전송(발행)
+    private void sendNotification(User receiver, String content, String url, NotificationType type) {
         try {
-            User targetUser;
-            String message;
-
-            if (parent != null) {
-                targetUser = parent.getAuthor();
-                message = "회원님의 댓글에 답글이 달렸습니다.";
-            } else { // 부모가 없는 글에 바로 쓰는 댓글
-                targetUser = post.getAuthor();
-                message = "회원님의 게시글에 댓글이 달렸습니다.";
-            }
-            // 본인 글에 쓴 댓글 알림 제외
-            // 비로그인 사용자가 쓴 댓글은 무조건 알림 발송
-            boolean isSelf = (currentUser != null && targetUser != null &&
-                    currentUser.getId().equals(targetUser.getId()));
-
-            // 수신자가 존재하고, 본인이 아닌 경우에 알림 발송
-            if (targetUser != null && !isSelf) {
-                // 해당 댓글 바로가기 기능을을 위한 앵커 추가
-                Category childCategory = post.getCategory();
-                Category parentCategory = childCategory.getParent();
-                String parentSlug = (parentCategory != null) ? parentCategory.getSlug() : "category";
-                String childSlug = childCategory.getSlug();
-
-                String url = "/" + parentSlug + "/" + childSlug + "/posts/" + post.getId() + "#comment-" + savedComment.getId();
-                eventPublisher.publishEvent(new NotificationEvent(
-                        targetUser.getId(),
-                        message,
-                        url,
-                        NotificationType.COMMENT
-                ));
-            }
+            eventPublisher.publishEvent(new NotificationEvent(
+                    receiver.getId(),
+                    content,
+                    url,
+                    type
+            ));
         } catch (Exception e) {
-            log.error("알림 발송 실패: {}", e.getMessage());
+            log.error("알림 이벤트 발행 실패: receiverId={}, reason={}", receiver.getId(), e.getMessage());
         }
     }
 
