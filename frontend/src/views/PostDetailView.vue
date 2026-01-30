@@ -131,7 +131,7 @@ async function removePost() {
         </template>
       </v-breadcrumbs>
 
-      <v-card-title class="text-h4">{{ postsStore.currentPost.title }}</v-card-title>
+      <v-card-title class="text-h4 text-wrap">{{ postsStore.currentPost.title }}</v-card-title>
       <v-card-subtitle class="d-flex align-center pt-2 px-4">
         <div>
           <span class="author">작성자: {{ postsStore.currentPost.authorNickname }}</span>
