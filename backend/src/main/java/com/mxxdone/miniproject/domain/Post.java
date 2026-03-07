@@ -92,18 +92,4 @@ public class Post extends BaseTimeEntity {
                 Objects.equals(this.content, content) &&
                 (this.category != null && Objects.equals(this.category.getId(), categoryId));
     }
-
-    public void incrementViewCount() {
-        this.viewCount++;
-    }
-
-    public void incrementLikeCount() {
-        this.likeCount++;
-    }
-
-    public void decrementLikeCount() {
-        if (this.likeCount > 0) {
-            this.likeCount--;
-        }
-    }
 }

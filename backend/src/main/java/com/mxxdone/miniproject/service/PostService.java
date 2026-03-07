@@ -148,10 +148,11 @@ public class PostService {
                 // 기록이 없으면 24시간 동안 유효한 키를 redis에 저장
                 redisTemplate.opsForValue().set(redisKey, "1", Duration.ofHours(24));
 
-                // DB의 조회수 1 증가 (JPA dirty checking 활용)
-                Post post = postRepository.findById(id)
-                        .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
-                post.incrementViewCount();
+                int updatedRows = postRepository.incrementViewCount(id);
+
+                if (updatedRows == 0) {
+                    throw new NoSuchElementException("해당 게시글이 없습니다.");
+                }
             }
         } catch (Exception e) {
             log.error("Redis 조회수 중복 방지 로직 실패 (Post ID: {}, IP: {})", id, ip, e);
@@ -268,18 +269,26 @@ public class PostService {
 
     // 좋아요 토글
     public void toggleLike(Long postId, User user) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다."));
-        Optional<PostLike> existingLike = postLikeRepository.findByUserAndPost(user, post);
+        // 조회 쿼리 없이 ID만 가진 Post 프록시 객체 생성
+        Post postProxy = postRepository.getReferenceById(postId);
+        Optional<PostLike> existingLike = postLikeRepository.findByPostIdAndUserId(postId, user.getId());
 
         if (existingLike.isPresent()) {
             // 이미 좋아요 누름 -> 취소
             postLikeRepository.delete(existingLike.get());
-            post.decrementLikeCount();
+            int updatedRows = postRepository.decrementLikeCount(postId);
+
+            if (updatedRows == 0) {
+                throw new NoSuchElementException("해당 게시글이 없거나 좋아요 수가 0입니다.");
+            }
         } else {
             // 좋아요 누르지 않음 -> 좋아요
-            postLikeRepository.save(new PostLike(user, post));
-            post.incrementLikeCount();
+            postLikeRepository.save(new PostLike(user, postProxy));
+            int updatedRows = postRepository.incrementLikeCount(postId);
+
+            if (updatedRows == 0) {
+                throw new NoSuchElementException("해당 게시글이 없습니다.");
+            }
         }
         try {
             redisTemplate.delete("posts::page_1");
