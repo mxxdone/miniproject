@@ -21,12 +21,23 @@ public class OpenAPIConfig {
                 .scheme("bearer")
                 .bearerFormat("JWT");
 
+        // Cookie 스키마 정의
+        String cookieAuth = "cookieAuth";
+        SecurityScheme cookieScheme = new SecurityScheme()
+                .name("refreshToken")
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.COOKIE);
+
         // 보안 요구사항 정의 (모든 API에 이 보안 스키마 적용)
-        SecurityRequirement securityRequirement = new SecurityRequirement().addList(jwt);
+        SecurityRequirement securityRequirement = new SecurityRequirement()
+                .addList(jwt)
+                .addList(cookieAuth);
 
         // OpenAPI 객체 생성 및 반환
         return new OpenAPI()
-                .components(new Components().addSecuritySchemes(jwt, securityScheme))
+                .components(new Components()
+                        .addSecuritySchemes(jwt, securityScheme)
+                        .addSecuritySchemes(cookieAuth, cookieScheme))
                 .addSecurityItem(securityRequirement)
                 .info(new Info()
                         .title("MiniProject API")
