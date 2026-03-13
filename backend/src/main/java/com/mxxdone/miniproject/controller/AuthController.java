@@ -6,6 +6,8 @@ import com.mxxdone.miniproject.dto.user.TokenResponseDto;
 import com.mxxdone.miniproject.service.AuthService;
 import com.mxxdone.miniproject.util.CookieUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +31,8 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @Operation(summary = "토큰 재발급", description = "쿠키에 있는 Refresh Token을 이용하여 새로운 Access Token을 발급합니다.")
+    @Parameter(name = "refreshToken", description = "HttpOnly Cookie의 Refresh Token",
+            in = ParameterIn.COOKIE, required = true)
     public ResponseEntity<TokenResponseDto> refresh(HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.ok(authService.refresh(request, response));
     }

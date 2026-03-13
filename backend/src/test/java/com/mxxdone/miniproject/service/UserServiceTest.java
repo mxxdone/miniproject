@@ -29,6 +29,8 @@ public class UserServiceTest {
     @Autowired
     private UserService userService;
     @Autowired
+    private AuthService authService;
+    @Autowired
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -158,7 +160,7 @@ public class UserServiceTest {
         );
 
         // when
-        LoginResponseDto result = userService.login(loginRequestDto);
+        LoginResponseDto result = authService.login(loginRequestDto);
 
         // 반환된 데이터 값 검증
         assertThat(result).isNotNull();
@@ -195,7 +197,7 @@ public class UserServiceTest {
         );
 
         // then
-        assertThatThrownBy(() -> userService.login(loginRequestDto))
+        assertThatThrownBy(() -> authService.login(loginRequestDto))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("비밀번호가 일치하지 않습니다.");
     }
