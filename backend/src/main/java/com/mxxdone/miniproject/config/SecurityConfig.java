@@ -85,6 +85,8 @@ public class SecurityConfig {
                                 "/favicon.ico",
                                 "/error"
                         ).permitAll()
+                        // 카테고리 생성 관리자만 허용
+                        .requestMatchers(HttpMethod.POST, "/api/v1/categories/**").hasRole("ADMIN")
                         //그 외 모든 요청은 인증 사용자만 접근 가능
                         .anyRequest().authenticated()
                 )
