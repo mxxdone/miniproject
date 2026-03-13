@@ -28,17 +28,13 @@ public class OpenAPIConfig {
                 .type(SecurityScheme.Type.APIKEY)
                 .in(SecurityScheme.In.COOKIE);
 
-        // 보안 요구사항 정의 (모든 API에 이 보안 스키마 적용)
-        SecurityRequirement securityRequirement = new SecurityRequirement()
-                .addList(jwt)
-                .addList(cookieAuth);
-
         // OpenAPI 객체 생성 및 반환
         return new OpenAPI()
                 .components(new Components()
                         .addSecuritySchemes(jwt, securityScheme)
                         .addSecuritySchemes(cookieAuth, cookieScheme))
-                .addSecurityItem(securityRequirement)
+                .addSecurityItem(new SecurityRequirement().addList(jwt))
+                .addSecurityItem(new SecurityRequirement().addList(cookieAuth))
                 .info(new Info()
                         .title("MiniProject API")
                         .description("미니프로젝트 API 명세서")

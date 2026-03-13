@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,14 +33,16 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @Operation(summary = "토큰 재발급", description = "쿠키에 있는 Refresh Token을 이용하여 새로운 Access Token을 발급합니다.")
+    @SecurityRequirement(name = "cookieAuth")
     @Parameter(name = "refreshToken", description = "HttpOnly Cookie의 Refresh Token",
-            in = ParameterIn.COOKIE, required = true)
+            in = ParameterIn.COOKIE, hidden = true)
     public ResponseEntity<TokenResponseDto> refresh(HttpServletRequest request, HttpServletResponse response) {
         return ResponseEntity.ok(authService.refresh(request, response));
     }
 
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "아이디와 비밀번호로 로그인하여 JWT 토큰을 발급받습니다.")
+    @SecurityRequirements()
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그인 성공 (AccessToken 반환)"),
             @ApiResponse(responseCode = "400", description = "아이디 또는 비밀번호 불일치")
