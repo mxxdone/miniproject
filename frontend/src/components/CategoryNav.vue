@@ -78,8 +78,9 @@ watch(
 <template>
   <v-list nav density="compact" v-model:opened="opened">
     <template v-for="category in categoriesStore.categories" :key="category.id">
+      <!--  about me 활성화 필요시 false 삭제 -->
       <v-list-item
-        v-if="category.slug === 'about-me'"
+        v-if="false && category.slug === 'about-me'"
         prepend-icon="mdi-account-box-outline"
         :to="`/${category.slug}`"
         :active="isAboutMeActive()"

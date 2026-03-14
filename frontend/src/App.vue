@@ -115,11 +115,10 @@ const handleLogout = async () => {
       <v-app-bar color="primary" flat>
         <v-app-bar-nav-icon variant="text" color="on-primary" @click="drawer = !drawer" />
 
-        <v-toolbar-title class="text-white flex-grow-1 text-subtitle-1 text-sm-h6 font-weight-bold ml-n2 ml-sm-0">
-          <RouterLink
-            to="/"
-            class="text-decoration-none text-white d-flex align-center h-100"
-          >
+        <v-toolbar-title
+          class="text-white flex-grow-1 text-subtitle-1 text-sm-h6 font-weight-bold ml-n2 ml-sm-0"
+        >
+          <RouterLink to="/" class="text-decoration-none text-white d-flex align-center h-100">
             MOODONE.DEV
           </RouterLink>
         </v-toolbar-title>
@@ -185,6 +184,19 @@ const handleLogout = async () => {
               <v-icon class="d-sm-none">mdi-logout</v-icon>
               <span class="d-none d-sm-block">로그아웃</span>
             </v-btn>
+            <!-- 관리자일 때만 대시보드 아이콘 표시 -->
+            <v-btn
+              v-if="authStore.isAdmin"
+              variant="text"
+              color="on-primary"
+              to="/admin"
+              min-width="0"
+              density="comfortable"
+              title="관리자 대시보드"
+            >
+              <v-icon class="d-sm-none">mdi-chart-box</v-icon>
+              <span class="d-none d-sm-block">통계</span>
+            </v-btn>
           </template>
         </div>
       </v-app-bar>
@@ -198,9 +210,7 @@ const handleLogout = async () => {
       >
         <CategoryNav />
         <template v-slot:append>
-          <div class="pa-2 text-caption text-center text-medium-emphasis">
-            © 2025. mxxdone. All rights reserved.
-          </div>
+          <div class="pa-2 text-caption text-center text-medium-emphasis">© 2026. mxxdone</div>
         </template>
       </v-navigation-drawer>
 
