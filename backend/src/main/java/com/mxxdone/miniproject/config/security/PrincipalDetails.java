@@ -19,15 +19,32 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
     private User user;
     private Map<String, Object> attributes;
 
+    private final Long id;
+    private final String username;
+    private final String role;
+
     // 일반 로그인 시 사용하는 생성자
     public PrincipalDetails(User user) {
         this.user = user;
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.role = user.getRole().getKey();
     }
 
     // OAuth 로그인 시 사용하는 생성자
     public PrincipalDetails(User user, Map<String, Object> attributes) {
         this.user = user;
         this.attributes = attributes;
+        this.id = user.getId();
+        this.username = user.getUsername();
+        this.role = user.getRole().getKey();
+    }
+
+    // JWT 필터에서 DB 조회 없이 토큰 정보만으로 객체 만들 때 쓰는 생성자
+    public PrincipalDetails(Long id, String username, String role) {
+        this.id = id;
+        this.username = username;
+        this.role = role;
     }
 
     // UserDetails 구현
@@ -35,18 +52,19 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // User 엔티티의 Role 정보를 가져와서 시큐리티 타입으로 변환
         return Collections.singletonList(
-                new SimpleGrantedAuthority(user.getRole().getKey())
+                new SimpleGrantedAuthority(this.role)
         );
     }
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        // 토큰 인증 시에는 비밀번호가 필요 없으므로 null 방어
+        return user != null ? user.getPassword() : null;
     }
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return this.username;
     }
 
     @Override
@@ -77,6 +95,6 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getName() {
-        return (String) attributes.get("sub"); // 고유 식별자를 반환
+        return attributes != null ? (String) attributes.get("sub") : null; // 고유 식별자를 반환
     }
 }

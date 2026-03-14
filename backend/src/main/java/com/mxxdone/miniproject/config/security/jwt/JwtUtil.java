@@ -34,16 +34,17 @@ public class JwtUtil {
     }
 
     // 액세스 토큰 생성 (인증, 인가)
-    public String createAccessToken(String username, Role role, String nickname) {
+    public String createAccessToken(Long id, String username, Role role, String nickname) {
         Instant now = Instant.now();
         Instant expiry = now.plus(ACCESS_TOKEN_EXPIRATION_MINUTES, ChronoUnit.MINUTES);
 
         return Jwts.builder()
-                .subject(username) // 사용자 id
-                .claim("auth", role.getKey()) // auth"라는 이름으로 권한 정보 추가
-                .claim("nickname", nickname) // 닉네임 클레임 추가
-                .issuedAt(Date.from(now)) //만료 시간
-                .expiration(Date.from(expiry))
+                .subject(username)                  // 사용자 id
+                .claim("id", id)                // DB PK 값
+                .claim("auth", role.getKey())   // auth"라는 이름으로 권한 정보 추가
+                .claim("nickname", nickname)    // 닉네임 클레임 추가
+                .issuedAt(Date.from(now))          // 발급 시간
+                .expiration(Date.from(expiry))     //만료 시간
                 .signWith(key)
                 .compact();
     }

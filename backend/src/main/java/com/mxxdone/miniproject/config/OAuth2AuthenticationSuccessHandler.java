@@ -39,7 +39,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         User user = principalDetails.getUser();
 
         // Access Token 생성
-        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
+        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getUsername(), user.getRole(), user.getNickname());
 
         // ===== Refresh Token =====
         // 생성 및 처리

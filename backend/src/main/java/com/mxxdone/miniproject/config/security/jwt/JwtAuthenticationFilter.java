@@ -1,6 +1,6 @@
 package com.mxxdone.miniproject.config.security.jwt;
 
-import com.mxxdone.miniproject.service.PrincipalDetailService;
+import com.mxxdone.miniproject.config.security.PrincipalDetails;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -10,19 +10,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final PrincipalDetailService userDetailService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -41,14 +43,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
             // 토큰에서 Claims(페이로드) 추출
             Claims info = jwtUtil.getUserInfoFromToken(token);
-            // Claims에서 username 꺼내기
+            // Claims에서 유저명, pk, 권한 꺼내기
             String username = info.getSubject();
+            Long userId = info.get("id", Long.class);
+            String roleStr = info.get("auth", String.class);
 
+            // 시큐리티 권한 객체 만들기
+            List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(roleStr));
+
+            // 프록시 PrincipalDeatils 객체 생성
+            // 토큰에서 가져온 값으로 껍데기 생성
+            PrincipalDetails principalDetails = new PrincipalDetails(userId, username, roleStr);
+
+            // Authentication 객체 생성 및 SecurityContext에 저장
             SecurityContext context = SecurityContextHolder.createEmptyContext();
-            // DB에서 username에 해당하는 사용자 정보 가져오기
-            UserDetails userDetails = userDetailService.loadUserByUsername(username);
-            // UserDetails와 권한 정보를 담아 Authentication 객체 생성
-            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            Authentication authentication = new UsernamePasswordAuthenticationToken(principalDetails, null, authorities);
             context.setAuthentication(authentication);
             // SecurityContextHolder에 context 등록하여 이후 필터/컨트롤러에서 인증 정보 사용 가능
             SecurityContextHolder.setContext(context);

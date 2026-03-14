@@ -3,7 +3,6 @@ package com.mxxdone.miniproject.config;
 import com.mxxdone.miniproject.config.security.PrincipalOAuth2UserService;
 import com.mxxdone.miniproject.config.security.jwt.JwtAuthenticationFilter;
 import com.mxxdone.miniproject.config.security.jwt.JwtUtil;
-import com.mxxdone.miniproject.service.PrincipalDetailService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +32,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
-    private final PrincipalDetailService userDetailService;
     private final PrincipalOAuth2UserService principalOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
@@ -103,7 +101,7 @@ public class SecurityConfig {
                         )
                 );
 
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userDetailService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -88,7 +88,7 @@ public class AuthService {
         // 검증 종료
 
         // 새로운 액세스 토큰과 리프레시 토큰 발급
-        String newAccessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
+        String newAccessToken = jwtUtil.createAccessToken(user.getId(), user.getUsername(), user.getRole(), user.getNickname());
         String newRefreshToken = jwtUtil.createRefreshToken(user.getUsername());
 
         // 새로운 리프레시 토큰을 Redis에 저장 (기존 토큰을 덮어쓰기)
@@ -112,7 +112,7 @@ public class AuthService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
-        String accessToken = jwtUtil.createAccessToken(user.getUsername(), user.getRole(), user.getNickname());
+        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getUsername(), user.getRole(), user.getNickname());
         String refreshToken = jwtUtil.createRefreshToken(user.getUsername());
 
         // Redis에 저장
