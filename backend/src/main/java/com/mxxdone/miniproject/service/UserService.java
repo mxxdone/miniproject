@@ -2,10 +2,7 @@ package com.mxxdone.miniproject.service;
 
 import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.domain.User;
-import com.mxxdone.miniproject.dto.user.NicknameUpdateRequestDto;
-import com.mxxdone.miniproject.dto.user.PasswordUpdateRequestDto;
-import com.mxxdone.miniproject.dto.user.SignUpRequestDto;
-import com.mxxdone.miniproject.dto.user.WithdrawRequestDto;
+import com.mxxdone.miniproject.dto.user.*;
 import com.mxxdone.miniproject.exception.DuplicateException;
 import com.mxxdone.miniproject.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +24,8 @@ public class UserService {
     private final RefreshTokenService refreshTokenService;
 
     public Long signup(SignUpRequestDto requestDto) {
-        // 아이디 중복 확인
-        if (userRepository.existsByUsername(requestDto.username())) {
+        // 아이디 중복 확인(탈퇴 회원 제외)
+        if (userRepository.existsByUsernameIgnoreDeleted(requestDto.username())) {
             throw new DuplicateException("이미 사용 중인 아이디입니다.");
         }
 
@@ -58,7 +55,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean isUsernameDuplicate(String username) {
-        return userRepository.existsByUsername(username);
+        return userRepository.existsByUsernameIgnoreDeleted(username);
     }
 
     @Transactional(readOnly = true)
