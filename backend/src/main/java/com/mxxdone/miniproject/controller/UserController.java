@@ -61,7 +61,9 @@ public class UserController {
     @Operation(summary = "내 정보 조회", description = "현재 로그인한 사용자의 정보를 조회합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공")
     public ResponseEntity<UserInfoResponseDto> getMyInfo(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-        return ResponseEntity.ok(UserInfoResponseDto.from(principalDetails.getUser()));
+        Long userId = principalDetails.getId();
+        UserInfoResponseDto responseDto = userService.getMyInfo(userId);
+        return ResponseEntity.ok(responseDto);
     }
 
     @PatchMapping("/nickname")

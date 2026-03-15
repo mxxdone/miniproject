@@ -121,4 +121,12 @@ public class UserService {
 
         user.updatePassword(passwordEncoder.encode(requestDto.newPassword()));
     }
+
+    // 토큰의 user pk id 값으로 DB에서 유저 정보 조회
+    @Transactional(readOnly = true)
+    public UserInfoResponseDto getMyInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+        return UserInfoResponseDto.from(user);
+    }
 }
