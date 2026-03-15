@@ -1,12 +1,15 @@
 package com.mxxdone.miniproject.repository;
 
 import com.mxxdone.miniproject.domain.QCategory;
+import com.mxxdone.miniproject.domain.QUser;
+import com.mxxdone.miniproject.domain.Role;
 import com.mxxdone.miniproject.dto.admin.AdminSummaryResponseDto;
 import com.mxxdone.miniproject.dto.admin.DailyStatResponseDto;
 import com.mxxdone.miniproject.dto.admin.PopularPostResponseDto;
 import com.mxxdone.miniproject.dto.admin.RecentCommentResponseDto;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.DateTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -45,6 +48,12 @@ public class AdminStatsRepository {
         return LocalDate.now(KST).atStartOfDay(KST).toInstant();
     }
 
+    // BooleanExpression — QueryDSL의 SQL 조건절 조각
+    private BooleanExpression isNotAdminComment() {
+        return comment.author.isNull()
+                .or(comment.author.role.ne(Role.ADMIN));
+    }
+
     public AdminSummaryResponseDto getSummary() {
 
         Instant todayStart = startOfToday();
@@ -68,7 +77,9 @@ public class AdminStatsRepository {
         // select count(id) from comment where is_deleted = false
         long totalComments = Optional.ofNullable(
                 queryFactory.select(comment.count()).from(comment)
-                        .where(comment.isDeleted.isFalse())
+                        .leftJoin(comment.author, user)
+                        .where(comment.isDeleted.isFalse(),
+                                isNotAdminComment())
                         .fetchOne()
         ).orElse(0L);
 
@@ -91,7 +102,8 @@ public class AdminStatsRepository {
         long todayComments = Optional.ofNullable(
                 queryFactory.select(comment.count()).from(comment)
                         .where(comment.isDeleted.isFalse(),
-                                comment.createdAt.goe(todayStart))
+                                comment.createdAt.goe(todayStart),
+                                isNotAdminComment())
                         .fetchOne()
         ).orElse(0L);
 
@@ -107,6 +119,10 @@ public class AdminStatsRepository {
      * 리스트 목록과 함께 해당 게시글의 좋아요 수, 댓글 수도 서브쿼리로 묶어서 조회
      */
     public List<PopularPostResponseDto> getPopularPosts(int limit) {
+
+        // 서브쿼리에서 user 겹쳐서 구분
+        QUser commentAuthor = new QUser("commentAuthor");
+
         return queryFactory
                 // Projections.constructor: DB에서 긁어온 데이터를 DTO(PopularPostResponseDto)의 생성자에 넣어줌
                 .select(Projections.constructor(PopularPostResponseDto.class,
@@ -123,21 +139,23 @@ public class AdminStatsRepository {
                                 .from(postLike)
                                 .where(postLike.post.eq(post)), // eq: Equal (같다, ==)
 
-                        // [서브쿼리 2] 이 게시글에 달린 댓글 수
+                        // 이 게시글에 달린 댓글 수
                         JPAExpressions.select(comment.count())
                                 .from(comment)
+                                .leftJoin(comment.author, commentAuthor)
                                 .where(
                                         comment.post.eq(post),
-                                        comment.isDeleted.isFalse()
+                                        comment.isDeleted.isFalse(),
+                                        commentAuthor.isNull()
+                                                .or(commentAuthor.role.ne(Role.ADMIN))
                                 ),
-
                         post.createdAt
                 ))
                 .from(post)
                 // 카테고리 정보를 가져오기 위해 카테고리 테이블과 LEFT JOIN
                 .leftJoin(post.category, category)
                 .leftJoin(category.parent, parentCategory)
-                // 조회수(viewCount) 기준으로 내림차순(DESC) 정렬합니다.
+                // 조회수(viewCount) 기준으로 내림차순(DESC) 정렬
                 .orderBy(post.viewCount.desc())
 
                 // 파라미터로 받은 갯수(limit)만큼만 자르기
@@ -166,9 +184,10 @@ public class AdminStatsRepository {
                 .leftJoin(comment.post, post)
                 .leftJoin(post.category, category)
                 .leftJoin(category.parent, parentCategory)
-
+                .leftJoin(comment.author, user)
                 // 삭제 안 된 댓글만 최신순(날짜 내림차순)으로 정렬
-                .where(comment.isDeleted.isFalse())
+                .where(comment.isDeleted.isFalse(),
+                        isNotAdminComment())
                 .orderBy(comment.createdAt.desc())
                 .limit(limit)
                 .fetch();
@@ -198,7 +217,8 @@ public class AdminStatsRepository {
                 .from(comment)
                 .where(
                         comment.isDeleted.isFalse(),
-                        comment.createdAt.goe(startDate) // 작성일이 'N일 전의 자정'보다 크거나 같은 조건
+                        comment.createdAt.goe(startDate), // 작성일이 'N일 전의 자정'보다 크거나 같은 조건
+                        isNotAdminComment()
                 )
                 .groupBy(dateExpr)          // 위에서 만든 날짜를 기준으로 GROUP BY
                 .orderBy(dateExpr.asc())    // 날짜 오름차순(과거->현재)으로 정렬
