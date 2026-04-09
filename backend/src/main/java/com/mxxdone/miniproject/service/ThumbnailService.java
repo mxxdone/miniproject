@@ -53,9 +53,6 @@ public class ThumbnailService {
         // e.g.: thumbnails/랜덤UUID문자열_thumb.jpg
         String thumbKey =THUMBNAIL_PREFIX + UUID.randomUUID() + "_thumb.jpg";
         // 썸네일 byte[]를 S3에 업로드하고 업로드된 썸네일의 CloudFront URL 반환
-        log.info("썸네일 생성 시작");
-        log.info("첫 번째 이미지 key={}", sourceKey);
-        log.info("썸네일 업로드 완료: {}", thumbKey);
         return s3Uploader.uploadBytes(thumbnailBytes, thumbKey, "image/jpeg");
     }
 

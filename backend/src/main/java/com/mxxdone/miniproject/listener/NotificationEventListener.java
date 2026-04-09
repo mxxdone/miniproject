@@ -27,8 +27,6 @@ public class NotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT) // 원래 트랜잭션 커밋 후 실행
     public void handleNotificationEvent(NotificationEvent event) {
         try {
-            log.info("알림 이벤트 수신 및 비동기 처리 시작: receiverId={}", event.receiverId());
-
             // 수신자 조회
             User receiver = userRepository.findById(event.receiverId())
                     .orElseThrow(() -> new IllegalArgumentException("수신자를 찾을 수 없습니다."));
@@ -43,9 +41,6 @@ public class NotificationEventListener {
 
             // DB에 저장
             notificationRepository.save(notification);
-
-            log.info("알림 저장 완료");
-
         } catch (Exception e) {
             // 비동기 로직이므로 예외가 발생해도 메인 트랜잭션(댓글 저장)에는 영향X
             log.error("알림 저장 중 오류가 발생했습니다", e);

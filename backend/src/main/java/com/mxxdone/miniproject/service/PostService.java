@@ -119,7 +119,6 @@ public class PostService {
             if (keys != null && !keys.isEmpty()) {
                 redisTemplate.delete(keys);
             }
-            log.info("변경 사항이 없어 수정을 중단합니다.");
         } catch (Exception e) {
             log.error("캐시 삭제 중 오류 발생", e);
         }
@@ -238,7 +237,6 @@ public class PostService {
 
                 // 캐시에 데이터가 있으면
                 if (cachedData != null) {
-                    log.info("캐시 발견: 레디스로부터 게시물 1페이지 불러오기");
                     // JSON 문자열을 PageDto로 변환
                     PageDto<PostSummaryResponseDto> cachedPageDto = objectMapper.readValue(cachedData, new TypeReference<>() {
                     });
@@ -250,7 +248,6 @@ public class PostService {
             }
         }
         // 캐시를 사용하지 않거나 캐시를 찾지 못할 경우 DB에서 조회
-        log.info("캐시 미발견: DB에서 조회");
         List<Long> categoryIds = null;
         if (categoryId != null) {
             Category category = categoryRepository.findById(categoryId)
@@ -267,7 +264,6 @@ public class PostService {
                 // PageDto를 JSON으로 변환 후 Redis에 저장
                 String jsonResult = objectMapper.writeValueAsString(resultDto);
                 redisTemplate.opsForValue().set(cacheKey, jsonResult, Duration.ofMinutes(10)); // TTL 10분 설정 추가
-                log.info("캐시 생성: 게시글 1페이지 redis에 저장");
             } catch (Exception e) {
                 log.error("캐시 생성 실패", e);
             }

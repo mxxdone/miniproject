@@ -84,7 +84,6 @@ public class UserService {
         }
 
         userRepository.delete(user); // soft delete (@SQLDelete)
-        log.info("회원 탈퇴 완료: username={}", username);
     }
 
     // 닉네임 수정: 소셜/일반 공통
