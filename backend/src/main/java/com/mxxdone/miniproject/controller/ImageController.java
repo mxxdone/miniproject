@@ -40,7 +40,7 @@ public class ImageController {
             )
             @RequestParam("image") MultipartFile image
     ) throws IOException {
-        String imageUrl = s3uploader.upload(image, "posts");
+        String imageUrl = s3uploader.upload(image);
         return ResponseEntity.ok(imageUrl);
     }
 }

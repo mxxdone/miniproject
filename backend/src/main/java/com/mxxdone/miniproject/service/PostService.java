@@ -36,6 +36,8 @@ public class PostService {
     private final PostLikeRepository postLikeRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ObjectMapper objectMapper;
+    private final ContentImageService contentImageService;
+    private final ThumbnailService thumbnailService;
 
     // 게시글 저장
     @CacheEvict(value = "categories", allEntries = true)
@@ -47,10 +49,17 @@ public class PostService {
             throw new IllegalArgumentException("하위 카테고리에만 게시글을 작성할 수 있습니다.");
         }
 
+        // 임시 이미지 → 정식 경로 이동 + HTML URL 교체
+        String finalHtml = contentImageService.processTempImages(requestDto.content());
+
+        // 첫 번째 이미지로 썸네일 생성 (없으면 null)
+        String thumbnailUrl = thumbnailService.createThumbnail(finalHtml);
+
         // 빌더를 이용하여 Post 객체 생성
         Post post = Post.builder()
                 .title(requestDto.title())
                 .content(requestDto.content())
+                .thumbnailUrl(thumbnailUrl)
                 .category(category)
                 .author(author)
                 .build();

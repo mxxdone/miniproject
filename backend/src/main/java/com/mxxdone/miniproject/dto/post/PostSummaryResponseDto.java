@@ -38,7 +38,10 @@ public record PostSummaryResponseDto(
         String parentSlug,
 
         @Schema(description = "하위 카테고리 슬러그", example = "security")
-        String childSlug
+        String childSlug,
+
+        @Schema(description = "썸네일 이미지 Url")
+        String thumbnailUrl
 ) {
     // QueryDSL에서 직접 DTO로 조회할 것이므로 @QueryProjection 추가
     // 수정시 clean build 필요

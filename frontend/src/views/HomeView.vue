@@ -56,6 +56,7 @@ const processedPosts = computed(() => {
   return postsStore.posts.map((post) => ({
     ...post, // 기존 post 객체의 모든 속성을 복사
     plainContent: stripHtml(post.content),
+    thumbnailUrl: post.thumbnailUrl || null,
   }))
 })
 
@@ -184,6 +185,13 @@ function handleSearch() {
           class="text-decoration-none text-black"
         >
           <v-card class="post-card h-100 d-flex flex-column">
+            <!-- 썸네일 이미지 추가 -->
+            <v-img
+              :src="post.thumbnailUrl || '/images/default-thumbnail.png'"
+              height="200"
+              cover
+              @error="(e) => e.target.src = '/images/default-thumbnail.png'"
+            />
             <div>
               <v-card-title class="text-h6 pt-4 pb-1">{{ post.title }}</v-card-title>
               <v-card-text class="content-truncate pd-2">

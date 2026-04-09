@@ -49,6 +49,9 @@ public class Post extends BaseTimeEntity {
     @OneToMany(mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 
+    @Column(length = 500)
+    private String thumbnailUrl;
+
     @Column(nullable = false)
     private boolean isDeleted = false;
 
@@ -59,14 +62,12 @@ public class Post extends BaseTimeEntity {
     private int likeCount = 0;
 
     @Builder
-    public Post(String title, String content, Category category, User author) {
+    public Post(String title, String content, Category category, User author, String thumbnailUrl) {
         this.title = title;
         this.content = content;
         this.category = category;
         this.author = author;
-
-        // 여기에 사용자님이 원하시는 스냅샷 로직을 넣습니다.
-        // 이렇게 하면 builder().build()를 호출할 때도 이 로직이 무조건 실행됩니다.
+        this.thumbnailUrl = thumbnailUrl;
         if (author != null) {
             this.authorNickname = author.getNickname();
             this.authorUsername = author.getUsername();

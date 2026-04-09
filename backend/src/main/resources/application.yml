@@ -1,22 +1,22 @@
-  spring:
-    profiles:
-      default: dev
-      group:
-        "dev": ["secret-dev"]
-        "prod": ["prod", "secret-prod"]
-        "local": ["local", "secret-local"]
-    jpa:
-      open-in-view: false # OSIV(Open Session In View) 비활성화
-    threads:
-      virtual:
-        enabled: true # 톰캣 가상 스레드 활성화
-    application:
-      name: miniproject
-    cloud:
-      aws:
-        region:
-          static: ap-northeast-2
-        s3:
-          bucket: miniproject-file-bucket
-        cloudfront:
-          domain: dyzr5x33xr922.cloudfront.net
+spring:
+  profiles:
+    default: dev
+    group:
+      "dev": ["secret-dev"]
+      "prod": ["prod", "secret-prod"]
+      "local": ["local", "secret-local"]
+  jpa:
+    open-in-view: false # OSIV(Open Session In View) 비활성화
+  threads:
+    virtual:
+      enabled: true # 톰캣 가상 스레드 활성화
+  application:
+    name: miniproject
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: miniproject-file-bucket
+      cloudfront:
+        domain: dyzr5x33xr922.cloudfront.net

@@ -59,7 +59,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         new CaseBuilder()
                                 .when(category.parent.isNotNull()).then(category.slug) // 부모가 있으면 자신의 slug
                                 .otherwise((String) null) // 부모가 없으면 null
-                                .as("childSlug")
+                                .as("childSlug"),
+                        post.thumbnailUrl
                 ))
                 .from(post)
                 .leftJoin(post.author, user)

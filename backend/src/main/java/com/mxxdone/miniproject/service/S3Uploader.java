@@ -1,20 +1,19 @@
 package com.mxxdone.miniproject.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-@Slf4j
 @RequiredArgsConstructor
 @Service
 public class S3Uploader {
@@ -27,30 +26,105 @@ public class S3Uploader {
     @Value("${spring.cloud.aws.cloudfront.domain}")
     private String cloudfrontDomain;
 
-    public String upload(MultipartFile multipartFile, String dirName) throws IOException {
+    /**
+     * 사용자가 업로드한 원본 이미지를 S3 temp/ 폴더에 임시 저장하고
+     * 그 이미지의 CloudFront URL을 반환한다.
+     *
+     * @param multipartFile 사용자가 업로드한 이미지 파일
+     * @return temp/ 에 저장된 이미지의 CloudFront URL
+     */
+    public String upload(MultipartFile multipartFile) throws IOException {
         String originalFilename = multipartFile.getOriginalFilename();
         String extension = "";
+
         if (originalFilename != null) {
             int dotIndex = originalFilename.lastIndexOf('.');
-            // .gitignore같은 숨김파일 때문에 추가
             if (dotIndex > 0) {
-                // "." 이후 확장자 가져오기
                 extension = originalFilename.substring(dotIndex);
             }
         }
-        // 날짜 폴더 경로 생성 (yyyy/MM/dd): 추후 배치로 미사용 파일 제거 고려
-        String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
-        // 최종 파일 경로에 날짜 경로 추가 (파일명은 UUID + 확장자)
-        String savedFileName = "images/" + dirName + "/" + datePath + "/" + UUID.randomUUID() + extension;
+        // temp/ 경로에 UUID 파일명으로 저장
+        String savedFileName = "temp/" + UUID.randomUUID() + extension;
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(savedFileName)
+                .contentType(multipartFile.getContentType())
                 .build();
 
         s3Client.putObject(putObjectRequest, RequestBody.fromBytes(multipartFile.getBytes()));
 
         return "https://" + cloudfrontDomain + "/" + savedFileName;
+    }
+
+    /**
+     * S3 내부에서 파일을 복사한다.
+     * temp/ → images/posts/yyyy/MM/dd/ 형태의 디렉토리로 이동할 때 사용한다.
+     *
+     * 입력:
+     * @param sourceKey 원본 key (e.g.: temp/abc.png)
+     * @param destKey   복사 대상 key (e.g.: images/posts/2026/04/04/abc.png)
+     */
+    public void copy(String sourceKey, String destKey) {
+        CopyObjectRequest request = CopyObjectRequest.builder()
+                .sourceBucket(bucket)
+                .sourceKey(sourceKey)
+                .destinationBucket(bucket)
+                .destinationKey(destKey)
+                .build();
+
+        s3Client.copyObject(request);
+    }
+
+    /**
+     * S3에 저장된 파일을 다운로드해서 byte[] 형태로 반환한다.
+     * 썸네일 생성 시 원본 이미지를 가져올 때 사용.
+     *
+     * @param key S3 객체 key
+     * @return 파일 데이터(byte[])
+     */
+    public byte[] download(String key) {
+        GetObjectRequest request = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
+
+        try (ResponseInputStream<?> response = s3Client.getObject(request)) {
+            return response.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("S3 다운로드 실패: " + key, e);
+        }
+    }
+
+    /**
+     * 서버 메모리 안에 있는 byte[] 데이터를
+     * 새로운 파일로 S3에 업로드한다.
+     * 서버가 직접 만든 썸네일 이미지(byte[])를 저장할 때 사용.
+     *
+     * @param data 업로드할 파일 데이터(byte[])
+     * @param key 저장할 S3 경로
+     * @param contentType 파일 타입 e.g. image/png
+     * @return 업로드된 파일의 CloudFront URL
+     */
+    public String uploadBytes(byte[] data, String key, String contentType) {
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(contentType)
+                .build();
+
+        s3Client.putObject(request, RequestBody.fromBytes(data));
+        return "https://" + cloudfrontDomain + "/" + key;
+    }
+
+    /**
+     * S3 key를 CloudFront URL 형태로 바꿔서 반환.
+     *
+     * @param key S3 객체 key
+     * @return CloudFront URL
+     */
+    public String getUrl(String key) {
+        return "https://" + cloudfrontDomain + "/" + key;
     }
 }
