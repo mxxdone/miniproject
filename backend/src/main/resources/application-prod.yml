@@ -21,7 +21,7 @@ app:
   oauth2:
     redirect-uri: https://api.moodone.dev/oauth2/redirect
   cors:
-    allowed-origins: https://moodone.dev, https://www.moodone.dev
+    allowed-origins: https://moodone.dev,https://www.moodone.dev
 admin:
   password: ${ADMIN_PASSWORD}
 springdoc:
