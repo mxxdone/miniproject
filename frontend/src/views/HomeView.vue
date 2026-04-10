@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { stripHtml } from '@/utils/formatText'
 import { useCategoriesStore } from '@/stores/categories'
+import { DEFAULT_THUMBNAIL } from '@/constants'
 
 // posts.js에 작성한 posts 스토어를 사용
 const postsStore = usePostsStore()
@@ -187,11 +188,14 @@ function handleSearch() {
           <v-card class="post-card h-100 d-flex flex-column">
             <!-- 썸네일 이미지 추가 -->
             <v-img
-              :src="post.thumbnailUrl || '/images/default-thumbnail.png'"
+              :src="post.thumbnailUrl || DEFAULT_THUMBNAIL"
               height="200"
               cover
-              @error="(e) => e.target.src = '/images/default-thumbnail.png'"
-            />
+            >
+              <template #error>
+                <v-img :src="DEFAULT_THUMBNAIL" height="200" cover />
+              </template>
+            </v-img>
             <div>
               <v-card-title class="text-h6 pt-4 pb-1">{{ post.title }}</v-card-title>
               <v-card-text class="content-truncate pd-2">
