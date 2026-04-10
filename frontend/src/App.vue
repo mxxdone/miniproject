@@ -116,9 +116,9 @@ const handleLogout = async () => {
         <v-app-bar-nav-icon variant="text" color="on-primary" @click="drawer = !drawer" />
 
         <v-toolbar-title
-          class="text-white flex-grow-1 text-subtitle-1 text-sm-h6 font-weight-bold ml-n2 ml-sm-0"
+          class="text-white text-subtitle-1 text-sm-h6 font-weight-bold ml-n2 ml-sm-0"
         >
-          <RouterLink to="/" class="text-decoration-none text-white d-flex align-center h-100">
+          <RouterLink to="/" class="text-decoration-none text-white">
             MOODONE.DEV
           </RouterLink>
         </v-toolbar-title>
