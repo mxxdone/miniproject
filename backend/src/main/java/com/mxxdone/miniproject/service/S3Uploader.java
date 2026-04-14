@@ -8,6 +8,7 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
@@ -126,5 +127,17 @@ public class S3Uploader {
      */
     public String getUrl(String key) {
         return "https://" + cloudfrontDomain + "/" + key;
+    }
+
+    /**
+     * S3 객체를 삭제
+     *
+     * @param key : 삭제할 S3 객체 key
+     */
+    public void delete(String key) {
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build());
     }
 }

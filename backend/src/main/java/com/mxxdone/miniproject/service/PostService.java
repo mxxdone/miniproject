@@ -38,6 +38,7 @@ public class PostService {
     private final ObjectMapper objectMapper;
     private final ContentImageService contentImageService;
     private final ThumbnailService thumbnailService;
+    private final S3Uploader s3Uploader;
 
     // 게시글 저장
     @CacheEvict(value = "categories", allEntries = true)
@@ -100,8 +101,17 @@ public class PostService {
             }
         }
 
-        post.update(requestDto.title(), requestDto.content(), category);
-
+        // temp → 정식 경로 이동 + HTML 교체
+        String finalHtml = contentImageService.processTempImages(requestDto.content());
+        // 기존 썸네일 삭제 (있으면)
+        if (post.getThumbnailUrl() != null) {
+            String oldThumbKey = contentImageService.extractS3Key(post.getThumbnailUrl());
+            s3Uploader.delete(oldThumbKey);
+        }
+        // 새 썸네일 생성
+        String newThumbnailUrl = thumbnailService.createThumbnail(finalHtml);
+        // 게시글 업데이트
+        post.update(requestDto.title(), finalHtml, category, newThumbnailUrl);
         // 실제 변경이 일어난 시점에만 캐시 삭제
         evictCache();
 

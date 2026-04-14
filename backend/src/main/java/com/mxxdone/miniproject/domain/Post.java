@@ -78,13 +78,14 @@ public class Post extends BaseTimeEntity {
     }
 
     // 수정 편의 메서드 추가
-    public void update(String title, String content, Category category) {
+    public void update(String title, String content, Category category, String thumbnailUrl) {
         this.title = title;
         this.content = content;
         // category가 null이 아닐 경우에만 업데이트 (null이면 기존 카테고리 유지)
         if (category != null) {
             this.category = category;
         }
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     // updatePost에서 수정 유무 체크
