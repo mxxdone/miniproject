@@ -2,8 +2,6 @@ package com.mxxdone.miniproject.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -35,10 +33,8 @@ public class Post extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT") // content는 내용이 길어질 수 있으므로 TEXT 타입으로 설정
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    private User author; // 작성자
+    @Column
+    private Long userId;
 
     @Column
     private String authorUsername;
@@ -62,19 +58,14 @@ public class Post extends BaseTimeEntity {
     private int likeCount = 0;
 
     @Builder
-    public Post(String title, String content, Category category, User author, String thumbnailUrl) {
+    public Post(String title, String content, Category category, Long userId, String authorUsername, String authorNickname, String thumbnailUrl) {
         this.title = title;
         this.content = content;
         this.category = category;
-        this.author = author;
+        this.userId = userId;
+        this.authorUsername = authorUsername;
+        this.authorNickname = authorNickname;
         this.thumbnailUrl = thumbnailUrl;
-        if (author != null) {
-            this.authorNickname = author.getNickname();
-            this.authorUsername = author.getUsername();
-        } else {
-            this.authorNickname = "(알수없음)";
-            this.authorUsername = null;
-        }
     }
 
     // 수정 편의 메서드 추가

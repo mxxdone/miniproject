@@ -2,6 +2,7 @@ package com.mxxdone.miniproject.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mxxdone.miniproject.config.security.PrincipalDetails;
 import com.mxxdone.miniproject.domain.*;
 import com.mxxdone.miniproject.dto.PageDto;
 import com.mxxdone.miniproject.dto.category.CategoryDto;
@@ -40,9 +41,24 @@ public class PostService {
     private final ThumbnailService thumbnailService;
     private final S3Uploader s3Uploader;
 
+    /**
+     * 게시글 수정/삭제 권한 체크
+     * @param post 대상 게시글
+     * @param principalDetails 현재 사용자 정보
+     */
+    private void validatePostPermission(Post post, PrincipalDetails principalDetails) {
+        boolean isAdmin = Role.ADMIN.getKey().equals(principalDetails.getRole());
+        boolean isAuthor = post.getUserId() != null
+                && post.getUserId().equals(principalDetails.getId());
+
+        if (!isAdmin && !isAuthor) {
+            throw new AccessDeniedException("해당 게시글에 대한 권한이 없습니다.");
+        }
+    }
+
     // 게시글 저장
     @CacheEvict(value = "categories", allEntries = true)
-    public PostSaveResponseDto save(PostSaveRequestDto requestDto, User author) {
+    public PostSaveResponseDto save(PostSaveRequestDto requestDto, PrincipalDetails principalDetails) {
         Category category = categoryRepository.findById(requestDto.categoryId())
                 .orElseThrow(() -> new NoSuchElementException("해당 카테고리가 없습니다. id= " + requestDto.categoryId()));
 
@@ -62,7 +78,9 @@ public class PostService {
                 .content(requestDto.content())
                 .thumbnailUrl(thumbnailUrl)
                 .category(category)
-                .author(author)
+                .userId(principalDetails.getId())
+                .authorUsername(principalDetails.getUsername())
+                .authorNickname(principalDetails.getNickname())
                 .build();
 
         Post savedPost = postRepository.save(post);
@@ -77,13 +95,12 @@ public class PostService {
     }
 
     //게시글 수정
-    public Long update(Long id, PostUpdateRequestDto requestDto, User currentUser) {
+    public Long update(Long id, PostUpdateRequestDto requestDto, PrincipalDetails principalDetails) {
+
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다. id= " + id));
 
-        if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
-            throw new AccessDeniedException("게시글 수정 권한이 없습니다.");
-        }
+        validatePostPermission(post, principalDetails);
 
         // 수정 여부 체크, 수정X -> 바로 id return
         if (post.isNotModified(requestDto.title(), requestDto.content(), requestDto.categoryId())) {
@@ -136,13 +153,11 @@ public class PostService {
 
     //게시글 삭제
     @CacheEvict(value = "categories", allEntries = true)
-    public void delete(Long id, User currentUser) {
+    public void delete(Long id, PrincipalDetails principalDetails) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 게시글이 없습니다. id= " + id));
 
-        if (post.getAuthor() != null && !post.getAuthor().equals(currentUser) && currentUser.getRole() != Role.ADMIN) {
-            throw new AccessDeniedException("게시글 삭제 권한이 없습니다.");
-        }
+        validatePostPermission(post, principalDetails);
 
         commentRepository.softDeleteByPostId(id);
 

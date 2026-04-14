@@ -41,7 +41,7 @@ public class PostController {
             @Valid @RequestBody PostSaveRequestDto requestDto,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails // 현재 로그인한 사용자 정보
     ) {
-        return ResponseEntity.ok(postService.save(requestDto, principalDetails.getUser()));
+        return ResponseEntity.ok(postService.save(requestDto, principalDetails));
     }
 
     // 게시글 수정 API
@@ -58,7 +58,7 @@ public class PostController {
             @Parameter(description = "수정할 게시글 ID") @PathVariable Long id,
             @RequestBody PostUpdateRequestDto requestDto,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails) {
-        return ResponseEntity.ok(postService.update(id, requestDto, principalDetails.getUser()));
+        return ResponseEntity.ok(postService.update(id, requestDto, principalDetails));
     }
 
     // 게시글 삭제 API
@@ -73,7 +73,7 @@ public class PostController {
     public ResponseEntity<Void> deletePost(
             @Parameter(description = "삭제할 게시글 ID") @PathVariable Long id,
             @Parameter(hidden = true) @AuthenticationPrincipal PrincipalDetails principalDetails) {
-        postService.delete(id, principalDetails.getUser());
+        postService.delete(id, principalDetails);
         return ResponseEntity.ok().build();
         //.build() 사용 이유
         //응답 본문(body)이 없는 HTTP응답을 만들기 위해서

@@ -21,6 +21,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private final Long id;
     private final String username;
+    private final String nickname;
     private final String role;
 
     // 일반 로그인 시 사용하는 생성자
@@ -28,6 +29,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         this.user = user;
         this.id = user.getId();
         this.username = user.getUsername();
+        this.nickname = user.getNickname();
         this.role = user.getRole().getKey();
     }
 
@@ -37,13 +39,15 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         this.attributes = attributes;
         this.id = user.getId();
         this.username = user.getUsername();
+        this.nickname = user.getNickname();
         this.role = user.getRole().getKey();
     }
 
     // JWT 필터에서 DB 조회 없이 토큰 정보만으로 객체 만들 때 쓰는 생성자
-    public PrincipalDetails(Long id, String username, String role) {
+    public PrincipalDetails(Long id, String username, String nickname, String role) {
         this.id = id;
         this.username = username;
+        this.nickname = nickname;
         this.role = role;
     }
 

@@ -45,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Claims info = jwtUtil.getUserInfoFromToken(token);
             // Claims에서 유저명, pk, 권한 꺼내기
             String username = info.getSubject();
+            String nickname = info.get("nickname", String.class);
             Long userId = info.get("id", Long.class);
             String roleStr = info.get("auth", String.class);
 
@@ -53,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 프록시 PrincipalDeatils 객체 생성
             // 토큰에서 가져온 값으로 껍데기 생성
-            PrincipalDetails principalDetails = new PrincipalDetails(userId, username, roleStr);
+            PrincipalDetails principalDetails = new PrincipalDetails(userId, username, nickname, roleStr);
 
             // Authentication 객체 생성 및 SecurityContext에 저장
             SecurityContext context = SecurityContextHolder.createEmptyContext();
