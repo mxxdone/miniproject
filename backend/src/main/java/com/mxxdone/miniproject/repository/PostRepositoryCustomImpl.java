@@ -17,7 +17,6 @@ import java.util.List;
 import static com.mxxdone.miniproject.domain.QCategory.category;
 import static com.mxxdone.miniproject.domain.QComment.comment;
 import static com.mxxdone.miniproject.domain.QPost.post;
-import static com.mxxdone.miniproject.domain.QUser.user;
 
 @RequiredArgsConstructor
 public class PostRepositoryCustomImpl implements PostRepositoryCustom {
@@ -40,8 +39,8 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         post.title,
                         post.content,
                         category.name,
-                        user.username,
-                        user.nickname,
+                        post.authorUsername,
+                        post.authorNickname,
                         post.likeCount,
                         // 스칼라 서브쿼리(Scalar Subquery)를 이용한 댓글 수 계산
                         JPAExpressions
@@ -63,7 +62,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
                         post.thumbnailUrl
                 ))
                 .from(post)
-                .leftJoin(post.author, user)
                 .leftJoin(post.category, category)
                 // 부모 카테고리 정보를 위한 JOIN
                 // 자식 카테고리(category)의 parent 필드를 이용해 부모 카테고리 별칭(parentCategory)과 연결

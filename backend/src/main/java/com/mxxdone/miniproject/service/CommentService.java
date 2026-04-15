@@ -87,9 +87,16 @@ public class CommentService {
         String url = "/" + parentSlug + "/" + childSlug + "/posts/" + post.getId() + "#comment-" + savedComment.getId();
 
         // 게시글 작성자에게 알림
-        User postAuthor = post.getAuthor();
-        boolean isPostOwnerSelf = (currentUser != null && postAuthor.equals(currentUser));
+        User postAuthor = null;
+        if (post.getUserId() != null) {
+            postAuthor = userRepository.findById(post.getUserId()).orElse(null);
+        }
+        // 게시글 작성자가 없으면 알림 불필요
+        if (postAuthor == null) {
+            return;
+        }
 
+        boolean isPostOwnerSelf = (currentUser != null && postAuthor.equals(currentUser));
         // 부모 댓글 작성자 - 게시글 작성자 동일 여부
         boolean isParentAuthorSameAsPostAuthor = (parent != null && parent.getAuthor().equals(postAuthor));
 
