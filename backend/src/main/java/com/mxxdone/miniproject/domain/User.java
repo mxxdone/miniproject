@@ -48,9 +48,6 @@ public class User extends BaseTimeEntity {
     private Instant deletedAt;
 
     @OneToMany(mappedBy = "author")
-    private List<Post> posts = new ArrayList<>();
-
-    @OneToMany(mappedBy = "author")
     private List<Comment> comments = new ArrayList<>();
 
 
