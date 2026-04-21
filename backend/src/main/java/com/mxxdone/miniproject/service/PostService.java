@@ -75,7 +75,7 @@ public class PostService {
         // 빌더를 이용하여 Post 객체 생성
         Post post = Post.builder()
                 .title(requestDto.title())
-                .content(requestDto.content())
+                .content(finalHtml)
                 .thumbnailUrl(thumbnailUrl)
                 .category(category)
                 .userId(principalDetails.getId())

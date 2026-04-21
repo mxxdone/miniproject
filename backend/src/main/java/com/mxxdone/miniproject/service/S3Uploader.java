@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -76,47 +74,6 @@ public class S3Uploader {
                 .build();
 
         s3Client.copyObject(request);
-    }
-
-    /**
-     * S3에 저장된 파일을 다운로드해서 byte[] 형태로 반환한다.
-     * 썸네일 생성 시 원본 이미지를 가져올 때 사용.
-     *
-     * @param key S3 객체 key
-     * @return 파일 데이터(byte[])
-     */
-    public byte[] download(String key) {
-        GetObjectRequest request = GetObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .build();
-
-        try (ResponseInputStream<?> response = s3Client.getObject(request)) {
-            return response.readAllBytes();
-        } catch (IOException e) {
-            throw new RuntimeException("S3 다운로드 실패: " + key, e);
-        }
-    }
-
-    /**
-     * 서버 메모리 안에 있는 byte[] 데이터를
-     * 새로운 파일로 S3에 업로드한다.
-     * 서버가 직접 만든 썸네일 이미지(byte[])를 저장할 때 사용.
-     *
-     * @param data 업로드할 파일 데이터(byte[])
-     * @param key 저장할 S3 경로
-     * @param contentType 파일 타입 e.g. image/png
-     * @return 업로드된 파일의 CloudFront URL
-     */
-    public String uploadBytes(byte[] data, String key, String contentType) {
-        PutObjectRequest request = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(key)
-                .contentType(contentType)
-                .build();
-
-        s3Client.putObject(request, RequestBody.fromBytes(data));
-        return "https://" + cloudfrontDomain + "/" + key;
     }
 
     /**
