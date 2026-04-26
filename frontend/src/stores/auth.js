@@ -12,7 +12,9 @@ export const useAuthStore = defineStore('auth', () => {
   const nickname = ref(null)
   const email = ref(null)
   const isSocialUser = ref(false)
-  const isAdmin = computed(() => userRole.value === 'ROLE_ADMIN')
+  const isAdmin = computed(() => {
+    return userRole.value === 'ADMIN' || userRole.value === 'ROLE_ADMIN'
+  })
   const isLoggedIn = computed(() => !!token.value)
 
   // 시작 시 토큰 있으면 사용자 정보 초기화
